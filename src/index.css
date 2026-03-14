@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* Fonts */
+  --font-Inter: Inter, sans-serif;
+  --font-Roboto: "Roboto", sans-serif;
+
+  /* Colors */
+
+  /* Primary */
+  --color-primary-10: #D6A850;
+
+  /* neutral */
+  --color-neutral-5: #1C2542;
+  --color-neutral-10: #1C2542;
+  --color-neutral-20: #545454;
+  --color-neutral-30: #6b7280;
+  --color-neutral-40: #05160b;
+  --color-neutral-45: #696767;
+  --color-neutral-50: #d4d4d4;
+  --color-neutral-55: #b0b0b0;
+  --color-neutral-55: #E4E4E4;
+
+  /* background */
+  --color-background-10: #fefdf8;
+  --color-background-20: #FEFDF8;
+
+  /* Shadows */
+  /* --shadow-job-card: 0 4px 12px 0 rgba(2, 45, 80, 0.08);
+  --shadow-tutorial-card: 0 4px 10px 0 rgba(0, 0, 0, 0.12); */
+
+  /* Gradients */
+  --bg-gradient-primary: linear-gradient(180deg, #EEBF65 0%, #EEBA08 100%);
+}
+
+.bg-gradient-primary {
+  background: var(--bg-gradient-primary);
+}
