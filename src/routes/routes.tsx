@@ -6,6 +6,7 @@ import NotFound from "../pages/NotFound/NotFound";
 import Login from "../pages/Auth/Login/Login";
 import ForgotPassword from "../pages/Auth/ForgotPassword/ForgotPassword";
 import VerifyOtp from "../pages/Auth/VerifyOtp/VerifyOtp";
+import Users from "../pages/Users/Users";
 
 export const router = createBrowserRouter([
   {
@@ -35,6 +36,10 @@ export const router = createBrowserRouter([
       {
         path: "home",
         element: <Dashboard />,
+      },
+      {
+        path: "users",
+        element: <Users />,
       },
     ],
   },
