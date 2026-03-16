@@ -25,7 +25,7 @@ const Sidebar = () => {
     { path: "/dashboard/home", label: "Dashboard", icon: LayoutDashboard },
     { path: "/dashboard/users", label: "Users", icon: Users },
     { path: "/dashboard/books", label: "Books", icon: BookOpen },
-    { path: "/dashboard/audioBooks", label: "Audio Books", icon: Headphones },
+    { path: "/dashboard/audio-books", label: "Audio Books", icon: Headphones },
     { path: "/dashboard/temples", label: "Temples", icon: Landmark },
     { path: "/dashboard/quiz", label: "Quiz", icon: HelpCircle },
     { path: "/dashboard/shop", label: "Shop", icon: ShoppingBag },
@@ -38,13 +38,15 @@ const Sidebar = () => {
     { path: "/dashboard/food", label: "Food", icon: Utensils },
   ];
 
- return (
+  return (
     <div className="w-72 h-screen top-0 left-0 bg-white border-r border-neutral-55 flex flex-col font-Inter">
       {/* Logo Section */}
       <div className="p-6 border-b border-neutral-55">
         <div className="flex items-center space-x-2">
-           <img src={IMAGES.logo} alt="" className="w-11" />
-          <span className="text-xl font-bold text-neutral-10 mt-2">Vedic Wisdom</span>
+          <img src={IMAGES.logo} alt="" className="w-11" />
+          <span className="text-xl font-bold text-neutral-10 mt-2">
+            Vedic Wisdom
+          </span>
         </div>
       </div>
 

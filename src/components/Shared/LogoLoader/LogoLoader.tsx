@@ -76,7 +76,7 @@ const LogoLoader = ({
           initial="hidden"
           animate="visible"
           exit="exit"
-          className=""
+          className="flex flex-col items-center"
         >
           <div className="relative flex flex-col items-center">
             {/* Subtle background glow */}

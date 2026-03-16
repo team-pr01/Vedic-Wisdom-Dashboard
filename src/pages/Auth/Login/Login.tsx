@@ -1,5 +1,8 @@
 import { useForm } from "react-hook-form";
 import Button from "../../../components/Reusable/Button/Button";
+import TextInput from "../../../components/Reusable/TextInput/TextInput";
+import PasswordInput from "../../../components/Reusable/PasswordInput/PasswordInput";
+import { useState } from "react";
 
 interface LoginFormData {
   email: string;
@@ -8,6 +11,7 @@ interface LoginFormData {
 }
 
 const Login = () => {
+  const [isPasswordVisible, setIsPasswordVisible] = useState<boolean>(false);
   const {
     register,
     handleSubmit,
@@ -36,65 +40,37 @@ const Login = () => {
         {/* Form */}
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-4">
-            {/* Email Field */}
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-neutral-20 font-Inter mb-1"
-              >
-                Email Address
-              </label>
-              <input
-                id="email"
-                type="email"
-                {...register("email", {
-                  required: "Email is required",
-                  pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: "Invalid email address",
-                  },
-                })}
-                className={`appearance-none relative block w-full px-4 py-3 border ${
-                  errors.email ? "border-red-500" : "border-neutral-50"
-                } placeholder-neutral-55 text-neutral-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-10 focus:border-transparent font-Roboto transition-all duration-200`}
-                placeholder="Enter your email"
-              />
-              {errors.email && (
-                <p className="mt-1 text-sm text-red-500 font-Roboto">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
+            {/* Email */}
+            <TextInput
+              label="Email Address"
+              placeholder="Enter your email"
+              type="email"
+              error={errors.email}
+              {...register("email", {
+                required: "Email is required",
+                setValueAs: (value) => value.replace(/\s+/g, ""),
+                pattern: {
+                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                  message: "Invalid email address",
+                },
+              })}
+            />
 
             {/* Password Field */}
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-neutral-20 font-Inter mb-1"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                {...register("password", {
-                  required: "Password is required",
-                  minLength: {
-                    value: 6,
-                    message: "Password must be at least 6 characters",
-                  },
-                })}
-                className={`appearance-none relative block w-full px-4 py-3 border ${
-                  errors.password ? "border-red-500" : "border-neutral-50"
-                } placeholder-neutral-55 text-neutral-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-10 focus:border-transparent font-Roboto transition-all duration-200`}
-                placeholder="Enter your password"
-              />
-              {errors.password && (
-                <p className="mt-1 text-sm text-red-500 font-Roboto">
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
+            <PasswordInput
+              label="Password"
+              placeholder="Must be at least 8 Characters"
+              error={errors.password}
+              {...register("password", {
+                required: "Password is required",
+                minLength: {
+                  value: 8,
+                  message: "Password must be at least 8 characters",
+                },
+              })}
+              isPasswordVisible={isPasswordVisible}
+              setIsPasswordVisible={setIsPasswordVisible}
+            />
 
             {/* Remember Me & Forgot Password */}
             <div className="flex items-center justify-between">
@@ -103,11 +79,11 @@ const Login = () => {
                   id="rememberMe"
                   type="checkbox"
                   {...register("rememberMe")}
-                  className="h-4 w-4 text-primary-10 focus:ring-primary-10 border-neutral-50 rounded transition-colors duration-200"
+                  className="h-4 w-4 text-primary-10 focus:ring-primary-10 border-neutral-50 rounded transition-colors duration-200 cursor-pointer"
                 />
                 <label
                   htmlFor="rememberMe"
-                  className="ml-2 block text-sm text-neutral-20 font-Roboto"
+                  className="ml-2 block text-sm text-neutral-20 font-Roboto cursor-pointer"
                 >
                   Remember me
                 </label>
@@ -126,13 +102,12 @@ const Login = () => {
 
           {/* Submit Button */}
           <Button
+          label="Sign In"
             type="submit"
             variant="primary"
             isLoading={isLoading}
             fullWidth
-          >
-            Sign In
-          </Button>
+          />
         </form>
 
         {/* Optional: Social Login */}

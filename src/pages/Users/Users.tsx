@@ -142,7 +142,7 @@ const Users = () => {
   return (
     <div className="">
       <Table<any>
-        title="All Registered Users"
+        title={`All Registered Users (${users.length})`}
         description="Manage all registered users of the platform."
         theads={userTheads}
         data={userTableData}

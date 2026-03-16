@@ -188,7 +188,7 @@ export default function Table<T extends Record<string, any>>({
             ))}
           </select>
 
-          {selectedCity !== null && (
+          {selectedCity && (
             <select
               value={selectedCity}
               onChange={(e) =>
@@ -205,7 +205,7 @@ export default function Table<T extends Record<string, any>>({
             </select>
           )}
 
-          {selectedArea !== null && (
+          {selectedArea && (
             <select
               value={selectedArea}
               onChange={(e) =>

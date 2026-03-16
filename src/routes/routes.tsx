@@ -7,6 +7,7 @@ import Login from "../pages/Auth/Login/Login";
 import ForgotPassword from "../pages/Auth/ForgotPassword/ForgotPassword";
 import VerifyOtp from "../pages/Auth/VerifyOtp/VerifyOtp";
 import Users from "../pages/Users/Users";
+import AudioBooks from "../pages/AudioBooks/AudioBooks";
 
 export const router = createBrowserRouter([
   {
@@ -40,6 +41,10 @@ export const router = createBrowserRouter([
       {
         path: "users",
         element: <Users />,
+      },
+      {
+        path: "audio-books",
+        element: <AudioBooks />,
       },
     ],
   },

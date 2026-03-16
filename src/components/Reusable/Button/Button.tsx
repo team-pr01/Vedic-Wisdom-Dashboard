@@ -2,6 +2,7 @@ import { forwardRef, type ButtonHTMLAttributes } from "react";
 import { twMerge } from "tailwind-merge";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  label: string;
   variant?: "primary" | "secondary";
   isLoading?: boolean;
   fullWidth?: boolean;
@@ -10,7 +11,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
-      children,
+      label,
       variant = "primary",
       isLoading = false,
       fullWidth = false,
@@ -22,7 +23,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) => {
     const baseStyles =
-      "relative flex justify-center py-3 px-4 text-sm font-medium rounded-lg transition-all duration-200 font-Inter focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
+      "relative flex justify-center py-3 px-4 text-sm font-medium rounded-lg transition-all duration-200 font-Inter focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed";
 
     const variants = {
       primary:
@@ -70,7 +71,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             />
           </svg>
         ) : (
-          children
+          label
         )}
       </button>
     );
