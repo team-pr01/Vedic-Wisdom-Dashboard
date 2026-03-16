@@ -4,7 +4,10 @@ import type { FieldError, FieldErrorsImpl, Merge } from "react-hook-form";
 
 interface DropdownProps {
   label: string;
-  options: string[];
+  options: {
+    label: string;
+    value: string;
+  }[];
   error?: FieldError | Merge<FieldError, FieldErrorsImpl<any>>;
   isRequired?: boolean;
   selected?: boolean;
@@ -59,8 +62,8 @@ const SelectDropdown = forwardRef<HTMLSelectElement, DropdownProps>(
             Select {label}
           </option>
           {options.map((option, index) => (
-            <option key={index} value={option} className="capitalize">
-              {option}
+            <option key={index} value={option?.value} className="capitalize">
+              {option?.label}
             </option>
           ))}
         </select>

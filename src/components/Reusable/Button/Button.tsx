@@ -5,7 +5,8 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   label: string;
   variant?: "primary" | "secondary";
   isLoading?: boolean;
-  fullWidth?: boolean;
+  fullWidth?: boolean
+  isDisabled?: boolean
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -16,7 +17,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       isLoading = false,
       fullWidth = false,
       className = "",
-      disabled,
+      isDisabled,
       type = "button",
       ...props
     },
@@ -45,7 +46,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         type={type}
-        disabled={disabled || isLoading}
+        disabled={isDisabled || isLoading}
         className={buttonStyles}
         {...props}
       >

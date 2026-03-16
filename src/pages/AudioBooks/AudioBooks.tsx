@@ -3,11 +3,16 @@ import { useState } from "react";
 import Table from "../../components/Reusable/Table/Table";
 import { Eye, Pencil, Trash2, Music } from "lucide-react";
 import ViewAudioTracks from "../../components/AudioBooksPage/ViewAudioTracks/ViewAudioTracks";
+import Button from "../../components/Reusable/Button/Button";
+import AddAudioBook from "../../components/AudioBooksPage/AddAudioBook/AddAudioBook";
 
 const AudioBooks = () => {
   const [isPremium, setIsPremium] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [isViewAudioTracksModalOpen, setIsViewAudioTracksModalOpen] =
+    useState<boolean>(false);
+  const [modalType, setModalType] = useState<string>("add");
+  const [isAddAudioBookModalOpen, setIsAddAudioBookModalOpen] =
     useState<boolean>(false);
 
   const audioBookTheads: any[] = [
@@ -127,18 +132,29 @@ const AudioBooks = () => {
   ];
 
   const children = (
-    <select
-      value={isPremium ?? ""}
-      onChange={(e) => setIsPremium && setIsPremium(e.target.value)}
-      className="input input-sm px-3 py-2 border border-neutral-55/60 focus:border-primary-10 transition duration-300 focus:outline-none rounded-md text-sm shadow-sm cursor-pointer"
-    >
-      <option value="">Select Access Type </option>
-      {filters?.map((filter: any) => (
-        <option key={filter?.value} value={filter?.value}>
-          {filter?.label}
-        </option>
-      ))}
-    </select>
+    <div className="flex items-center gap-3">
+      <select
+        value={isPremium ?? ""}
+        onChange={(e) => setIsPremium && setIsPremium(e.target.value)}
+        className="input input-sm px-3 py-2 border border-neutral-55/60 focus:border-primary-10 transition duration-300 focus:outline-none rounded-md text-sm shadow-sm cursor-pointer"
+      >
+        <option value="">Select Access Type </option>
+        {filters?.map((filter: any) => (
+          <option key={filter?.value} value={filter?.value}>
+            {filter?.label}
+          </option>
+        ))}
+      </select>
+
+      <Button
+        label="Add New Book"
+        onClick={() => {
+          setIsAddAudioBookModalOpen(true);
+          setModalType("add");
+        }}
+        className="px-3 py-2"
+      />
+    </div>
   );
 
   // Sample data
@@ -255,6 +271,16 @@ const AudioBooks = () => {
           setIsViewAudioTracksModalOpen={setIsViewAudioTracksModalOpen}
           isLoading={false}
           data={tracks}
+        />
+      )}
+
+      {isAddAudioBookModalOpen && (
+        <AddAudioBook
+          isAddAudioBookModalOpen={isAddAudioBookModalOpen}
+          setIsAddAudioBookModalOpen={setIsAddAudioBookModalOpen}
+          isLoading={false}
+          modalType={modalType}
+          setModalType={setModalType}
         />
       )}
     </div>

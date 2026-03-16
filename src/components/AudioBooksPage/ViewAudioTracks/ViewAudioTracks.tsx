@@ -3,6 +3,7 @@ import Modal from "../../Reusable/Modal/Modal";
 import Loader from "../../Reusable/Loader/Loader";
 import AudioTrackCard from "../AudioTrackCard/AudioTrackCard";
 import Button from "../../Reusable/Button/Button";
+import AddAudioTrack from "../AddAudioTrack/AddAudioTrack";
 
 type TViewAudioTracksProps = {
   isViewAudioTracksModalOpen: boolean;
@@ -15,6 +16,8 @@ const ViewAudioTracks: React.FC<TViewAudioTracksProps> = ({
   isLoading,
   data,
 }) => {
+  const [isAddAudioTrackModalOpen, setIsAddAudioTrackModalOpen] =
+    useState<boolean>(false);
   const [playingTrack, setPlayingTrack] = useState<string | null>(null);
 
   const handlePlayPause = (trackId: string) => {
@@ -24,7 +27,7 @@ const ViewAudioTracks: React.FC<TViewAudioTracksProps> = ({
     <Modal
       isModalOpen={isViewAudioTracksModalOpen}
       setIsModalOpen={setIsViewAudioTracksModalOpen}
-      heading={`Audio Tracks`}
+      heading={isAddAudioTrackModalOpen ? "Add Audio Track" : "Audio Tracks"}
     >
       <div className="relative">
         {isLoading && (
@@ -34,28 +37,39 @@ const ViewAudioTracks: React.FC<TViewAudioTracksProps> = ({
         )}
       </div>
 
-      <div className="relative">
-        {/* Audio Tracks */}
-        <div className="flex flex-col gap-4">
-          {data?.map((track) => (
-            <AudioTrackCard
-              key={track.id}
-              title={track.title}
-              artist={track.artist}
-              duration={track.duration}
-              isPlaying={playingTrack === track.id}
-              onPlayPause={() => handlePlayPause(track.id)}
-            />
-          ))}
-        </div>
+      {!isAddAudioTrackModalOpen && (
+        <div className="relative">
+          {/* Audio Tracks */}
+          <div className="flex flex-col gap-4">
+            {data?.map((track) => (
+              <AudioTrackCard
+                key={track.id}
+                title={track.title}
+                artist={track.artist}
+                duration={track.duration}
+                isPlaying={playingTrack === track.id}
+                onPlayPause={() => handlePlayPause(track.id)}
+              />
+            ))}
+          </div>
 
-        <div className="sticky bottom-0 flex justify-end">
-  <Button
-    label="Add"
-    variant="primary"
-  />
-</div>
-      </div>
+          <div className="sticky bottom-0 flex justify-end">
+            <Button
+              label="Add"
+              onClick={() => {
+                setIsAddAudioTrackModalOpen(true);
+              }}
+              variant="primary"
+            />
+          </div>
+        </div>
+      )}
+
+      {isAddAudioTrackModalOpen && (
+        <AddAudioTrack
+          setIsAddAudioTrackModalOpen={setIsAddAudioTrackModalOpen}
+        />
+      )}
     </Modal>
   );
 };
