@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import Table from "../../components/Reusable/Table/Table";
-import { Eye, Pencil, Trash2, Music } from "lucide-react";
+import { Pencil, Trash2, Music } from "lucide-react";
 import ViewAudioTracks from "../../components/AudioBooksPage/ViewAudioTracks/ViewAudioTracks";
 import Button from "../../components/Reusable/Button/Button";
 import AddAudioBook from "../../components/AudioBooksPage/AddAudioBook/AddAudioBook";
+import { useGetAllAudioBooksQuery } from "../../redux/Features/AudioBooks/audioBooksApi";
+import type { TAudioBook } from "../../types/audioBook.types";
 
 const AudioBooks = () => {
   const [isPremium, setIsPremium] = useState<string | null>(null);
@@ -14,6 +16,8 @@ const AudioBooks = () => {
   const [modalType, setModalType] = useState<string>("add");
   const [isAddAudioBookModalOpen, setIsAddAudioBookModalOpen] =
     useState<boolean>(false);
+  const { data, isLoading } = useGetAllAudioBooksQuery({});
+  console.log(data);
 
   const audioBookTheads: any[] = [
     { key: "sl", label: "SL" },
@@ -24,86 +28,56 @@ const AudioBooks = () => {
     { key: "tracks", label: "Tracks" },
   ];
 
-  const audioBooks = [
-    {
-      _id: "1",
-      name: "The Power of Habit",
-      description: "A book about habits and how they shape our lives.",
-      image:
-        "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=500",
-      isPremium: true,
-    },
-    {
-      _id: "2",
-      name: "Atomic Habits",
-      description: "Build good habits and break bad ones.",
-      image:
-        "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=500",
-      isPremium: false,
-    },
-    {
-      _id: "3",
-      name: "Deep Work",
-      description: "Focused success in a distracted world.",
-      image:
-        "https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=500",
-      isPremium: true,
-    },
-  ];
+  const audioBooks = data?.data?.data || [];
 
-  const audioBookTableData = audioBooks.map((book, index) => ({
-    _id: book._id,
+  const audioBookTableData = audioBooks?.map(
+    (book: TAudioBook, index: number) => ({
+      _id: book._id,
 
-    sl: index + 1,
+      sl: index + 1,
 
-    image: (
-      <img
-        src={book.image}
-        alt={book.name}
-        className="w-12 h-12 rounded object-cover cursor-pointer"
-        onClick={() => setPreviewImage(book.image)}
-      />
-    ),
+      image: (
+        <img
+          src={book?.thumbnailUrl}
+          alt={book.name}
+          className="w-12 h-12 rounded object-cover cursor-pointer"
+          onClick={() => setPreviewImage(book?.thumbnailUrl)}
+        />
+      ),
 
-    name: <p className="font-medium">{book.name}</p>,
+      name: <p className="font-medium">{book.name}</p>,
 
-    description: (
-      <p className="max-w-[350px] truncate text-sm text-gray-600">
-        {book.description}
-      </p>
-    ),
+      description: (
+        <p className="max-w-[350px] truncate text-sm text-gray-600">
+          {book.description}
+        </p>
+      ),
 
-    isPremium: (
-      <span
-        className={`px-3 py-1 rounded-full text-xs font-medium ${
-          book.isPremium
-            ? "bg-yellow-100 text-yellow-700"
-            : "bg-gray-100 text-gray-600"
-        }`}
-      >
-        {book.isPremium ? "Premium" : "Free"}
-      </span>
-    ),
+      isPremium: (
+        <span
+          className={`px-3 py-1 rounded-full text-xs font-medium ${
+            book.isPremium
+              ? "bg-yellow-100 text-yellow-700"
+              : "bg-gray-100 text-gray-600"
+          }`}
+        >
+          {book.isPremium ? "Premium" : "Free"}
+        </span>
+      ),
 
-    tracks: (
-      <button
-        className="flex items-center gap-1 text-sm text-primary hover:underline cursor-pointer"
-        onClick={() => setIsViewAudioTracksModalOpen(true)}
-      >
-        <Music className="size-4" />
-        View Audio Tracks
-      </button>
-    ),
-  }));
+      tracks: (
+        <button
+          className="flex items-center gap-1 text-sm text-primary hover:underline cursor-pointer"
+          onClick={() => setIsViewAudioTracksModalOpen(true)}
+        >
+          <Music className="size-4" />
+          View Audio Tracks
+        </button>
+      ),
+    }),
+  );
 
   const audioBookActions: any[] = [
-    {
-      label: "View",
-      icon: <Eye className="inline mr-2 size-4" />,
-      onClick: (row: any) => {
-        console.log("View AudioBook:", row);
-      },
-    },
     {
       label: "Edit",
       icon: <Pencil className="inline mr-2 size-4" />,
@@ -236,7 +210,7 @@ const AudioBooks = () => {
   return (
     <div>
       <Table<any>
-        title={`Audio Books (${audioBooks.length})`}
+        title={`Audio Books (${audioBooks?.length || 0})`}
         description="Manage all audiobooks available in the platform."
         theads={audioBookTheads}
         data={audioBookTableData}

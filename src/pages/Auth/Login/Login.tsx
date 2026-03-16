@@ -1,28 +1,56 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useForm } from "react-hook-form";
 import Button from "../../../components/Reusable/Button/Button";
 import TextInput from "../../../components/Reusable/TextInput/TextInput";
 import PasswordInput from "../../../components/Reusable/PasswordInput/PasswordInput";
 import { useState } from "react";
+import { useLoginMutation } from "../../../redux/Features/Auth/authApi";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { setUser } from "../../../redux/Features/Auth/authSlice";
+import toast from "react-hot-toast";
 
-interface LoginFormData {
+interface TFormData {
   email: string;
   password: string;
-  rememberMe: boolean;
 }
 
 const Login = () => {
   const [isPasswordVisible, setIsPasswordVisible] = useState<boolean>(false);
+  const [login, { isLoading }] = useLoginMutation();
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
-  } = useForm<LoginFormData>();
-
-  const onSubmit = async (data: LoginFormData) => {
-    console.log("Login data:", data);
+  } = useForm<TFormData>();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const handleLogin = async (data: TFormData) => {
+    try {
+      const payload = {
+        email: data.email,
+        password: data.password,
+      };
+      const res = await login(payload).unwrap();
+      if (res?.success) {
+        dispatch(
+          setUser({ user: res?.data?.user, token: res?.data?.accessToken }),
+        );
+      }
+      if (res?.data?.user?.role === "admin") {
+        navigate("/dashboard/home");
+      }
+      // else if (res?.data?.user?.role === "tutor") {
+      //   navigate("/dashboard/tutor/home");
+      // } else {
+      //   navigate("/dashboard/guardian/home");
+      // }
+      reset();
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Login failed. Please try again.");
+    }
   };
-
-  const isLoading = false;
 
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -38,7 +66,7 @@ const Login = () => {
         </div>
 
         {/* Form */}
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit(handleLogin)}>
           <div className="space-y-4">
             {/* Email */}
             <TextInput
@@ -78,7 +106,6 @@ const Login = () => {
                 <input
                   id="rememberMe"
                   type="checkbox"
-                  {...register("rememberMe")}
                   className="h-4 w-4 text-primary-10 focus:ring-primary-10 border-neutral-50 rounded transition-colors duration-200 cursor-pointer"
                 />
                 <label
@@ -102,7 +129,7 @@ const Login = () => {
 
           {/* Submit Button */}
           <Button
-          label="Sign In"
+            label="Sign In"
             type="submit"
             variant="primary"
             isLoading={isLoading}

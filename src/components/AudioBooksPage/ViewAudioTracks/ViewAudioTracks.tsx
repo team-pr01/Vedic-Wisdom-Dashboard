@@ -27,7 +27,11 @@ const ViewAudioTracks: React.FC<TViewAudioTracksProps> = ({
     <Modal
       isModalOpen={isViewAudioTracksModalOpen}
       setIsModalOpen={setIsViewAudioTracksModalOpen}
-      heading={isAddAudioTrackModalOpen ? "Add Audio Track" : "Audio Tracks"}
+      heading={
+        isAddAudioTrackModalOpen
+          ? "Add Audio Track"
+          : `Audio Tracks (${data?.length || 0})`
+      }
     >
       <div className="relative">
         {isLoading && (
