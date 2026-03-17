@@ -145,10 +145,10 @@ export default function Table<T extends Record<string, any>>({
     );
 
     if (setAreaOptions) setAreaOptions(cityObj ? cityObj.locations : []);
-    if (setSelectedArea) setSelectedArea(""); // reset when city changes
+    if (setSelectedArea) setSelectedArea("");
   }, [selectedCity]);
 
-  const limits = [5, 10, 15, 20, 25, 30, 50, 100];
+  const limits = [5, 10, 15, 20, 25, 30, 50, 100, 200, 500, 1000];
 
   return (
     <div

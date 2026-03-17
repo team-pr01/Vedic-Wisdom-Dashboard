@@ -4,7 +4,6 @@ import Table from "../../components/Reusable/Table/Table";
 import { Pencil, Trash2, Music } from "lucide-react";
 import ViewAudioTracks from "../../components/AudioBooksPage/ViewAudioTracks/ViewAudioTracks";
 import Button from "../../components/Reusable/Button/Button";
-import AddAudioBook from "../../components/AudioBooksPage/AddAudioBook/AddAudioBook";
 import {
   useDeleteAudioBookMutation,
   useGetAllAudioBooksQuery,
@@ -12,8 +11,13 @@ import {
 import type { TAudioBook } from "../../types/audioBook.types";
 import { useGetAllAudioTracksOfABookQuery } from "../../redux/Features/AudioTracks/audioTracksApi";
 import toast from "react-hot-toast";
+import AddOrUpdateAudioBook from "../../components/AudioBooksPage/AddOrUpdateAudioBook/AddOrUpdateAudioBook";
 
 const AudioBooks = () => {
+  const [page, setPage] = useState<number>(1);
+  const [limit, setLimit] = useState<number>(10);
+  const skip = (page - 1) * limit;
+  const [keyword, setKeyword] = useState<string>("");
   const [isPremium, setIsPremium] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [isViewAudioTracksModalOpen, setIsViewAudioTracksModalOpen] =
@@ -22,7 +26,13 @@ const AudioBooks = () => {
   const [isAddAudioBookModalOpen, setIsAddAudioBookModalOpen] =
     useState<boolean>(false);
   const [audioBookId, setAudioBookId] = useState<string | null>(null);
-  const { data, isLoading, isFetching } = useGetAllAudioBooksQuery({});
+  const { data, isLoading, isFetching } = useGetAllAudioBooksQuery({
+    skip,
+    limit,
+    keyword,
+    isPremium: isPremium as string,
+  });
+  console.log(data);
   const { data: audioTracks, isLoading: isAudioTracksLoading } =
     useGetAllAudioTracksOfABookQuery(audioBookId);
 
@@ -106,7 +116,9 @@ const AudioBooks = () => {
       label: "Edit",
       icon: <Pencil className="inline mr-2 size-4" />,
       onClick: (row: any) => {
-        console.log("Edit AudioBook:", row);
+        setModalType("update");
+        setIsAddAudioBookModalOpen(true);
+        setAudioBookId(row?._id);
       },
     },
     {
@@ -147,13 +159,17 @@ const AudioBooks = () => {
       <Button
         label="Add New Book"
         onClick={() => {
-          setIsAddAudioBookModalOpen(true);
           setModalType("add");
+          setIsAddAudioBookModalOpen(true);
         }}
         className="px-3 py-2"
       />
     </div>
   );
+
+  const handleSearch = (k: string) => {
+    setKeyword(k);
+  };
 
   return (
     <div>
@@ -162,14 +178,14 @@ const AudioBooks = () => {
         description="Manage all audiobooks available in the platform."
         theads={audioBookTheads}
         data={audioBookTableData}
-        totalPages={1}
-        currentPage={1}
-        onPageChange={() => {}}
+        totalPages={data?.data?.meta?.totalPages || 1}
+        currentPage={page}
+        onPageChange={(p) => setPage(p)}
         isLoading={isLoading || isFetching}
-        onSearch={() => {}}
+        onSearch={handleSearch}
         actions={audioBookActions}
         limit={10}
-        setLimit={() => {}}
+        setLimit={setLimit}
         children={children}
       />
 
@@ -198,12 +214,13 @@ const AudioBooks = () => {
       )}
 
       {isAddAudioBookModalOpen && (
-        <AddAudioBook
+        <AddOrUpdateAudioBook
           isAddAudioBookModalOpen={isAddAudioBookModalOpen}
           setIsAddAudioBookModalOpen={setIsAddAudioBookModalOpen}
           isLoading={false}
           modalType={modalType}
           setModalType={setModalType}
+          audioBookId={audioBookId as string}
         />
       )}
     </div>

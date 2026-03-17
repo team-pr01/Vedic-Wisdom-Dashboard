@@ -6,8 +6,13 @@ import Modal from "../../Reusable/Modal/Modal";
 import SelectDropdown from "../../Reusable/SelectDropdown/SelectDropdown";
 import Textarea from "../../Reusable/TextArea/TextArea";
 import TextInput from "../../Reusable/TextInput/TextInput";
-import FileUploadInput from "./../../Reusable/FileUploadInput/FileUploadInput";
-import { useAddAudioBookMutation } from "../../../redux/Features/AudioBooks/audioBooksApi";
+import FileUploadInput from "../../Reusable/FileUploadInput/FileUploadInput";
+import {
+  useAddAudioBookMutation,
+  useGetSingleAudioBookByIdQuery,
+  useUpdateAudioBookMutation,
+} from "../../../redux/Features/AudioBooks/audioBooksApi";
+import { useEffect } from "react";
 
 type TFormData = {
   name: string;
@@ -16,21 +21,27 @@ type TFormData = {
   file?: any;
 };
 
-type TAddAudioBookProps = {
+type TAddOrUpdateAudioBookProps = {
   isAddAudioBookModalOpen: boolean;
   setIsAddAudioBookModalOpen: any;
   isLoading: boolean;
   modalType: string;
   setModalType: (value: string) => void;
+  audioBookId?: string;
 };
-const AddAudioBook: React.FC<TAddAudioBookProps> = ({
+const AddOrUpdateAudioBook: React.FC<TAddOrUpdateAudioBookProps> = ({
   isAddAudioBookModalOpen,
   setIsAddAudioBookModalOpen,
   isLoading,
   modalType,
   setModalType,
+  audioBookId,
 }) => {
-  const [addAudioBook, {isLoading:isAdding}] = useAddAudioBookMutation();
+  const { data: singleAudioBookData, isLoading: isSingleAudioBookDataLoading } =
+    useGetSingleAudioBookByIdQuery(audioBookId);
+  const [addAudioBook, { isLoading: isAdding }] = useAddAudioBookMutation();
+  const [updateAudioBook, { isLoading: isUpdating }] =
+    useUpdateAudioBookMutation();
 
   const {
     register,
@@ -39,6 +50,16 @@ const AddAudioBook: React.FC<TAddAudioBookProps> = ({
     setValue,
     formState: { errors },
   } = useForm<TFormData>();
+
+  useEffect(() => {
+    if (modalType === "update" && singleAudioBookData) {
+      setValue("name", singleAudioBookData?.data?.name);
+      setValue("description", singleAudioBookData?.data?.description);
+      setValue("isPremium", singleAudioBookData?.data?.isPremium.toString());
+    } else {
+      reset();
+    }
+  }, [modalType, singleAudioBookData, reset, setValue]);
 
   const handleAddAudioBook = async (data: TFormData) => {
     try {
@@ -52,9 +73,14 @@ const AddAudioBook: React.FC<TAddAudioBookProps> = ({
         formData.append("file", data.file[0]);
       }
 
-      await addAudioBook(formData).unwrap();
+      if (modalType === "add") {
+        await addAudioBook(formData).unwrap();
 
-      setIsAddAudioBookModalOpen(false);
+        setIsAddAudioBookModalOpen(false);
+      } else {
+        await updateAudioBook({ id: audioBookId, data: formData }).unwrap();
+        setIsAddAudioBookModalOpen(false);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -77,11 +103,12 @@ const AddAudioBook: React.FC<TAddAudioBookProps> = ({
       heading={`${modalType === "add" ? "Add" : "Update"} Audio Book`}
     >
       <div className="relative">
-        {isLoading && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center backdrop-blur-[2px] bg-white/30 z-50">
-            <Loader size="lg" text="Please wait..." />
-          </div>
-        )}
+        {isLoading ||
+          (isSingleAudioBookDataLoading && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center backdrop-blur-[2px] bg-white/30 z-50">
+              <Loader size="lg" text="Please wait..." />
+            </div>
+          ))}
 
         <form
           onSubmit={handleSubmit(handleAddAudioBook)}
@@ -123,21 +150,18 @@ const AddAudioBook: React.FC<TAddAudioBookProps> = ({
               maxSize={5}
               error={errors.file}
               {...register("file", {
-                required: "Cover image is required",
+                required:
+                  modalType === "add" ? "Cover image is required" : false,
                 validate: {
                   fileType: (files) => {
-                    if (
-                      files &&
-                      files[0] &&
-                      !files[0].type.startsWith("image/")
-                    ) {
+                    if (files?.[0] && !files[0].type.startsWith("image/")) {
                       return "Please upload an image file";
                     }
                     return true;
                   },
                   fileSize: (files) => {
-                    if (files && files[0] && files[0].size > 5 * 1024 * 1024) {
-                      return "File size must be less than 2MB";
+                    if (files?.[0] && files[0].size > 5 * 1024 * 1024) {
+                      return "File size must be less than 5MB";
                     }
                     return true;
                   },
@@ -162,8 +186,8 @@ const AddAudioBook: React.FC<TAddAudioBookProps> = ({
               label={modalType === "add" ? "Add Notice" : "Update Notice"}
               variant="primary"
               className="py-1.75 w-full md:w-fit"
-                isLoading={isAdding}
-                isDisabled={isAdding}
+              isLoading={isAdding || isUpdating}
+              isDisabled={isAdding || isUpdating}
             />
           </div>
         </form>
@@ -172,4 +196,4 @@ const AddAudioBook: React.FC<TAddAudioBookProps> = ({
   );
 };
 
-export default AddAudioBook;
+export default AddOrUpdateAudioBook;

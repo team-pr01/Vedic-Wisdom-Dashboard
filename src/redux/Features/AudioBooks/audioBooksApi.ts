@@ -5,21 +5,21 @@ const audioBooksApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getAllAudioBooks: builder.query({
       query: ({
-        page,
+        skip,
         limit,
         keyword,
         isPremium
       }: {
         keyword?: string;
         limit?: number;
-        page?: number;
+        skip?: number;
         isPremium?: string
       } = {}) => {
         const params = new URLSearchParams();
 
         if (keyword) params.append("keyword", keyword);
         if (typeof limit === "number") params.append("limit", limit.toString());
-        if (typeof page === "number") params.append("page", page.toString());
+        if (typeof skip === "number") params.append("skip", skip.toString());
         if (isPremium) params.append("isPremium", isPremium);
 
         return {
