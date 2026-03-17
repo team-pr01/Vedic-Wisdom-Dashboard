@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import Button from "../../Reusable/Button/Button";
 import FileUploadInput from "../../Reusable/FileUploadInput/FileUploadInput";
 import TextInput from "../../Reusable/TextInput/TextInput";
+import { useAddAudioTrackMutation } from "../../../redux/Features/AudioTracks/audioTracksApi";
 
 type TFormData = {
   audioBookId: string;
@@ -10,15 +11,43 @@ type TFormData = {
   file?: any;
 };
 
-const AddAudioTrack = ({ setIsAddAudioTrackModalOpen }) => {
+type TAddAudioTrackProps = {
+  audioBookId: string;
+  setIsAddAudioTrackModalOpen: (value: boolean) => void;
+};
+
+const AddAudioTrack: React.FC<TAddAudioTrackProps> = ({
+  audioBookId,
+  setIsAddAudioTrackModalOpen,
+}) => {
+  const [addAudioTrack, { isLoading }] = useAddAudioTrackMutation();
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<TFormData>();
+
+  const handleAddAudioTrack = async (data: TFormData) => {
+    try {
+      const formData = new FormData();
+
+      formData.append("audioBookId", audioBookId);
+      formData.append("title", data.title);
+
+      if (data.file?.[0]) {
+        formData.append("file", data.file[0]);
+      }
+
+      await addAudioTrack(formData).unwrap();
+
+      setIsAddAudioTrackModalOpen(false);
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <form
-      //   onSubmit={handleSubmit(handleSubmitNotice)}
+      onSubmit={handleSubmit(handleAddAudioTrack)}
       className="flex flex-col gap-6 font-Nunito mt-5"
     >
       <div className="flex flex-col gap-6">
@@ -30,26 +59,32 @@ const AddAudioTrack = ({ setIsAddAudioTrackModalOpen }) => {
           {...register("title", { required: "Title is required" })}
         />
 
-        {/* Single Cover Image Upload */}
+        {/* Audio Track */}
         <FileUploadInput
-          label="Cover Image"
-          placeholder="Upload book cover image"
-          helpText="Recommended size: 300x300px"
-          accept="image/*"
-          maxSize={2}
+          label="Audio Track"
+          placeholder="Upload audio track"
+          accept="audio/mpeg,audio/mp3,video/mp4"
+          helpText="Please upload MP3/MP4 file"
+          maxSize={20}
           error={errors.file}
           {...register("file", {
-            required: "Cover image is required",
+            required: "Audio track is required",
             validate: {
               fileType: (files) => {
-                if (files && files[0] && !files[0].type.startsWith("image/")) {
-                  return "Please upload an image file";
+                if (
+                  files?.[0] &&
+                  !(
+                    files[0].type.startsWith("audio/") ||
+                    files[0].type.startsWith("video/")
+                  )
+                ) {
+                  return "Please upload mp3 or mp4 file";
                 }
                 return true;
               },
               fileSize: (files) => {
-                if (files && files[0] && files[0].size > 2 * 1024 * 1024) {
-                  return "File size must be less than 2MB";
+                if (files?.[0] && files[0].size > 20 * 1024 * 1024) {
+                  return "File size must be less than 20MB";
                 }
                 return true;
               },
@@ -63,7 +98,7 @@ const AddAudioTrack = ({ setIsAddAudioTrackModalOpen }) => {
           label={"Cancel"}
           type="button"
           variant="secondary"
-          className="py-[7px] w-full md:w-fit"
+          className="py-1.75 w-full md:w-fit"
           onClick={() => {
             setIsAddAudioTrackModalOpen(false);
           }}
@@ -72,9 +107,9 @@ const AddAudioTrack = ({ setIsAddAudioTrackModalOpen }) => {
           type="submit"
           label="Add Audio Track"
           variant="primary"
-          className="py-[7px] w-full md:w-fit"
-          //   isLoading={isUpdating || isLoading}
-          //   isDisabled={isUpdating || isLoading}
+          className="py-1.75 w-full md:w-fit"
+          isLoading={isLoading}
+          isDisabled={isLoading}
         />
       </div>
     </form>

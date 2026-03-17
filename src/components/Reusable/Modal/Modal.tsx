@@ -18,7 +18,7 @@ const Modal: React.FC<TModalProps> = ({
     <div
       className={`${
         isModalOpen ? "visible" : "invisible"
-      } w-full h-screen fixed top-0 left-0 z-[200000000] bg-neutral-5/60 backdrop-blur-xs flex items-center justify-center font-Nunito transition-all duration-500`}
+      } w-full h-screen fixed top-0 left-0 z-[9999] bg-neutral-5/60 backdrop-blur-xs flex items-center justify-center font-Nunito transition-all duration-500`}
     >
       <div
         className={`${

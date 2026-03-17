@@ -13,7 +13,14 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       {/* <SocketProvider /> */}
       <RouterProvider router={router} />
       {/* </SmoothScroll> */}
-      <Toaster />
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          style: {
+            zIndex: 9999999999,
+          },
+        }}
+      />
     </PersistGate>
   </Provider>,
 );

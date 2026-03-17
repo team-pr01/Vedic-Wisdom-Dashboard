@@ -7,6 +7,7 @@ import Button from "../../components/Reusable/Button/Button";
 import AddAudioBook from "../../components/AudioBooksPage/AddAudioBook/AddAudioBook";
 import { useGetAllAudioBooksQuery } from "../../redux/Features/AudioBooks/audioBooksApi";
 import type { TAudioBook } from "../../types/audioBook.types";
+import { useGetAllAudioTracksOfABookQuery } from "../../redux/Features/AudioTracks/audioTracksApi";
 
 const AudioBooks = () => {
   const [isPremium, setIsPremium] = useState<string | null>(null);
@@ -16,8 +17,10 @@ const AudioBooks = () => {
   const [modalType, setModalType] = useState<string>("add");
   const [isAddAudioBookModalOpen, setIsAddAudioBookModalOpen] =
     useState<boolean>(false);
-  const { data, isLoading } = useGetAllAudioBooksQuery({});
-  console.log(data);
+  const [audioBookId, setAudioBookId] = useState<string | null>(null);
+  const { data, isLoading, isFetching } = useGetAllAudioBooksQuery({});
+  const { data: audioTracks, isLoading: isAudioTracksLoading } =
+    useGetAllAudioTracksOfABookQuery(audioBookId);
 
   const audioBookTheads: any[] = [
     { key: "sl", label: "SL" },
@@ -68,7 +71,10 @@ const AudioBooks = () => {
       tracks: (
         <button
           className="flex items-center gap-1 text-sm text-primary hover:underline cursor-pointer"
-          onClick={() => setIsViewAudioTracksModalOpen(true)}
+          onClick={() => {
+            setAudioBookId(book?._id);
+            setIsViewAudioTracksModalOpen(true);
+          }}
         >
           <Music className="size-4" />
           View Audio Tracks
@@ -131,82 +137,6 @@ const AudioBooks = () => {
     </div>
   );
 
-  // Sample data
-  const tracks = [
-    {
-      id: "1",
-      title: "Peaceful Meditation",
-      artist: "Mindfulness Collective",
-      duration: "12:34",
-    },
-    {
-      id: "2",
-      title: "Ocean Waves",
-      artist: "Nature Sounds",
-      duration: "8:22",
-    },
-    {
-      id: "3",
-      title: "Morning Yoga Flow",
-      artist: "Yoga Music Academy",
-      duration: "15:45",
-    },
-    {
-      id: "4",
-      title: "Deep Sleep Hypnosis",
-      artist: "Sleep Therapy",
-      duration: "30:00",
-    },
-    {
-      id: "1",
-      title: "Peaceful Meditation",
-      artist: "Mindfulness Collective",
-      duration: "12:34",
-    },
-    {
-      id: "2",
-      title: "Ocean Waves",
-      artist: "Nature Sounds",
-      duration: "8:22",
-    },
-    {
-      id: "3",
-      title: "Morning Yoga Flow",
-      artist: "Yoga Music Academy",
-      duration: "15:45",
-    },
-    {
-      id: "4",
-      title: "Deep Sleep Hypnosis",
-      artist: "Sleep Therapy",
-      duration: "30:00",
-    },
-    {
-      id: "1",
-      title: "Peaceful Meditation",
-      artist: "Mindfulness Collective",
-      duration: "12:34",
-    },
-    {
-      id: "2",
-      title: "Ocean Waves",
-      artist: "Nature Sounds",
-      duration: "8:22",
-    },
-    {
-      id: "3",
-      title: "Morning Yoga Flow",
-      artist: "Yoga Music Academy",
-      duration: "15:45",
-    },
-    {
-      id: "4",
-      title: "Deep Sleep Hypnosis",
-      artist: "Sleep Therapy",
-      duration: "30:00",
-    },
-  ];
-
   return (
     <div>
       <Table<any>
@@ -217,7 +147,7 @@ const AudioBooks = () => {
         totalPages={1}
         currentPage={1}
         onPageChange={() => {}}
-        isLoading={false}
+        isLoading={isLoading || isFetching}
         onSearch={() => {}}
         actions={audioBookActions}
         limit={10}
@@ -243,8 +173,9 @@ const AudioBooks = () => {
         <ViewAudioTracks
           isViewAudioTracksModalOpen={isViewAudioTracksModalOpen}
           setIsViewAudioTracksModalOpen={setIsViewAudioTracksModalOpen}
-          isLoading={false}
-          data={tracks}
+          isLoading={isAudioTracksLoading}
+          data={audioTracks?.data?.tracks || []}
+          audioBookId={audioBookId as string}
         />
       )}
 

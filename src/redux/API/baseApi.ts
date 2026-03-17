@@ -56,7 +56,8 @@ export const baseApi = createApi({
   tagTypes: [
     "admin",
     "users",
-    "audioBook"
+    "audioBook",
+    "audioTrack"
   ],
   endpoints: () => ({}),
 });
