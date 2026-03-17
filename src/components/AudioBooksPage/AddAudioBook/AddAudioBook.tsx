@@ -7,6 +7,7 @@ import SelectDropdown from "../../Reusable/SelectDropdown/SelectDropdown";
 import Textarea from "../../Reusable/TextArea/TextArea";
 import TextInput from "../../Reusable/TextInput/TextInput";
 import FileUploadInput from "./../../Reusable/FileUploadInput/FileUploadInput";
+import { useAddAudioBookMutation } from "../../../redux/Features/AudioBooks/audioBooksApi";
 
 type TFormData = {
   name: string;
@@ -14,13 +15,23 @@ type TFormData = {
   isPremium: string;
   file?: any;
 };
-const AddAudioBook = ({
+
+type TAddAudioBookProps = {
+  isAddAudioBookModalOpen: boolean;
+  setIsAddAudioBookModalOpen: any;
+  isLoading: boolean;
+  modalType: string;
+  setModalType: (value: string) => void;
+};
+const AddAudioBook: React.FC<TAddAudioBookProps> = ({
   isAddAudioBookModalOpen,
   setIsAddAudioBookModalOpen,
   isLoading,
   modalType,
   setModalType,
 }) => {
+  const [addAudioBook, {isLoading:isAdding}] = useAddAudioBookMutation();
+
   const {
     register,
     handleSubmit,
@@ -28,6 +39,26 @@ const AddAudioBook = ({
     setValue,
     formState: { errors },
   } = useForm<TFormData>();
+
+  const handleAddAudioBook = async (data: TFormData) => {
+    try {
+      const formData = new FormData();
+
+      formData.append("name", data.name);
+      formData.append("description", data.description);
+      formData.append("isPremium", data.isPremium);
+
+      if (data.file?.[0]) {
+        formData.append("file", data.file[0]);
+      }
+
+      await addAudioBook(formData).unwrap();
+
+      setIsAddAudioBookModalOpen(false);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const accessTypes = [
     {
@@ -53,7 +84,7 @@ const AddAudioBook = ({
         )}
 
         <form
-          //   onSubmit={handleSubmit(handleSubmitNotice)}
+          onSubmit={handleSubmit(handleAddAudioBook)}
           className="flex flex-col gap-6 font-Nunito mt-5"
         >
           <div className="flex flex-col gap-6">
@@ -89,7 +120,7 @@ const AddAudioBook = ({
               placeholder="Upload book cover image"
               helpText="Recommended size: 300x300px"
               accept="image/*"
-              maxSize={2}
+              maxSize={5}
               error={errors.file}
               {...register("file", {
                 required: "Cover image is required",
@@ -105,7 +136,7 @@ const AddAudioBook = ({
                     return true;
                   },
                   fileSize: (files) => {
-                    if (files && files[0] && files[0].size > 2 * 1024 * 1024) {
+                    if (files && files[0] && files[0].size > 5 * 1024 * 1024) {
                       return "File size must be less than 2MB";
                     }
                     return true;
@@ -120,7 +151,7 @@ const AddAudioBook = ({
               label={"Cancel"}
               type="button"
               variant="secondary"
-              className="py-[7px] w-full md:w-fit"
+              className="py-1.75 w-full md:w-fit"
               onClick={() => {
                 setIsAddAudioBookModalOpen(false);
                 setModalType("add");
@@ -130,9 +161,9 @@ const AddAudioBook = ({
               type="submit"
               label={modalType === "add" ? "Add Notice" : "Update Notice"}
               variant="primary"
-              className="py-[7px] w-full md:w-fit"
-              //   isLoading={isUpdating || isLoading}
-              //   isDisabled={isUpdating || isLoading}
+              className="py-1.75 w-full md:w-fit"
+                isLoading={isAdding}
+                isDisabled={isAdding}
             />
           </div>
         </form>

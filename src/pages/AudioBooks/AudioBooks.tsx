@@ -5,9 +5,13 @@ import { Pencil, Trash2, Music } from "lucide-react";
 import ViewAudioTracks from "../../components/AudioBooksPage/ViewAudioTracks/ViewAudioTracks";
 import Button from "../../components/Reusable/Button/Button";
 import AddAudioBook from "../../components/AudioBooksPage/AddAudioBook/AddAudioBook";
-import { useGetAllAudioBooksQuery } from "../../redux/Features/AudioBooks/audioBooksApi";
+import {
+  useDeleteAudioBookMutation,
+  useGetAllAudioBooksQuery,
+} from "../../redux/Features/AudioBooks/audioBooksApi";
 import type { TAudioBook } from "../../types/audioBook.types";
 import { useGetAllAudioTracksOfABookQuery } from "../../redux/Features/AudioTracks/audioTracksApi";
+import toast from "react-hot-toast";
 
 const AudioBooks = () => {
   const [isPremium, setIsPremium] = useState<string | null>(null);
@@ -21,6 +25,20 @@ const AudioBooks = () => {
   const { data, isLoading, isFetching } = useGetAllAudioBooksQuery({});
   const { data: audioTracks, isLoading: isAudioTracksLoading } =
     useGetAllAudioTracksOfABookQuery(audioBookId);
+
+  const [deleteAudioBook] = useDeleteAudioBookMutation();
+
+  const handleDeleteAudioBook = async (id: string) => {
+    try {
+      await toast.promise(deleteAudioBook(id).unwrap(), {
+        loading: "Loading...",
+        success: "Audio book deleted successfully!",
+        error: "Failed to delete audio book. Please try again.",
+      });
+    } catch (err) {
+      console.error("Error deleting audio book:", err);
+    }
+  };
 
   const audioBookTheads: any[] = [
     { key: "sl", label: "SL" },
@@ -95,7 +113,7 @@ const AudioBooks = () => {
       label: "Delete",
       icon: <Trash2 className="inline mr-2 size-4" />,
       onClick: (row: any) => {
-        console.log("Delete AudioBook:", row);
+        handleDeleteAudioBook(row._id);
       },
     },
   ];
