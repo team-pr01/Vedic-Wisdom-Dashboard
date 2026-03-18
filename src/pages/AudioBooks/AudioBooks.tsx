@@ -32,7 +32,6 @@ const AudioBooks = () => {
     keyword,
     isPremium: isPremium as string,
   });
-  console.log(data);
   const { data: audioTracks, isLoading: isAudioTracksLoading } =
     useGetAllAudioTracksOfABookQuery(audioBookId);
 

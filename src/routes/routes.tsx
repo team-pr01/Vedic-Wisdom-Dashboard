@@ -8,6 +8,7 @@ import ForgotPassword from "../pages/Auth/ForgotPassword/ForgotPassword";
 import VerifyOtp from "../pages/Auth/VerifyOtp/VerifyOtp";
 import Users from "../pages/Users/Users";
 import AudioBooks from "../pages/AudioBooks/AudioBooks";
+import Temple from "../pages/Temple/Temple";
 
 export const router = createBrowserRouter([
   {
@@ -45,6 +46,10 @@ export const router = createBrowserRouter([
       {
         path: "audio-books",
         element: <AudioBooks />,
+      },
+      {
+        path: "temple",
+        element: <Temple />,
       },
     ],
   },

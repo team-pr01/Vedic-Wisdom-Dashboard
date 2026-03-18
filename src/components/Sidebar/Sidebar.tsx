@@ -26,7 +26,7 @@ const Sidebar = () => {
     { path: "/dashboard/users", label: "Users", icon: Users },
     { path: "/dashboard/books", label: "Books", icon: BookOpen },
     { path: "/dashboard/audio-books", label: "Audio Books", icon: Headphones },
-    { path: "/dashboard/temples", label: "Temples", icon: Landmark },
+    { path: "/dashboard/temple", label: "Temple", icon: Landmark },
     { path: "/dashboard/quiz", label: "Quiz", icon: HelpCircle },
     { path: "/dashboard/shop", label: "Shop", icon: ShoppingBag },
     { path: "/dashboard/vastu", label: "Vastu", icon: Compass },

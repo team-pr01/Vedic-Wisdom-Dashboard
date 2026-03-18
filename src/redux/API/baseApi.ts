@@ -57,7 +57,8 @@ export const baseApi = createApi({
     "admin",
     "users",
     "audioBook",
-    "audioTrack"
+    "audioTrack",
+    "temple",
   ],
   endpoints: () => ({}),
 });
