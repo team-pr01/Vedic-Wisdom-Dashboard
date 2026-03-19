@@ -9,6 +9,7 @@ import type { TTemple } from "../../types/temple.types";
 import { Landmark, Pencil, Trash2 } from "lucide-react";
 import Button from "../../components/Reusable/Button/Button";
 import Table from "../../components/Reusable/Table/Table";
+import AddOrUpdateTemple from "../../components/TemplePage/AddTempleForm/AddTemple";
 
 const Temple = () => {
   const [page, setPage] = useState<number>(1);
@@ -17,7 +18,7 @@ const Temple = () => {
   const [keyword, setKeyword] = useState<string>("");
   const [status, setStatus] = useState<string>("");
   const [modalType, setModalType] = useState<string>("add");
-  const [isAddAudioBookModalOpen, setIsAddAudioBookModalOpen] =
+  const [isAddOrUpdateTempleModalOpen, setIsAddOrUpdateTempleModalOpen ] =
     useState<boolean>(false);
   const [templeId, setTempleId] = useState<string | null>(null);
   const { data, isLoading, isFetching } = useGetAllTemplesQuery({
@@ -186,7 +187,7 @@ const Temple = () => {
         label="Add New Temple"
         onClick={() => {
           setModalType("add");
-          setIsAddAudioBookModalOpen(true);
+          setIsAddOrUpdateTempleModalOpen(true);
         }}
         className="px-3 py-2"
       />
@@ -214,6 +215,11 @@ const Temple = () => {
         setLimit={setLimit}
         children={children}
       />
+
+      {
+        isAddOrUpdateTempleModalOpen &&
+        <AddOrUpdateTemple isAddOrUpdateTempleModalOpen={isAddOrUpdateTempleModalOpen} setIsAddOrUpdateTempleModalOpen={setIsAddOrUpdateTempleModalOpen} modalType={modalType} />
+      }
     </div>
   );
 };

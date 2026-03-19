@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Modal from "../../Reusable/Modal/Modal";
 import Loader from "../../Reusable/Loader/Loader";
 import AudioTrackCard from "../AudioTrackCard/AudioTrackCard";
@@ -23,6 +23,37 @@ const ViewAudioTracks: React.FC<TViewAudioTracksProps> = ({
 }) => {
   const [isAddAudioTrackModalOpen, setIsAddAudioTrackModalOpen] =
     useState<boolean>(false);
+
+  const [currentlyPlayingId, setCurrentlyPlayingId] = useState<string | null>(null);
+  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  const handlePlay = (audioElement: HTMLAudioElement, trackId: string) => {
+    // Stop currently playing audio if exists
+    if (currentAudioRef.current && currentAudioRef.current !== audioElement) {
+      currentAudioRef.current.pause();
+    }
+
+    // Play the new audio
+    audioElement.play();
+    
+    // Update refs and state
+    currentAudioRef.current = audioElement;
+    setCurrentlyPlayingId(trackId);
+
+    // Add ended event listener to reset state when audio finishes
+    audioElement.onended = () => {
+      setCurrentlyPlayingId(null);
+      currentAudioRef.current = null;
+    };
+  };
+
+  const handlePause = () => {
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      setCurrentlyPlayingId(null);
+      currentAudioRef.current = null;
+    }
+  };
   return (
     <Modal
       isModalOpen={isViewAudioTracksModalOpen}
@@ -48,7 +79,14 @@ const ViewAudioTracks: React.FC<TViewAudioTracksProps> = ({
           {/* Audio Tracks */}
           <div className="flex flex-col gap-4">
             {data?.map((track) => (
-              <AudioTrackCard key={track?._id} track={track} />
+              <AudioTrackCard
+                key={track?._id}
+                track={track}
+                onPlay={handlePlay}
+          onPause={handlePause}
+          isGloballyPlaying={currentlyPlayingId === track._id}
+          currentlyPlayingId={currentlyPlayingId}
+              />
             ))}
           </div>
 
