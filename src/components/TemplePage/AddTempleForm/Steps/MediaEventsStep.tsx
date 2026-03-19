@@ -10,7 +10,7 @@ const MediaEventsStep = () => {
   // For video URLs array
   const { fields, append, remove } = useFieldArray({
     control,
-    name: "videoUrls",
+    name: "media.videoUrls",
   });
 
   return (
@@ -28,7 +28,7 @@ const MediaEventsStep = () => {
           multiple
           maxFiles={10}
           maxSize={5}
-          {...register("media.imageUrls")}
+          {...register("media.files")}
         />
       </div>
 
@@ -54,7 +54,7 @@ const MediaEventsStep = () => {
                   type="url"
                   placeholder="Enter video URL (YouTube, Facebook, etc.)"
                   className="w-full px-4 py-3 border border-neutral-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-10 focus:border-transparent font-Roboto"
-                  {...register(`videoUrls.${index}`, {
+                  {...register(`media.videoUrls.${index}`, {
                     pattern: {
                       value:
                         /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/,

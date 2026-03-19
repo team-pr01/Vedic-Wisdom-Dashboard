@@ -64,10 +64,8 @@ const AddTemple = ({
         website: "",
       },
       socialMedia: { facebook: "", youtube: "", instagram: "", linkedin: "" },
-      media: { imageUrls: [], videoUrls: [] },
-      events: [],
+      media: { files: [], videoUrls: [] },
       category: "",
-      status: "draft",
     },
     mode: "onChange",
   });
@@ -146,9 +144,9 @@ const AddTemple = ({
       // Append all data
       Object.keys(data).forEach((key) => {
         if (key === "media") {
-          if (data.media.imageUrls?.length) {
-            Array.from(data.media.imageUrls).forEach((file: any) => {
-              formData.append("media[imageUrls]", file);
+          if (data.media.files?.length) {
+            Array.from(data.media.files).forEach((file: any) => {
+              formData.append("files", file);
             });
           }
           if (data.media.videoUrls?.length) {

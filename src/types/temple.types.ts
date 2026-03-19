@@ -26,11 +26,11 @@ export interface TLocation {
 
 //    OTHER INFO
 export interface TOtherInfo {
-    establishedYear?: number;
-    visitingHours?: string;
-    phoneNumber?: string;
-    email?: string;
-    website?: string;
+    establishedYear: number;
+    visitingHours: string;
+    phoneNumber: string;
+    email: string;
+    website: string;
 }
 
 //    MEDIA
@@ -48,7 +48,7 @@ export type TempleStatus =
 
     export type TEvent = {
         name : string;
-        date : Date;
+        date : string;
         description : string;
         imageUrls : string[];
     }
@@ -69,6 +69,6 @@ export interface TTemple {
 
     createdBy: string;
 
-    createdAt?: Date;
-    updatedAt?: Date;
+    createdAt?: string;
+    updatedAt?: string;
 }

@@ -10,6 +10,7 @@ import { Landmark, Pencil, Trash2 } from "lucide-react";
 import Button from "../../components/Reusable/Button/Button";
 import Table from "../../components/Reusable/Table/Table";
 import AddOrUpdateTemple from "../../components/TemplePage/AddTempleForm/AddTemple";
+import { Link } from "react-router-dom";
 
 const Temple = () => {
   const [page, setPage] = useState<number>(1);
@@ -122,15 +123,13 @@ const Temple = () => {
     ),
 
     details: (
-      <button
+      <Link
+        to={`/dashboard/temple/${temple?._id}`}
         className="flex items-center gap-1 text-sm text-primary hover:underline cursor-pointer"
-        onClick={() => {
-          setTempleId(temple?._id);
-        }}
       >
         <Landmark className="size-4" />
         View
-      </button>
+      </Link>
     ),
   }));
 
