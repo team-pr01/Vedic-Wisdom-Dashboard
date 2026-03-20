@@ -1,9 +1,14 @@
 import Loader from "../../Reusable/Loader/Loader";
 import Modal from "../../Reusable/Modal/Modal";
-import { useGetAllCategoriesByAreaNameQuery } from "../../../redux/Features/Categories/categoriesApi";
+import {
+  useDeleteCategoryMutation,
+  useGetAllCategoriesByAreaNameQuery,
+} from "../../../redux/Features/Categories/categoriesApi";
 import { useState } from "react";
 import AddCategoryForm from "./AddCategoryForm";
 import Button from "../../Reusable/Button/Button";
+import { Trash } from "lucide-react";
+import toast from "react-hot-toast";
 
 export type TCategories = {
   _id: string;
@@ -21,6 +26,20 @@ const Category: React.FC<TCategoryProps> = ({ areaName }) => {
     useState<boolean>(false);
   const [isAddCategoryForOpen, setIsAddCategoryForOpen] =
     useState<boolean>(false);
+
+  const [deleteCategory] = useDeleteCategoryMutation();
+
+  const handleDeleteCategory = async (id:string) => {
+    try {
+      await toast.promise(deleteCategory(id).unwrap(), {
+        loading: "Loading...",
+        success: "Deleted successfully!",
+        error: "Failed to delete. Please try again.",
+      });
+    } catch (err) {
+      console.error("Error deleting:", err);
+    }
+  };
 
   return (
     <div>
@@ -49,9 +68,10 @@ const Category: React.FC<TCategoryProps> = ({ areaName }) => {
               {data?.data?.map((category: TCategories) => (
                 <div
                   key={category?._id}
-                  className="border border-neutral-60 px-3 py-2 rounded-lg text-neutral-5 text-sm"
+                  className="border border-neutral-60 px-3 py-2 rounded-lg text-neutral-5 text-sm flex items-center gap-2"
                 >
                   {category?.category}
+                  <Trash onClick={() => handleDeleteCategory(category?._id)} className="size-4 text-red-500 cursor-pointer" />
                 </div>
               ))}
 
