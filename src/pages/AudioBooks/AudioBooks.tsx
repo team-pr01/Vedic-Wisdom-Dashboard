@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import Table from "../../components/Reusable/Table/Table";
-import { Pencil, Trash2, Music } from "lucide-react";
+import { Music } from "lucide-react";
 import ViewAudioTracks from "../../components/AudioBooksPage/ViewAudioTracks/ViewAudioTracks";
 import Button from "../../components/Reusable/Button/Button";
 import {
@@ -12,6 +12,7 @@ import type { TAudioBook } from "../../types/audioBook.types";
 import { useGetAllAudioTracksOfABookQuery } from "../../redux/Features/AudioTracks/audioTracksApi";
 import toast from "react-hot-toast";
 import AddOrUpdateAudioBook from "../../components/AudioBooksPage/AddOrUpdateAudioBook/AddOrUpdateAudioBook";
+import DeleteConfirmationModal from "../../components/Reusable/DeleteConfirmationModal/DeleteConfirmationModal";
 
 const AudioBooks = () => {
   const [page, setPage] = useState<number>(1);
@@ -25,6 +26,8 @@ const AudioBooks = () => {
   const [modalType, setModalType] = useState<string>("add");
   const [isAddAudioBookModalOpen, setIsAddAudioBookModalOpen] =
     useState<boolean>(false);
+  const [showDeleteConfirmationModal, setShowDeleteConfirmationModal] =
+    useState<boolean>(false);
   const [audioBookId, setAudioBookId] = useState<string | null>(null);
   const { data, isLoading, isFetching } = useGetAllAudioBooksQuery({
     skip,
@@ -37,9 +40,9 @@ const AudioBooks = () => {
 
   const [deleteAudioBook] = useDeleteAudioBookMutation();
 
-  const handleDeleteAudioBook = async (id: string) => {
+  const handleDeleteAudioBook = async () => {
     try {
-      await toast.promise(deleteAudioBook(id).unwrap(), {
+      await toast.promise(deleteAudioBook(audioBookId as string).unwrap(), {
         loading: "Loading...",
         success: "Audio book deleted successfully!",
         error: "Failed to delete audio book. Please try again.",
@@ -110,25 +113,6 @@ const AudioBooks = () => {
     }),
   );
 
-  const audioBookActions: any[] = [
-    {
-      label: "Edit",
-      icon: <Pencil className="inline mr-2 size-4" />,
-      onClick: (row: any) => {
-        setModalType("update");
-        setIsAddAudioBookModalOpen(true);
-        setAudioBookId(row?._id);
-      },
-    },
-    {
-      label: "Delete",
-      icon: <Trash2 className="inline mr-2 size-4" />,
-      onClick: (row: any) => {
-        handleDeleteAudioBook(row._id);
-      },
-    },
-  ];
-
   const filters = [
     {
       label: "Premium",
@@ -182,10 +166,19 @@ const AudioBooks = () => {
         onPageChange={(p) => setPage(p)}
         isLoading={isLoading || isFetching}
         onSearch={handleSearch}
-        actions={audioBookActions}
         limit={10}
         setLimit={setLimit}
         children={children}
+        onEditItem={(row: any) => {
+          setModalType("edit");
+          setAudioBookId(row?._id);
+          setIsAddAudioBookModalOpen(true);
+        }}
+        onDeleteItem={(row: any) => {
+          console.log(row);
+          setAudioBookId(row?._id);
+          setShowDeleteConfirmationModal(true);
+        }}
       />
 
       {/* Image Preview Modal */}
@@ -220,6 +213,13 @@ const AudioBooks = () => {
           modalType={modalType}
           setModalType={setModalType}
           audioBookId={audioBookId as string}
+        />
+      )}
+
+      {showDeleteConfirmationModal && (
+        <DeleteConfirmationModal
+          onClose={() => setShowDeleteConfirmationModal(false)}
+          onConfirm={handleDeleteAudioBook}
         />
       )}
     </div>

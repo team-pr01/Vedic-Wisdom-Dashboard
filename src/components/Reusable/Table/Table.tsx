@@ -4,6 +4,7 @@ import { ICONS } from "../../../assets";
 import { filterData } from "../../../constants/filterData";
 import NoData from "../NoData/NoData";
 import LogoLoader from "../../Shared/LogoLoader/LogoLoader";
+import { Pencil, Trash2 } from "lucide-react";
 
 export type TableHead = {
   key: string;
@@ -23,6 +24,8 @@ type Props<T extends Record<string, any>> = {
   theads: TableHead[];
   data: T[];
   actions?: TableAction<T>[];
+  onEditItem?: (row : any) => any;
+  onDeleteItem?: (row : any) => any;
   totalPages?: number;
   currentPage?: number;
   onPageChange?: (page: number) => void;
@@ -47,6 +50,8 @@ export default function Table<T extends Record<string, any>>({
   theads,
   data,
   actions = [],
+  onEditItem,
+  onDeleteItem,
   totalPages = 1,
   currentPage = 1,
   onPageChange,
@@ -287,7 +292,6 @@ export default function Table<T extends Record<string, any>>({
                       );
                     })}
 
-                    {actions.length > 0 && (
                       <td className="p-3 text-sm border-b border-neutral-55/60 text-right relative">
                         <div className="inline-block relative">
                           <button
@@ -319,12 +323,39 @@ export default function Table<T extends Record<string, any>>({
                             }
                           >
                             <div className="py-1">
+                              <button
+                                onClick={() => {
+                                  onEditItem!(row);
+                                  setClosingMenuId(rowId);
+                                  setTimeout(() => {
+                                    setOpenMenuId(null);
+                                    setClosingMenuId(null);
+                                  }, 180);
+                                }}
+                                className="w-full text-left px-3 py-2 text-sm hover:bg-slate-100 cursor-pointer flex items-center gap-1"
+                              >
+                                <Pencil className="inline mr-2 size-4" />
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => {
+                                  onDeleteItem!(row);
+                                  setClosingMenuId(rowId);
+                                  setTimeout(() => {
+                                    setOpenMenuId(null);
+                                    setClosingMenuId(null);
+                                  }, 180);
+                                }}
+                                className="w-full text-left px-3 py-2 text-sm hover:bg-slate-100 cursor-pointer flex items-center gap-1"
+                              >
+                                <Trash2 className="inline mr-2 size-4" />
+                                Delete
+                              </button>
                               {actions.map((act, i) => (
                                 <button
                                   key={i}
                                   onClick={() => {
                                     act.onClick(row);
-                                    // close smoothly
                                     setClosingMenuId(rowId);
                                     setTimeout(() => {
                                       setOpenMenuId(null);
@@ -341,7 +372,6 @@ export default function Table<T extends Record<string, any>>({
                           </div>
                         </div>
                       </td>
-                    )}
                   </tr>
                 );
               })}

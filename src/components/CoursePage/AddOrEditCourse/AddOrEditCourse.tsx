@@ -4,44 +4,45 @@ import Button from "../../Reusable/Button/Button";
 import Loader from "../../Reusable/Loader/Loader";
 import Modal from "../../Reusable/Modal/Modal";
 import SelectDropdown from "../../Reusable/SelectDropdown/SelectDropdown";
-import Textarea from "../../Reusable/TextArea/TextArea";
 import TextInput from "../../Reusable/TextInput/TextInput";
 import FileUploadInput from "../../Reusable/FileUploadInput/FileUploadInput";
-import {
-  useAddAudioBookMutation,
-  useGetSingleAudioBookByIdQuery,
-  useUpdateAudioBookMutation,
-} from "../../../redux/Features/AudioBooks/audioBooksApi";
 import { useEffect } from "react";
+import {
+  useAddCourseMutation,
+  useGetSingleCourseByIdQuery,
+  useUpdateCourseMutation,
+} from "../../../redux/Features/Course/courseApi";
+import type { TCategories } from "../../Shared/Category/Category";
 
 type TFormData = {
-  name: string;
-  description: string;
-  isPremium: string;
+  title: string;
+  category: string;
+  duration: string;
+  courseUrl: string;
   file?: any;
 };
 
-type TAddOrUpdateAudioBookProps = {
-  isAddAudioBookModalOpen: boolean;
-  setIsAddAudioBookModalOpen: any;
-  isLoading: boolean;
+type TAddOrEditCourseProps = {
+  isAddOrEditCourseModalOpen: boolean;
+  setIsAddOrEditCourseModalOpen: any;
   modalType: string;
   setModalType: (value: string) => void;
-  audioBookId?: string;
+  courseId?: string;
+  categories?: TCategories[];
 };
-const AddOrUpdateAudioBook: React.FC<TAddOrUpdateAudioBookProps> = ({
-  isAddAudioBookModalOpen,
-  setIsAddAudioBookModalOpen,
-  isLoading,
+const AddOrEditCourse: React.FC<TAddOrEditCourseProps> = ({
+  isAddOrEditCourseModalOpen,
+  setIsAddOrEditCourseModalOpen,
   modalType,
   setModalType,
-  audioBookId,
+  courseId,
+  categories,
 }) => {
-  const { data: singleAudioBookData, isLoading: isSingleAudioBookDataLoading } =
-    useGetSingleAudioBookByIdQuery(audioBookId);
-  const [addAudioBook, { isLoading: isAdding }] = useAddAudioBookMutation();
-  const [updateAudioBook, { isLoading: isUpdating }] =
-    useUpdateAudioBookMutation();
+  const { data, isLoading: isSingleCourseDataLoading } =
+    useGetSingleCourseByIdQuery(courseId);
+
+  const [addCourse, { isLoading: isAdding }] = useAddCourseMutation();
+  const [updateCourse, { isLoading: isUpdating }] = useUpdateCourseMutation();
 
   const {
     register,
@@ -52,93 +53,101 @@ const AddOrUpdateAudioBook: React.FC<TAddOrUpdateAudioBookProps> = ({
   } = useForm<TFormData>();
 
   useEffect(() => {
-    if (modalType === "edit" && singleAudioBookData) {
-      setValue("name", singleAudioBookData?.data?.name);
-      setValue("description", singleAudioBookData?.data?.description);
-      setValue("isPremium", singleAudioBookData?.data?.isPremium.toString());
+    const singleCourseData = data?.data || {};
+    if (modalType === "edit" && singleCourseData) {
+      setValue("title", singleCourseData?.title);
+      setValue("category", singleCourseData?.category);
+      setValue("duration", singleCourseData?.duration);
+      setValue("courseUrl", singleCourseData?.courseUrl);
     } else {
       reset();
     }
-  }, [modalType, singleAudioBookData, reset, setValue]);
+  }, [modalType, data, reset, setValue]);
 
-  const handleAddAudioBook = async (data: TFormData) => {
+  const handleSubmitCourse = async (data: TFormData) => {
     try {
       const formData = new FormData();
 
-      formData.append("name", data.name);
-      formData.append("description", data.description);
-      formData.append("isPremium", data.isPremium);
+      formData.append("title", data.title);
+      formData.append("category", data.category);
+      formData.append("duration", data.duration);
+      formData.append("courseUrl", data.courseUrl);
 
       if (data.file?.[0]) {
         formData.append("file", data.file[0]);
       }
 
       if (modalType === "add") {
-        await addAudioBook(formData).unwrap();
+        await addCourse(formData).unwrap();
 
-        setIsAddAudioBookModalOpen(false);
+        setIsAddOrEditCourseModalOpen(false);
       } else {
-        await updateAudioBook({ id: audioBookId, data: formData }).unwrap();
-        setIsAddAudioBookModalOpen(false);
+        await updateCourse({ id: courseId, data: formData }).unwrap();
+        setIsAddOrEditCourseModalOpen(false);
       }
     } catch (error) {
       console.log(error);
     }
   };
 
-  const accessTypes = [
-    {
-      label: "Premium",
-      value: "true",
-    },
-    {
-      label: "Free",
-      value: "false",
-    },
-  ];
+  const courseCategories = categories?.map((category) => ({
+    label: category.category,
+    value: category.category,
+  }));
   return (
     <Modal
-      isModalOpen={isAddAudioBookModalOpen}
-      setIsModalOpen={setIsAddAudioBookModalOpen}
+      isModalOpen={isAddOrEditCourseModalOpen}
+      setIsModalOpen={setIsAddOrEditCourseModalOpen}
       heading={`${modalType === "add" ? "Add" : "Update"} Audio Book`}
     >
       <div className="relative">
-        {isLoading ||
-          (isSingleAudioBookDataLoading && (
+        {isSingleCourseDataLoading && (
             <div className="absolute inset-0 flex flex-col items-center justify-center backdrop-blur-[2px] bg-white/30 z-50">
               <Loader size="lg" text="Please wait..." />
             </div>
-          ))}
+          )}
 
         <form
-          onSubmit={handleSubmit(handleAddAudioBook)}
+          onSubmit={handleSubmit(handleSubmitCourse)}
           className="flex flex-col gap-6 font-Nunito mt-5"
         >
           <div className="flex flex-col gap-6">
-            {/* Title */}
-            <TextInput
-              label="Book Name"
-              placeholder="Enter book name"
-              error={errors.name}
-              {...register("name", { required: "Book name is required" })}
-            />
-
-            {/* Notice */}
-            <Textarea
-              label="Description"
-              placeholder="Enter description"
-              error={errors.description}
-              {...register("description", {
-                required: "Description is required",
+            {/* Category */}
+            <SelectDropdown
+              label="Category"
+              options={courseCategories || []}
+              error={errors.category}
+              {...register("category", {
+                required: "Category is required",
               })}
             />
 
-            {/* Targeted Audience */}
-            <SelectDropdown
-              label="Access Type"
-              options={accessTypes}
-              error={errors.isPremium}
-              {...register("isPremium")}
+            {/* Title */}
+            <TextInput
+              label="Course Name"
+              placeholder="Enter course name"
+              error={errors.title}
+              {...register("title", { required: "Course name is required" })}
+            />
+
+            {/* Duration */}
+            <TextInput
+              label="Duration"
+              placeholder="e.g. 10:30 mins"
+              error={errors.duration}
+              {...register("duration", {
+                required: "Duration is required",
+              })}
+            />
+
+            {/* Duration */}
+            <TextInput
+              label="Course URL"
+              placeholder="Enter course URL"
+              error={errors.courseUrl}
+              {...register("courseUrl", {
+                required: "Course URL is required",
+              })}
             />
 
             {/* Single Cover Image Upload */}
@@ -177,7 +186,7 @@ const AddOrUpdateAudioBook: React.FC<TAddOrUpdateAudioBookProps> = ({
               variant="secondary"
               className="py-1.75 w-full md:w-fit"
               onClick={() => {
-                setIsAddAudioBookModalOpen(false);
+                setIsAddOrEditCourseModalOpen(false);
                 setModalType("add");
               }}
             />
@@ -196,4 +205,4 @@ const AddOrUpdateAudioBook: React.FC<TAddOrUpdateAudioBookProps> = ({
   );
 };
 
-export default AddOrUpdateAudioBook;
+export default AddOrEditCourse;

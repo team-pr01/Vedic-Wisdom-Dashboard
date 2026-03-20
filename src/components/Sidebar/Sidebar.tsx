@@ -33,7 +33,7 @@ const Sidebar = () => {
     { path: "/dashboard/jyotish", label: "Jyotish", icon: Star },
     { path: "/dashboard/consultancy", label: "Consultancy", icon: Briefcase },
     { path: "/dashboard/ayurveda", label: "Ayurveda", icon: Leaf },
-    { path: "/dashboard/courses", label: "Courses", icon: GraduationCap },
+    { path: "/dashboard/course", label: "Course", icon: GraduationCap },
     { path: "/dashboard/video", label: "Video", icon: Video },
     { path: "/dashboard/food", label: "Food", icon: Utensils },
   ];

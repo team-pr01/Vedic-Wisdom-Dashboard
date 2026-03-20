@@ -11,6 +11,7 @@ import AudioBooks from "../pages/AudioBooks/AudioBooks";
 import Temple from "../pages/Temple/Temple";
 import TempleDetails from "../pages/Temple/TempleDetails/TempleDetails";
 import Food from "../pages/Food/Food";
+import Course from "../pages/Course/Course";
 
 export const router = createBrowserRouter([
   {
@@ -60,6 +61,10 @@ export const router = createBrowserRouter([
       {
         path: "food",
         element: <Food />,
+      },
+      {
+        path: "course",
+        element: <Course />,
       },
     ],
   },

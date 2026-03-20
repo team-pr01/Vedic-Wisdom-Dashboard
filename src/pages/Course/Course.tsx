@@ -1,98 +1,109 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import Category from "../../components/Shared/Category/Category";
-import {
-  useDeleteRecipeMutation,
-  useGetAllRecipesQuery,
-} from "../../redux/Features/Food/foodApi";
 import toast from "react-hot-toast";
-import type { TFood } from "../../types/food.interface";
 import { Clock, Play } from "lucide-react";
 import Button from "../../components/Reusable/Button/Button";
 import Table from "../../components/Reusable/Table/Table";
 import { useGetAllCategoriesByAreaNameQuery } from "../../redux/Features/Categories/categoriesApi";
-import AddOrEditRecipe from "../../components/FoodPage/AddOrEditRecipe/AddOrEditRecipe";
 import DeleteConfirmationModal from "../../components/Reusable/DeleteConfirmationModal/DeleteConfirmationModal";
+import {
+  useDeleteCourseMutation,
+  useGetAllCoursesQuery,
+} from "../../redux/Features/Course/courseApi";
+import type { TCourse } from "../../types/course.types";
+import AddOrEditCourse from "../../components/CoursePage/AddOrEditCourse/AddOrEditCourse";
 
-const Food = () => {
+const Course = () => {
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(10);
   const skip = (page - 1) * limit;
   const [keyword, setKeyword] = useState<string>("");
   const [category, setCategory] = useState<string>("");
   const [modalType, setModalType] = useState<string>("add");
-  const [isAddOrEditRecipeModalOpen, setIsAddOrEditRecipeModalOpen] =
+  const [isAddOrEditCourseModalOpen, setIsAddOrEditCourseModalOpen] =
     useState<boolean>(false);
   const [showDeleteConfirmationModal, setShowDeleteConfirmationModal] =
     useState<boolean>(false);
-  const [recipeId, setRecipeId] = useState<string | null>(null);
-  const { data, isLoading, isFetching } = useGetAllRecipesQuery({
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [courseId, setCourseId] = useState<string | null>(null);
+  const { data, isLoading, isFetching } = useGetAllCoursesQuery({
     skip,
     limit,
     keyword,
     category,
   });
 
-  const { data: categories } = useGetAllCategoriesByAreaNameQuery("Food");
+  const { data: categories } = useGetAllCategoriesByAreaNameQuery("Course");
 
-  const [deleteAudioBook] = useDeleteRecipeMutation();
+  const [deleteCourse] = useDeleteCourseMutation();
 
-  const handleDeleteRecipe = async () => {
+  const handleDeleteCourse = async () => {
     try {
-      await toast.promise(deleteAudioBook(recipeId as string).unwrap(), {
+      await toast.promise(deleteCourse(courseId as string).unwrap(), {
         loading: "Loading...",
-        success: "Recipe deleted successfully!",
-        error: "Failed to delete recipe. Please try again.",
+        success: "Course deleted successfully!",
+        error: "Failed to delete course. Please try again.",
       });
     } catch (err) {
-      console.error("Error deleting recipe:", err);
+      console.error("Error deleting course:", err);
     }
   };
 
-  const foodTheads: any[] = [
+  const courseTheads: any[] = [
     { key: "sl", label: "SL" },
+    { key: "thumbnail", label: "Thumbnail" },
     { key: "title", label: "Title" },
     { key: "category", label: "Category" },
-    { key: "videoSource", label: "Video Source" },
     { key: "duration", label: "Duration" },
-    { key: "viewVideo", label: "ViewV ideo" },
+    { key: "viewCourse", label: "View Course" },
   ];
 
-  const food = data?.data?.foods || [];
+  const courses = data?.data?.courses || [];
 
-  const foodTableData = food?.map((recipe: TFood, index: number) => ({
-    _id: recipe?._id,
+  const courseTableData = courses?.map((course: TCourse, index: number) => ({
+    _id: course._id,
 
     sl: index + 1,
 
-    title: <p className="font-medium">{recipe?.title}</p>,
-    category: (
-      <span className="px-2 py-1 bg-primary-10/10 text-primary-10 text-xs font-medium rounded-full capitalize">
-        {recipe?.category}
-      </span>
+    thumbnail: (
+      <button type="button" onClick={() => setPreviewImage(course?.thumbnail as string)} className="size-12 rounded-lg overflow-hidden">
+          <img
+            src={course.thumbnail}
+            alt={course.title}
+            className="w-full h-full object-cover"
+          />
+      </button>
     ),
-    videoSource: (
-      <p
-        className={`font-medium capitalize ${recipe?.videoSource === "youtube" ? "text-red-500" : "text-blue-500"}`}
-      >
-        {recipe?.videoSource}
+
+    title: (
+      <p className="font-medium text-neutral-10 font-Inter line-clamp-2 max-w-[250px]">
+        {course.title}
       </p>
     ),
+
+    category: (
+      <span className="px-2 py-1 bg-primary-10/10 text-primary-10 text-xs font-medium rounded-full capitalize">
+        {course.category}
+      </span>
+    ),
+
     duration: (
       <div className="flex items-center gap-1 text-sm text-neutral-45">
         <Clock size={14} />
-        <span>{recipe?.duration}</span>
+        <span>{course.duration}</span>
       </div>
     ),
 
-    viewVideo: (
+    viewCourse: (
       <a
-        href={recipe?.videoUrl}
+        href={course.courseUrl}
         target="_blank"
-        className="flex items-center gap-1 text-sm text-primary hover:underline cursor-pointer"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary-10 bg-primary-10/10 rounded-lg hover:bg-primary-10/20 transition-colors cursor-pointer"
       >
-        <Play className="size-4" />
-        View Video
+        <Play className="size-3.5" />
+        View Course
       </a>
     ),
   }));
@@ -111,12 +122,12 @@ const Food = () => {
           </option>
         ))}
       </select>
-      <Category areaName="Food" />
+      <Category areaName="Course" />
       <Button
         label="Add New Recipe"
         onClick={() => {
           setModalType("add");
-          setIsAddOrEditRecipeModalOpen(true);
+          setIsAddOrEditCourseModalOpen(true);
         }}
         className="px-3 py-2"
       />
@@ -130,10 +141,10 @@ const Food = () => {
   return (
     <div>
       <Table<any>
-        title={`Food & Recipes (${food?.length || 0})`}
-        description="Manage all recipes"
-        theads={foodTheads}
-        data={foodTableData}
+        title={`All Courses (${courses?.length || 0})`}
+        description="Manage all courses"
+        theads={courseTheads}
+        data={courseTableData}
         totalPages={data?.data?.meta?.totalPages || 1}
         currentPage={page}
         onPageChange={(p) => setPage(p)}
@@ -144,23 +155,22 @@ const Food = () => {
         children={children}
         onEditItem={(row: any) => {
           setModalType("edit");
-          setRecipeId(row?._id);
-          setIsAddOrEditRecipeModalOpen(true);
+          setCourseId(row?._id);
+          setIsAddOrEditCourseModalOpen(true);
         }}
         onDeleteItem={(row: any) => {
-          setRecipeId(row?._id);
+          setCourseId(row?._id);
           setShowDeleteConfirmationModal(true);
         }}
       />
 
-      {isAddOrEditRecipeModalOpen && (
-        <AddOrEditRecipe
-          isAddOrEditRecipeModalOpen={isAddOrEditRecipeModalOpen}
-          setIsAddOrEditRecipeModalOpen={setIsAddOrEditRecipeModalOpen}
-          isLoading={false}
+      {isAddOrEditCourseModalOpen && (
+        <AddOrEditCourse
+          isAddOrEditCourseModalOpen={isAddOrEditCourseModalOpen}
+          setIsAddOrEditCourseModalOpen={setIsAddOrEditCourseModalOpen}
           modalType={modalType}
           setModalType={setModalType}
-          recipeId={recipeId as string}
+          courseId={courseId as string}
           categories={categories?.data || []}
         />
       )}
@@ -168,11 +178,25 @@ const Food = () => {
       {showDeleteConfirmationModal && (
         <DeleteConfirmationModal
           onClose={() => setShowDeleteConfirmationModal(false)}
-          onConfirm={handleDeleteRecipe}
+          onConfirm={handleDeleteCourse}
         />
+      )}
+
+      {/* Image Preview Modal */}
+      {previewImage && (
+        <div
+          className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
+          onClick={() => setPreviewImage(null)}
+        >
+          <img
+            src={previewImage}
+            alt="preview"
+            className="max-h-[90%] max-w-[90%] rounded-lg"
+          />
+        </div>
       )}
     </div>
   );
 };
 
-export default Food;
+export default Course;
