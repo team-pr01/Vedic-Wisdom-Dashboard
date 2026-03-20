@@ -62,6 +62,7 @@ export const baseApi = createApi({
     "category",
     "food",
     "course",
+    "reels",
   ],
   endpoints: () => ({}),
 });

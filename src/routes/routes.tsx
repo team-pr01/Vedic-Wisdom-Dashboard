@@ -12,6 +12,7 @@ import Temple from "../pages/Temple/Temple";
 import TempleDetails from "../pages/Temple/TempleDetails/TempleDetails";
 import Food from "../pages/Food/Food";
 import Course from "../pages/Course/Course";
+import Video from "../pages/Video/Video";
 
 export const router = createBrowserRouter([
   {
@@ -65,6 +66,10 @@ export const router = createBrowserRouter([
       {
         path: "course",
         element: <Course />,
+      },
+      {
+        path: "video",
+        element: <Video />,
       },
     ],
   },

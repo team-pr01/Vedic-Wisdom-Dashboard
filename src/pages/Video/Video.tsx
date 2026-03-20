@@ -1,110 +1,116 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import Category from "../../components/Shared/Category/Category";
-import {
-  useDeleteRecipeMutation,
-  useGetAllRecipesQuery,
-} from "../../redux/Features/Food/foodApi";
 import toast from "react-hot-toast";
-import type { TFood } from "../../types/food.interface";
-import { Clock, Play, Youtube } from "lucide-react";
+import { Play, ThumbsUp, Youtube } from "lucide-react";
 import Button from "../../components/Reusable/Button/Button";
 import Table from "../../components/Reusable/Table/Table";
 import { useGetAllCategoriesByAreaNameQuery } from "../../redux/Features/Categories/categoriesApi";
-import AddOrEditRecipe from "../../components/FoodPage/AddOrEditRecipe/AddOrEditRecipe";
 import DeleteConfirmationModal from "../../components/Reusable/DeleteConfirmationModal/DeleteConfirmationModal";
+import { useDeleteVideoMutation, useGetAllVideosQuery } from "../../redux/Features/Video/videoApi";
+import type { TReels } from "../../types/reels.types";
+import AddOrEditVideo from "../../components/VideoPage/AddOrEditVideo/AddOrEditVideo";
 
-const Food = () => {
+const Video = () => {
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(10);
   const skip = (page - 1) * limit;
   const [keyword, setKeyword] = useState<string>("");
   const [category, setCategory] = useState<string>("");
   const [modalType, setModalType] = useState<string>("add");
-  const [isAddOrEditRecipeModalOpen, setIsAddOrEditRecipeModalOpen] =
+  const [isAddOrEditVideoModalOpen, setIsAddOrEditVideoModalOpen] =
     useState<boolean>(false);
   const [showDeleteConfirmationModal, setShowDeleteConfirmationModal] =
     useState<boolean>(false);
-  const [recipeId, setRecipeId] = useState<string | null>(null);
-  const { data, isLoading, isFetching } = useGetAllRecipesQuery({
+  const [videoId, setVideoId] = useState<string | null>(null);
+  const { data, isLoading, isFetching } = useGetAllVideosQuery({
     skip,
     limit,
     keyword,
     category,
   });
 
-  const { data: categories } = useGetAllCategoriesByAreaNameQuery("Food");
+  const { data: categories } = useGetAllCategoriesByAreaNameQuery("Video");
 
-  const [deleteRecipe] = useDeleteRecipeMutation();
+  const [deleteVideo] = useDeleteVideoMutation();
 
   const handleDeleteRecipe = async () => {
     try {
-      await toast.promise(deleteRecipe(recipeId as string).unwrap(), {
+      await toast.promise(deleteVideo(videoId as string).unwrap(), {
         loading: "Loading...",
-        success: "Recipe deleted successfully!",
-        error: "Failed to delete recipe. Please try again.",
+        success: "Video deleted successfully!",
+        error: "Failed to delete video. Please try again.",
       });
     } catch (err) {
-      console.error("Error deleting recipe:", err);
+      console.error("Error deleting video:", err);
     }
   };
 
-  const foodTheads: any[] = [
-    { key: "sl", label: "SL" },
-    { key: "title", label: "Title" },
-    { key: "category", label: "Category" },
-    { key: "videoSource", label: "Video Source" },
-    { key: "duration", label: "Duration" },
-    { key: "viewVideo", label: "ViewV ideo" },
-  ];
+const videoTheads: any[] = [
+  { key: "sl", label: "SL" },
+  { key: "title", label: "Title" },
+  { key: "category", label: "Category" },
+  { key: "videoSource", label: "Video Source" },
+  { key: "likes", label: "Likes" },
+  { key: "viewVideo", label: "View Video" },
+];
 
-  const food = data?.data?.foods || [];
+const videos = data?.data?.reels || [];
 
-  const foodTableData = food?.map((recipe: TFood, index: number) => ({
-    _id: recipe?._id,
+const videoTableData = videos?.map((video: TReels, index: number) => ({
+  _id: video?._id,
 
-    sl: index + 1,
+  sl: index + 1,
+  title: (
+    <div className="max-w-70">
+      <p className="font-medium text-neutral-10 font-Inter line-clamp-2">
+        {video?.title}
+      </p>
+    </div>
+  ),
 
-    title: <p className="font-medium">{recipe?.title}</p>,
-    category: (
-      <span className="px-2 py-1 bg-primary-10/10 text-primary-10 text-xs font-medium rounded-full capitalize">
-        {recipe?.category}
-      </span>
-    ),
-    videoSource: (
+  category: (
+    <span className="px-2.5 py-1 bg-primary-10/10 text-primary-10 text-xs font-medium rounded-full capitalize">
+      {video?.category}
+    </span>
+  ),
+
+  videoSource: (
     <div className="flex items-center gap-1.5">
-      {recipe?.videoSource === "youtube" ? (
+      {video?.videoSource === "youtube" ? (
         <Youtube size={16} className="text-red-500" />
       ) : (
         <Play size={16} className="text-blue-500" />
       )}
       <span
         className={`font-medium capitalize text-sm ${
-          recipe?.videoSource === "youtube" ? "text-red-500" : "text-blue-500"
+          video?.videoSource === "youtube" ? "text-red-500" : "text-blue-500"
         }`}
       >
-        {recipe?.videoSource}
+        {video?.videoSource}
       </span>
     </div>
   ),
-    duration: (
-      <div className="flex items-center gap-1 text-sm text-neutral-45">
-        <Clock size={14} />
-        <span>{recipe?.duration}</span>
-      </div>
-    ),
 
-    viewVideo: (
-      <a
-        href={recipe?.videoUrl}
-        target="_blank"
-        className="flex items-center gap-1 text-sm text-primary hover:underline cursor-pointer"
-      >
-        <Play className="size-4" />
-        View Video
-      </a>
-    ),
-  }));
+  likes: (
+    <div className="flex items-center gap-1">
+      <ThumbsUp size={14} className="text-neutral-45" />
+      <span className="text-sm text-neutral-45">{video?.likes || 0}</span>
+    </div>
+  ),
+
+  viewVideo: (
+    <a
+      href={video?.videoUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary-10 bg-primary-10/10 rounded-lg hover:bg-primary-10/20 transition-colors cursor-pointer"
+    >
+      <Play className="size-3.5" />
+      Watch Video
+    </a>
+  ),
+}));
 
   const children = (
     <div className="flex items-center gap-3">
@@ -120,12 +126,12 @@ const Food = () => {
           </option>
         ))}
       </select>
-      <Category areaName="Food" />
+      <Category areaName="Video" />
       <Button
-        label="Add New Recipe"
+        label="Add New Video"
         onClick={() => {
           setModalType("add");
-          setIsAddOrEditRecipeModalOpen(true);
+          setIsAddOrEditVideoModalOpen(true);
         }}
         className="px-3 py-2"
       />
@@ -139,10 +145,10 @@ const Food = () => {
   return (
     <div>
       <Table<any>
-        title={`Food & Recipes (${food?.length || 0})`}
-        description="Manage all recipes"
-        theads={foodTheads}
-        data={foodTableData}
+        title={`All Videos/Reels (${data?.data?.length || 0})`}
+        description="Manage all videos & reels"
+        theads={videoTheads}
+        data={videoTableData}
         totalPages={data?.data?.meta?.totalPages || 1}
         currentPage={page}
         onPageChange={(p) => setPage(p)}
@@ -153,22 +159,22 @@ const Food = () => {
         children={children}
         onEditItem={(row: any) => {
           setModalType("edit");
-          setRecipeId(row?._id);
-          setIsAddOrEditRecipeModalOpen(true);
+          setVideoId(row?._id);
+          setIsAddOrEditVideoModalOpen(true);
         }}
         onDeleteItem={(row: any) => {
-          setRecipeId(row?._id);
+          setVideoId(row?._id);
           setShowDeleteConfirmationModal(true);
         }}
       />
 
-      {isAddOrEditRecipeModalOpen && (
-        <AddOrEditRecipe
-          isAddOrEditRecipeModalOpen={isAddOrEditRecipeModalOpen}
-          setIsAddOrEditRecipeModalOpen={setIsAddOrEditRecipeModalOpen}
+      {isAddOrEditVideoModalOpen && (
+        <AddOrEditVideo
+          isAddOrEditVideoModalOpen={isAddOrEditVideoModalOpen}
+          setIsAddOrEditVideoModalOpen={setIsAddOrEditVideoModalOpen}
           modalType={modalType}
           setModalType={setModalType}
-          recipeId={recipeId as string}
+          videoId={videoId as string}
           categories={categories?.data || []}
         />
       )}
@@ -183,4 +189,4 @@ const Food = () => {
   );
 };
 
-export default Food;
+export default Video;

@@ -6,42 +6,44 @@ import Modal from "../../Reusable/Modal/Modal";
 import SelectDropdown from "../../Reusable/SelectDropdown/SelectDropdown";
 import TextInput from "../../Reusable/TextInput/TextInput";
 import { useEffect } from "react";
-import {
-  useAddRecipeMutation,
-  useGetSingleRecipeByIdQuery,
-  useUpdateRecipeMutation,
-} from "../../../redux/Features/Food/foodApi";
 import type { VideoSource } from "../../../types/food.interface";
 import type { TCategories } from "../../Shared/Category/Category";
+import Textarea from "../../Reusable/TextArea/TextArea";
+import {
+  useAddVideoMutation,
+  useGetSingleVideoByIdQuery,
+  useUpdateVideoMutation,
+} from "../../../redux/Features/Video/videoApi";
 
 type TFormData = {
   title: string;
-  category: string;
+  description: string;
   videoSource: VideoSource;
   videoUrl: string;
-  duration: string;
+  category: string;
 };
 
-type TAddOrEditRecipeProps = {
-  isAddOrEditRecipeModalOpen: boolean;
-  setIsAddOrEditRecipeModalOpen: any;
+type TAddOrEditVideoProps = {
+  isAddOrEditVideoModalOpen: boolean;
+  setIsAddOrEditVideoModalOpen: any;
   modalType: string;
   setModalType: (value: string) => void;
-  recipeId?: string;
+  videoId?: string;
   categories?: TCategories[];
 };
-const AddOrEditRecipe: React.FC<TAddOrEditRecipeProps> = ({
-  isAddOrEditRecipeModalOpen,
-  setIsAddOrEditRecipeModalOpen,
+const AddOrEditVideo: React.FC<TAddOrEditVideoProps> = ({
+  isAddOrEditVideoModalOpen,
+  setIsAddOrEditVideoModalOpen,
   modalType,
   setModalType,
-  recipeId,
+  videoId,
   categories,
 }) => {
-  const { data: singleRecipeData, isLoading: isSingleRecipeDataLoading } =
-    useGetSingleRecipeByIdQuery(recipeId);
-  const [addRecipe, { isLoading: isAdding }] = useAddRecipeMutation();
-  const [updateRecipe, { isLoading: isUpdating }] = useUpdateRecipeMutation();
+  const { data, isLoading: isSingleVideoDataLoading } =
+    useGetSingleVideoByIdQuery(videoId);
+
+  const [addVideo, { isLoading: isAdding }] = useAddVideoMutation();
+  const [updateVideo, { isLoading: isUpdating }] = useUpdateVideoMutation();
 
   const {
     register,
@@ -53,34 +55,35 @@ const AddOrEditRecipe: React.FC<TAddOrEditRecipeProps> = ({
 
   //   Setting default values
   useEffect(() => {
-    if (modalType === "edit" && singleRecipeData) {
-      setValue("title", singleRecipeData?.data?.title);
-      setValue("category", singleRecipeData?.data?.category);
-      setValue("videoSource", singleRecipeData?.data?.videoSource);
-      setValue("videoUrl", singleRecipeData?.data?.videoUrl);
-      setValue("duration", singleRecipeData?.data?.duration);
+    const singleVideoData = data?.data || {};
+    if (modalType === "edit" && singleVideoData) {
+      setValue("title", singleVideoData?.title);
+      setValue("description", singleVideoData?.description);
+      setValue("category", singleVideoData?.category);
+      setValue("videoSource", singleVideoData?.videoSource);
+      setValue("videoUrl", singleVideoData?.videoUrl);
     } else {
       reset();
     }
-  }, [modalType, singleRecipeData, reset, setValue]);
+  }, [modalType, data, reset, setValue]);
 
   const handleAddAudioBook = async (data: TFormData) => {
     try {
       const payload = {
         title: data.title,
+        description: data.description,
         category: data.category,
         videoSource: data.videoSource,
         videoUrl: data.videoUrl,
-        duration: data.duration,
       };
 
       if (modalType === "add") {
-        await addRecipe(payload).unwrap();
+        await addVideo(payload).unwrap();
 
-        setIsAddOrEditRecipeModalOpen(false);
+        setIsAddOrEditVideoModalOpen(false);
       } else {
-        await updateRecipe({ id: recipeId, data: payload }).unwrap();
-        setIsAddOrEditRecipeModalOpen(false);
+        await updateVideo({ id: videoId, data: payload }).unwrap();
+        setIsAddOrEditVideoModalOpen(false);
       }
     } catch (error) {
       console.log(error);
@@ -92,19 +95,19 @@ const AddOrEditRecipe: React.FC<TAddOrEditRecipeProps> = ({
     { label: "Facebook", value: "facebook" },
   ];
 
-  const foodCategories = categories?.map((category) => ({
+  const videoCategories = categories?.map((category) => ({
     label: category.category,
     value: category.category,
   }));
 
   return (
     <Modal
-      isModalOpen={isAddOrEditRecipeModalOpen}
-      setIsModalOpen={setIsAddOrEditRecipeModalOpen}
+      isModalOpen={isAddOrEditVideoModalOpen}
+      setIsModalOpen={setIsAddOrEditVideoModalOpen}
       heading={`${modalType === "add" ? "Add" : "Update"} Recipe`}
     >
       <div className="relative">
-        {isSingleRecipeDataLoading && (
+        {isSingleVideoDataLoading && (
           <div className="absolute inset-0 flex flex-col items-center justify-center backdrop-blur-[2px] bg-white/30 z-50">
             <Loader size="lg" text="Please wait..." />
           </div>
@@ -123,10 +126,20 @@ const AddOrEditRecipe: React.FC<TAddOrEditRecipeProps> = ({
               {...register("title", { required: "Title is required" })}
             />
 
+            {/* Notice */}
+            <Textarea
+              label="Description"
+              placeholder="Enter description"
+              error={errors.description}
+              {...register("description", {
+                required: "Description is required",
+              })}
+            />
+
             {/* Category */}
             <SelectDropdown
               label="Category"
-              options={foodCategories || []}
+              options={videoCategories || []}
               error={errors.category}
               {...register("category", {
                 required: "Category is required",
@@ -152,16 +165,6 @@ const AddOrEditRecipe: React.FC<TAddOrEditRecipeProps> = ({
                 required: "Video URL is required",
               })}
             />
-
-            {/* Duration */}
-            <TextInput
-              label="Duration"
-              placeholder="e.g. 10:30 mins"
-              error={errors.duration}
-              {...register("duration", {
-                required: "Duration is required",
-              })}
-            />
           </div>
 
           <div className="flex gap-3 justify-end">
@@ -171,7 +174,7 @@ const AddOrEditRecipe: React.FC<TAddOrEditRecipeProps> = ({
               variant="secondary"
               className="py-1.75 w-full md:w-fit"
               onClick={() => {
-                setIsAddOrEditRecipeModalOpen(false);
+                setIsAddOrEditVideoModalOpen(false);
                 setModalType("add");
               }}
             />
@@ -190,4 +193,4 @@ const AddOrEditRecipe: React.FC<TAddOrEditRecipeProps> = ({
   );
 };
 
-export default AddOrEditRecipe;
+export default AddOrEditVideo;
