@@ -11,6 +11,7 @@ import TempleContactInfo from "./TempleContactInfo";
 import TempleMediaGallery from "./TempleMediaGallery";
 import TempleSocialMediaLinks from "./TempleSocialMediaLinks";
 import TempleMetadata from "./TempleMetadata";
+import TempleEvents from "./TempleEvents";
 
 // Info Card Component
 export const InfoCard = ({
@@ -107,6 +108,8 @@ const TempleDetails = () => {
     );
   }
 
+  console.log(temple);
+
   return (
     <div className="max-w-7xl mx-auto">
       {/* Header */}
@@ -138,6 +141,8 @@ const TempleDetails = () => {
                 temple.otherInfo?.website) && (
                 <TempleContactInfo temple={temple} />
               )}
+
+              <TempleEvents events={temple.event} templeId={id as string} />
             </div>
 
             <div className="space-y-6">

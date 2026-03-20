@@ -30,7 +30,7 @@ interface AddTempleProps {
   isAddOrUpdateTempleModalOpen: boolean;
   setIsAddOrUpdateTempleModalOpen: any;
   templeData?: TTemple;
-  modalType?: "add" | "edit";
+  modalType?: string;
 }
 
 const AddTemple = ({

@@ -68,6 +68,35 @@ const templeApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["temple"],
     }),
+
+    addEvent: builder.mutation<any, any>({
+      query: ({id, data}) => ({
+        url: `/temple/add-event/${id}`,
+        method: "POST",
+        body: data,
+        credentials: "include",
+      }),
+      invalidatesTags: ["temple"],
+    }),
+
+    updateEvent: builder.mutation<any, any>({
+      query: ({templeId, eventId, data}) => ({
+        url: `/temple/update-event/${templeId}/event/${eventId}`,
+        method: "PATCH",
+        body: data,
+        credentials: "include",
+      }),
+      invalidatesTags: ["temple"],
+    }),
+
+    deleteEvent: builder.mutation<any, any>({
+      query: ({templeId, eventId}) => ({
+        url: `/temple/delete-event/${templeId}/event/${eventId}`,
+        method: "DELETE",
+        credentials: "include",
+      }),
+      invalidatesTags: ["temple"],
+    }),
   }),
 });
 
@@ -77,4 +106,8 @@ export const {
   useAddTempleMutation,
   useUpdateTempleMutation,
   useDeleteTempleMutation,
+  useAddEventMutation,
+  useUpdateEventMutation,
+  useDeleteEventMutation
+
 } = templeApi;

@@ -59,6 +59,7 @@ export const baseApi = createApi({
     "audioBook",
     "audioTrack",
     "temple",
+    "category",
   ],
   endpoints: () => ({}),
 });

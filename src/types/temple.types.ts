@@ -47,6 +47,7 @@ export type TempleStatus =
     | "rejected";
 
     export type TEvent = {
+        _id : string;
         name : string;
         date : string;
         description : string;

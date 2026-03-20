@@ -6,11 +6,12 @@ import {
 } from "../../redux/Features/Temple/templeApi";
 import toast from "react-hot-toast";
 import type { TTemple } from "../../types/temple.types";
-import { Landmark, Pencil, Trash2 } from "lucide-react";
+import { Calendar, Landmark, Pencil, Trash2 } from "lucide-react";
 import Button from "../../components/Reusable/Button/Button";
 import Table from "../../components/Reusable/Table/Table";
 import AddOrUpdateTemple from "../../components/TemplePage/AddTempleForm/AddTemple";
 import { Link } from "react-router-dom";
+import AddEvent from "../../components/TemplePage/AddEvent";
 
 const Temple = () => {
   const [page, setPage] = useState<number>(1);
@@ -19,7 +20,9 @@ const Temple = () => {
   const [keyword, setKeyword] = useState<string>("");
   const [status, setStatus] = useState<string>("");
   const [modalType, setModalType] = useState<string>("add");
-  const [isAddOrUpdateTempleModalOpen, setIsAddOrUpdateTempleModalOpen ] =
+  const [isAddOrUpdateTempleModalOpen, setIsAddOrUpdateTempleModalOpen] =
+    useState<boolean>(false);
+  const [isAddEventModalOpen, setIsAddEventModalOpen] =
     useState<boolean>(false);
   const [templeId, setTempleId] = useState<string | null>(null);
   const { data, isLoading, isFetching } = useGetAllTemplesQuery({
@@ -52,6 +55,8 @@ const Temple = () => {
     { key: "category", label: "Category" },
     { key: "status", label: "Status" },
     { key: "details", label: "Details" },
+    { key: "event", label: "Add Event" },
+
   ];
 
   const audioBooks = data?.data?.temples || [];
@@ -131,6 +136,19 @@ const Temple = () => {
         View
       </Link>
     ),
+
+    event: (
+      <button
+        onClick={() => {
+          setTempleId(temple?._id);
+          setIsAddEventModalOpen(true);
+        }}
+        className="flex items-center gap-1 text-sm text-primary hover:underline cursor-pointer"
+      >
+        <Calendar className="size-4" />
+        Add Event
+      </button>
+    ),
   }));
 
   const templeActions: any[] = [
@@ -138,8 +156,8 @@ const Temple = () => {
       label: "Edit",
       icon: <Pencil className="inline mr-2 size-4" />,
       onClick: (row: any) => {
-        setModalType("update");
-        setIsAddAudioBookModalOpen(true);
+        setModalType("edit");
+        setIsAddOrUpdateTempleModalOpen(true);
         setTempleId(row?._id);
       },
     },
@@ -215,10 +233,21 @@ const Temple = () => {
         children={children}
       />
 
-      {
-        isAddOrUpdateTempleModalOpen &&
-        <AddOrUpdateTemple isAddOrUpdateTempleModalOpen={isAddOrUpdateTempleModalOpen} setIsAddOrUpdateTempleModalOpen={setIsAddOrUpdateTempleModalOpen} modalType={modalType} />
-      }
+      {isAddOrUpdateTempleModalOpen && (
+        <AddOrUpdateTemple
+          isAddOrUpdateTempleModalOpen={isAddOrUpdateTempleModalOpen}
+          setIsAddOrUpdateTempleModalOpen={setIsAddOrUpdateTempleModalOpen}
+          modalType={modalType}
+        />
+      )}
+
+      {isAddEventModalOpen && (
+        <AddEvent
+          isAddEventModalOpen={isAddEventModalOpen}
+          setIsAddEventModalOpen={setIsAddEventModalOpen}
+          templeId={templeId as string}
+        />
+      )}
     </div>
   );
 };
