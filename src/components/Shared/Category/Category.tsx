@@ -29,7 +29,7 @@ const Category: React.FC<TCategoryProps> = ({ areaName }) => {
 
   const [deleteCategory] = useDeleteCategoryMutation();
 
-  const handleDeleteCategory = async (id:string) => {
+  const handleDeleteCategory = async (id: string) => {
     try {
       await toast.promise(deleteCategory(id).unwrap(), {
         loading: "Loading...",
@@ -44,6 +44,7 @@ const Category: React.FC<TCategoryProps> = ({ areaName }) => {
   return (
     <div>
       <Button
+        variant="secondary"
         label="Manage Categories"
         onClick={() => {
           setIsCategoryModalOpen(true);
@@ -71,7 +72,10 @@ const Category: React.FC<TCategoryProps> = ({ areaName }) => {
                   className="border border-neutral-60 px-3 py-2 rounded-lg text-neutral-5 text-sm flex items-center gap-2"
                 >
                   {category?.category}
-                  <Trash onClick={() => handleDeleteCategory(category?._id)} className="size-4 text-red-500 cursor-pointer" />
+                  <Trash
+                    onClick={() => handleDeleteCategory(category?._id)}
+                    className="size-4 text-red-500 cursor-pointer"
+                  />
                 </div>
               ))}
 
