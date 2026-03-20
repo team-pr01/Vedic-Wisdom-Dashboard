@@ -11,6 +11,8 @@ import { Pencil, Play, Trash2 } from "lucide-react";
 import Button from "../../components/Reusable/Button/Button";
 import Table from "../../components/Reusable/Table/Table";
 import { useGetAllCategoriesByAreaNameQuery } from "../../redux/Features/Categories/categoriesApi";
+import AddOrEditRecipe from "../../components/FoodPage/AddOrEditRecipe/AddOrEditRecipe";
+import DeleteConfirmationModal from "../../components/Reusable/DeleteConfirmationModal/DeleteConfirmationModal";
 
 const Food = () => {
   const [page, setPage] = useState<number>(1);
@@ -18,10 +20,10 @@ const Food = () => {
   const skip = (page - 1) * limit;
   const [keyword, setKeyword] = useState<string>("");
   const [category, setCategory] = useState<string>("");
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [modalType, setModalType] = useState<string>("add");
   const [isAddOrEditRecipeModalOpen, setIsAddOrEditRecipeModalOpen] =
     useState<boolean>(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [recipeId, setRecipeId] = useState<string | null>(null);
   const { data, isLoading, isFetching } = useGetAllRecipesQuery({
     skip,
@@ -34,9 +36,9 @@ const Food = () => {
 
   const [deleteAudioBook] = useDeleteRecipeMutation();
 
-  const handleDeleteAudioBook = async (id: string) => {
+  const handleDeleteRecipe = async () => {
     try {
-      await toast.promise(deleteAudioBook(id).unwrap(), {
+      await toast.promise(deleteAudioBook(recipeId as string).unwrap(), {
         loading: "Loading...",
         success: "Recipe deleted successfully!",
         error: "Failed to delete recipe. Please try again.",
@@ -56,8 +58,6 @@ const Food = () => {
   ];
 
   const food = data?.data?.foods || [];
-
-  console.log(data);
 
   const foodTableData = food?.map((recipe: TFood, index: number) => ({
     _id: recipe._id,
@@ -92,16 +92,17 @@ const Food = () => {
       label: "Edit",
       icon: <Pencil className="inline mr-2 size-4" />,
       onClick: (row: any) => {
-        setModalType("update");
-        setIsAddAudioBookModalOpen(true);
-        setAudioBookId(row?._id);
+        setModalType("edit");
+        setRecipeId(row?._id);
+        setIsAddOrEditRecipeModalOpen(true);
       },
     },
     {
       label: "Delete",
       icon: <Trash2 className="inline mr-2 size-4" />,
       onClick: (row: any) => {
-        handleDeleteAudioBook(row._id);
+        setRecipeId(row?._id);
+        setShowDeleteModal(true);
       },
     },
   ];
@@ -153,6 +154,25 @@ const Food = () => {
         setLimit={setLimit}
         children={children}
       />
+
+      {isAddOrEditRecipeModalOpen && (
+        <AddOrEditRecipe
+          isAddOrEditRecipeModalOpen={isAddOrEditRecipeModalOpen}
+          setIsAddOrEditRecipeModalOpen={setIsAddOrEditRecipeModalOpen}
+          isLoading={false}
+          modalType={modalType}
+          setModalType={setModalType}
+          recipeId={recipeId as string}
+          categories={categories?.data || []}
+        />
+      )}
+
+      {showDeleteModal && (
+        <DeleteConfirmationModal
+          onClose={() => setShowDeleteModal(false)}
+          onConfirm={handleDeleteRecipe}
+        />
+      )}
     </div>
   );
 };
