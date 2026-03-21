@@ -13,6 +13,7 @@ import TempleDetails from "../pages/Temple/TempleDetails/TempleDetails";
 import Food from "../pages/Food/Food";
 import Course from "../pages/Course/Course";
 import Video from "../pages/Video/Video";
+import Ayurveda from "../pages/Ayurveda/Ayurveda";
 
 export const router = createBrowserRouter([
   {
@@ -70,6 +71,10 @@ export const router = createBrowserRouter([
       {
         path: "video",
         element: <Video />,
+      },
+      {
+        path: "ayurveda",
+        element: <Ayurveda />,
       },
     ],
   },
