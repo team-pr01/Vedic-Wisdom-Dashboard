@@ -16,6 +16,7 @@ import Video from "../pages/Video/Video";
 import Ayurveda from "../pages/Ayurveda/Ayurveda";
 import Emergency from "../pages/Emergency/Emergency";
 import News from "../pages/News/News";
+import Vastu from "../pages/Vastu/Vastu";
 
 export const router = createBrowserRouter([
   {
@@ -85,6 +86,10 @@ export const router = createBrowserRouter([
       {
         path: "news",
         element: <News />,
+      },
+      {
+        path: "vastu",
+        element: <Vastu />,
       },
     ],
   },
