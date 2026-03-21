@@ -24,8 +24,8 @@ type Props<T extends Record<string, any>> = {
   theads: TableHead[];
   data: T[];
   actions?: TableAction<T>[];
-  onEditItem?: (row : any) => any;
-  onDeleteItem?: (row : any) => any;
+  onEditItem?: (row: any) => any;
+  onDeleteItem?: (row: any) => any;
   totalPages?: number;
   currentPage?: number;
   onPageChange?: (page: number) => void;
@@ -292,37 +292,37 @@ export default function Table<T extends Record<string, any>>({
                       );
                     })}
 
-                      <td className="p-3 text-sm border-b border-neutral-55/60 text-right relative">
-                        <div className="inline-block relative">
-                          <button
-                            onClick={() => handleToggleMenu(rowId)}
-                            className="cursor-pointer"
-                            aria-expanded={openMenuId === rowId}
-                            aria-controls={`menu-${rowId}`}
-                          >
-                            <img
-                              src={ICONS.threeDots}
-                              alt="three-dots"
-                              className="size-5"
-                            />
-                          </button>
+                    <td className="p-3 text-sm border-b border-neutral-55/60 relative text-lef">
+                      <div className="inline-block relative">
+                        <button
+                          onClick={() => handleToggleMenu(rowId)}
+                          className="cursor-pointer"
+                          aria-expanded={openMenuId === rowId}
+                          aria-controls={`menu-${rowId}`}
+                        >
+                          <img
+                            src={ICONS.threeDots}
+                            alt="three-dots"
+                            className="size-5"
+                          />
+                        </button>
 
-                          {/* Dropdown - keep mounted for smooth transitions */}
-                          <div
-                            ref={openMenuId === rowId ? menuRef : null}
-                            id={`menu-${rowId}`}
-                            role="menu"
-                            className={
-                              `bg-white origin-top-right absolute right-0 mt-2 w-40 rounded-md shadow-lg transform transition-all duration-150 ease-out z-30 ` +
-                              (openMenuId === rowId && closingMenuId !== rowId
-                                ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
-                                : openMenuId === rowId &&
-                                    closingMenuId === rowId
-                                  ? "opacity-0 scale-95 -translate-y-1 pointer-events-none"
-                                  : "opacity-0 scale-95 -translate-y-1 pointer-events-none")
-                            }
-                          >
-                            <div className="py-1">
+                        {/* Dropdown - keep mounted for smooth transitions */}
+                        <div
+                          ref={openMenuId === rowId ? menuRef : null}
+                          id={`menu-${rowId}`}
+                          role="menu"
+                          className={
+                            `bg-white origin-top-right absolute right-0 mt-2 w-40 rounded-md shadow-lg transform transition-all duration-150 ease-out z-30 ` +
+                            (openMenuId === rowId && closingMenuId !== rowId
+                              ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
+                              : openMenuId === rowId && closingMenuId === rowId
+                                ? "opacity-0 scale-95 -translate-y-1 pointer-events-none"
+                                : "opacity-0 scale-95 -translate-y-1 pointer-events-none")
+                          }
+                        >
+                          <div className="py-1">
+                            {onEditItem && (
                               <button
                                 onClick={() => {
                                   onEditItem!(row);
@@ -337,9 +337,26 @@ export default function Table<T extends Record<string, any>>({
                                 <Pencil className="inline mr-2 size-4" />
                                 Edit
                               </button>
+                            )}
+                            <button
+                              onClick={() => {
+                                onDeleteItem!(row);
+                                setClosingMenuId(rowId);
+                                setTimeout(() => {
+                                  setOpenMenuId(null);
+                                  setClosingMenuId(null);
+                                }, 180);
+                              }}
+                              className="w-full text-left px-3 py-2 text-sm hover:bg-slate-100 cursor-pointer flex items-center gap-1"
+                            >
+                              <Trash2 className="inline mr-2 size-4" />
+                              Delete
+                            </button>
+                            {actions.map((act, i) => (
                               <button
+                                key={i}
                                 onClick={() => {
-                                  onDeleteItem!(row);
+                                  act.onClick(row);
                                   setClosingMenuId(rowId);
                                   setTimeout(() => {
                                     setOpenMenuId(null);
@@ -348,30 +365,14 @@ export default function Table<T extends Record<string, any>>({
                                 }}
                                 className="w-full text-left px-3 py-2 text-sm hover:bg-slate-100 cursor-pointer flex items-center gap-1"
                               >
-                                <Trash2 className="inline mr-2 size-4" />
-                                Delete
+                                {act.icon && <p>{act.icon}</p>}
+                                {act.label}
                               </button>
-                              {actions.map((act, i) => (
-                                <button
-                                  key={i}
-                                  onClick={() => {
-                                    act.onClick(row);
-                                    setClosingMenuId(rowId);
-                                    setTimeout(() => {
-                                      setOpenMenuId(null);
-                                      setClosingMenuId(null);
-                                    }, 180);
-                                  }}
-                                  className="w-full text-left px-3 py-2 text-sm hover:bg-slate-100 cursor-pointer flex items-center gap-1"
-                                >
-                                  {act.icon && <p>{act.icon}</p>}
-                                  {act.label}
-                                </button>
-                              ))}
-                            </div>
+                            ))}
                           </div>
                         </div>
-                      </td>
+                      </div>
+                    </td>
                   </tr>
                 );
               })}

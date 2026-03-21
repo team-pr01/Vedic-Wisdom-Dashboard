@@ -2,6 +2,41 @@ import { baseApi } from "../../API/baseApi";
 
 const userApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+
+    getAllUsers: builder.query({
+      query: ({
+        skip,
+        limit,
+        keyword,
+        city,
+        state,
+        country
+      }: {
+        keyword?: string;
+        limit?: number;
+        skip?: number;
+        city?: string;
+        state?: string;
+        country?: string
+      } = {}) => {
+        const params = new URLSearchParams();
+
+        if (keyword) params.append("keyword", keyword);
+        if (typeof limit === "number") params.append("limit", limit.toString());
+        if (typeof skip === "number") params.append("skip", skip.toString());
+        if (city) params.append("city", city);
+        if (state) params.append("state", state);
+        if (country) params.append("country", country);
+
+        return {
+          url: `/user?${params.toString()}`,
+          method: "GET",
+          credentials: "include",
+        };
+      },
+      providesTags: ["users"],
+    }),
+
     getMe: builder.query({
       query: () => ({
         url: `/user/me`,
@@ -72,7 +107,7 @@ const userApi = baseApi.injectEndpoints({
     }),
 
     giveRating: builder.mutation({
-      query: ({data, id}) => ({
+      query: ({ data, id }) => ({
         url: `/user/give-rating/${id}`,
         body: data,
         method: "PATCH",
@@ -82,4 +117,4 @@ const userApi = baseApi.injectEndpoints({
   }),
 });
 
-export const {  useGetMeQuery, useUpdateProfileMutation, useDeleteAccountMutation, useRestoreDeletedAccountMutation, useSuspendUserMutation, useActiveUserMutation, useRequestToUnlockProfileMutation, useToggleProfileStatusMutation , useGiveRatingMutation} = userApi;
+export const { useGetAllUsersQuery, useGetMeQuery, useUpdateProfileMutation, useDeleteAccountMutation, useRestoreDeletedAccountMutation, useSuspendUserMutation, useActiveUserMutation, useRequestToUnlockProfileMutation, useToggleProfileStatusMutation, useGiveRatingMutation } = userApi;

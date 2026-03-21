@@ -15,6 +15,7 @@ import {
   Utensils,
   Settings,
   LogOut,
+  Siren,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { IMAGES } from "../../assets";
@@ -29,6 +30,7 @@ const Sidebar = () => {
     { path: "/dashboard/temple", label: "Temple", icon: Landmark },
     { path: "/dashboard/quiz", label: "Quiz", icon: HelpCircle },
     { path: "/dashboard/shop", label: "Shop", icon: ShoppingBag },
+    { path: "/dashboard/emergency", label: "Emergency", icon: Siren },
     { path: "/dashboard/vastu", label: "Vastu", icon: Compass },
     { path: "/dashboard/jyotish", label: "Jyotish", icon: Star },
     { path: "/dashboard/consultancy", label: "Consultancy", icon: Briefcase },
