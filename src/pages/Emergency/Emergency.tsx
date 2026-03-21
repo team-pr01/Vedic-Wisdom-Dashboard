@@ -295,7 +295,7 @@ const Emergency = () => {
         onChange={(e) => setStatus(e.target.value)}
         className="input input-sm px-3 py-2 border border-neutral-55/60 focus:border-primary-10 transition duration-300 focus:outline-none rounded-md text-sm shadow-sm cursor-pointer"
       >
-        <option value="">Select Category </option>
+        <option value="">Select Status</option>
         {statusFilters?.map((s: any) => (
           <option key={s?.label} value={s?.value}>
             {s?.label}

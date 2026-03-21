@@ -13,6 +13,7 @@ interface TextInputProps {
   defaultValue?: any;
   isDisabled?: boolean;
   isRequired?: boolean;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
@@ -26,6 +27,7 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
       defaultValue,
       isDisabled = false,
       isRequired = true,
+      onKeyDown,
       ...rest
     },
     ref,
@@ -52,6 +54,7 @@ const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
           defaultValue={defaultValue}
           ref={ref}
           disabled={isDisabled}
+          onKeyDown={onKeyDown}
           className={`appearance-none relative block w-full px-4 py-3 border text-neutral-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-10 focus:border-transparent font-Roboto transition-all duration-200 ${
             isDisabled ? "cursor-not-allowed bg-neutral-50/20" : "bg-white"
           } ${error ? "border-red-500" : "border-neutral-50"}`}
