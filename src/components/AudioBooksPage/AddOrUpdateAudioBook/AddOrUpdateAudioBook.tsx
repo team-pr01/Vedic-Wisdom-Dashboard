@@ -183,7 +183,7 @@ const AddOrUpdateAudioBook: React.FC<TAddOrUpdateAudioBookProps> = ({
             />
             <Button
               type="submit"
-              label={modalType === "add" ? "Add Notice" : "Update Notice"}
+              label={modalType === "add" ? "Add Audio Book" : "Update Audio Book"}
               variant="primary"
               className="py-1.75 w-full md:w-fit"
               isLoading={isAdding || isUpdating}
