@@ -13,6 +13,7 @@ import {
 } from "../../redux/Features/Vastu/vastuApi";
 import type { TVastu } from "../../types/vastu.types";
 import AddOrEditVastu from "../../components/VastuPage/AddOrEditVastu/AddOrEditVastu";
+import VastuTips from "./VastuTips";
 
 const Vastu = () => {
   const [page, setPage] = useState<number>(1);
@@ -159,8 +160,9 @@ const Vastu = () => {
   };
 
   return (
-    <div>
-      <Table<any>
+    <div className="flex flex-col gap-5">
+      <div>
+        <Table<any>
         title={`Vastu (${vastuData?.length || 0})`}
         description="Manage all recipes"
         theads={vastuTheads}
@@ -201,6 +203,10 @@ const Vastu = () => {
           onConfirm={handleDeleteVastu}
         />
       )}
+      </div>
+
+
+      <VastuTips/>
     </div>
   );
 };

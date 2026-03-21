@@ -89,7 +89,7 @@ const AddOrEditAyurveda: React.FC<TAddOrEditAyurvedaProps> = ({
     { label: "Facebook", value: "facebook" },
   ];
 
-  const foodCategories = categories?.map((category) => ({
+  const ayurvedaCategories = categories?.map((category) => ({
     label: category.category,
     value: category.category,
   }));
@@ -123,7 +123,7 @@ const AddOrEditAyurveda: React.FC<TAddOrEditAyurvedaProps> = ({
             {/* Category */}
             <SelectDropdown
               label="Category"
-              options={foodCategories || []}
+              options={ayurvedaCategories || []}
               error={errors.category}
               {...register("category", {
                 required: "Category is required",

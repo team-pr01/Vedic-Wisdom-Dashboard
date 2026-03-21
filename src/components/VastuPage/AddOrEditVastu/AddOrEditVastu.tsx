@@ -90,7 +90,7 @@ const AddOrEditVastu: React.FC<TAddOrEditVastuProps> = ({
     { label: "Facebook", value: "facebook" },
   ];
 
-  const foodCategories = categories?.map((category) => ({
+  const vastuCategories = categories?.map((category) => ({
     label: category.category,
     value: category.category,
   }));
@@ -124,7 +124,7 @@ const AddOrEditVastu: React.FC<TAddOrEditVastuProps> = ({
             {/* Category */}
             <SelectDropdown
               label="Category"
-              options={foodCategories || []}
+              options={vastuCategories || []}
               error={errors.category}
               {...register("category", {
                 required: "Category is required",
