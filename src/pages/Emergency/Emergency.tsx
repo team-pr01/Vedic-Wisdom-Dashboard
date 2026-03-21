@@ -1,5 +1,7 @@
+/* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable react-refresh/only-export-components */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import Table from "../../components/Reusable/Table/Table";
 import DeleteConfirmationModal from "../../components/Reusable/DeleteConfirmationModal/DeleteConfirmationModal";
@@ -20,10 +22,53 @@ import {
   Check,
   Share2,
   Send,
+  Eye,
 } from "lucide-react";
 import type { TEmergency } from "../../types/emergency.types";
 import { formatDate } from "../../utils/formatDate";
 import ForwardMessage from "../../components/EmergencyPage/ForwardMessage/ForwardMessage";
+import EmergencyMessageDetails from "../../components/EmergencyPage/EmergencyMessageDetails/EmergencyMessageDetails";
+import { useSearchParams } from "react-router-dom";
+
+export const getStatusConfig = (status?: string) => {
+  switch (status) {
+    case "pending":
+      return {
+        icon: Clock,
+        label: "Pending",
+        className: "bg-yellow-100 text-yellow-700 border-yellow-200",
+        iconColor: "text-yellow-500",
+      };
+    case "processing":
+      return {
+        icon: AlertCircle,
+        label: "Processing",
+        className: "bg-blue-100 text-blue-700 border-blue-200",
+        iconColor: "text-blue-500",
+      };
+    case "resolved":
+      return {
+        icon: CheckCircle,
+        label: "Resolved",
+        className: "bg-green-100 text-green-700 border-green-200",
+        iconColor: "text-green-500",
+      };
+    case "forwarded":
+      return {
+        icon: Send,
+        label: "Forwarded",
+        className: "bg-teal-100 text-teal-700 border-teal-200",
+        iconColor: "text-teal-500",
+      };
+    default:
+      return {
+        icon: Clock,
+        label: "Pending",
+        className: "bg-gray-100 text-gray-700 border-gray-200",
+        iconColor: "text-gray-500",
+      };
+  }
+};
 
 const Emergency = () => {
   const [page, setPage] = useState<number>(1);
@@ -35,6 +80,8 @@ const Emergency = () => {
     useState<boolean>(false);
   const [showDeleteConfirmationModal, setShowDeleteConfirmationModal] =
     useState<boolean>(false);
+  const [isEmergencyDetailsModalOpen, setIsEmergencyDetailsModalOpen] =
+    useState<boolean>(false);
   const [emergencyId, setEmergencyId] = useState<string | null>(null);
   const { data, isLoading, isFetching } = useGetAllEmergenciesQuery({
     skip,
@@ -42,6 +89,11 @@ const Emergency = () => {
     keyword,
     status,
   });
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Get emergencyId from URL params
+  const emergencyIdFromUrl = searchParams.get("id");
 
   const [deleteEmergency] = useDeleteEmergencyMutation();
 
@@ -86,46 +138,6 @@ const Emergency = () => {
   ];
 
   const emergencies = data?.data || [];
-
-  const getStatusConfig = (status?: string) => {
-    switch (status) {
-      case "pending":
-        return {
-          icon: Clock,
-          label: "Pending",
-          className: "bg-yellow-100 text-yellow-700 border-yellow-200",
-          iconColor: "text-yellow-500",
-        };
-      case "processing":
-        return {
-          icon: AlertCircle,
-          label: "Processing",
-          className: "bg-blue-100 text-blue-700 border-blue-200",
-          iconColor: "text-blue-500",
-        };
-      case "resolved":
-        return {
-          icon: CheckCircle,
-          label: "Resolved",
-          className: "bg-green-100 text-green-700 border-green-200",
-          iconColor: "text-green-500",
-        };
-      case "forwarded":
-        return {
-          icon: Send,
-          label: "Forwarded",
-          className: "bg-teal-100 text-teal-700 border-teal-200",
-          iconColor: "text-teal-500",
-        };
-      default:
-        return {
-          icon: Clock,
-          label: "Pending",
-          className: "bg-gray-100 text-gray-700 border-gray-200",
-          iconColor: "text-gray-500",
-        };
-    }
-  };
 
   const emergencyTableData = emergencies?.map(
     (emergency: TEmergency, index: number) => {
@@ -238,6 +250,15 @@ const Emergency = () => {
               <Share2 size={14} className="text-purple-500" />
               <span className="text-xs font-medium">Forward</span>
             </button>
+
+            <button
+              onClick={() => handleOpenDetails(emergency._id)}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-primary-50 hover:bg-primary-100 text-primary-700 rounded-lg transition-colors"
+              title="View details"
+            >
+              <Eye size={14} className="text-primary-500" />
+              <span className="text-xs font-medium">Details</span>
+            </button>
           </div>
         ),
       };
@@ -284,6 +305,32 @@ const Emergency = () => {
     </div>
   );
 
+  // Open modal when URL has id param
+  useEffect(() => {
+    if (emergencyIdFromUrl) {
+      setEmergencyId(emergencyIdFromUrl);
+      setIsEmergencyDetailsModalOpen(true);
+    }
+  }, [emergencyIdFromUrl]);
+
+  // Handle opening modal with URL param
+  const handleOpenDetails = (id: string) => {
+    setEmergencyId(id);
+    setIsEmergencyDetailsModalOpen(true);
+    // Add id to URL params
+    setSearchParams({ id });
+  };
+
+  // Handle closing modal
+  const handleCloseDetails = () => {
+    setIsEmergencyDetailsModalOpen(false);
+    setEmergencyId("");
+    // Remove id from URL params
+    setSearchParams({});
+    // Or use navigate to remove param:
+    // navigate("/dashboard/emergency", { replace: true });
+  };
+
   return (
     <div>
       <Table<any>
@@ -317,6 +364,14 @@ const Emergency = () => {
         <DeleteConfirmationModal
           onClose={() => setShowDeleteConfirmationModal(false)}
           onConfirm={handleDeleteEmergencyMessage}
+        />
+      )}
+
+      {isEmergencyDetailsModalOpen && (
+        <EmergencyMessageDetails
+          emergencyId={emergencyId as string}
+          isEmergencyDetailsModalOpen={isEmergencyDetailsModalOpen}
+          handleCloseDetails={handleCloseDetails}
         />
       )}
     </div>
