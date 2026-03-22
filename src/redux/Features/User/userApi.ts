@@ -2,31 +2,39 @@ import { baseApi } from "../../API/baseApi";
 
 const userApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-
     getAllUsers: builder.query({
       query: ({
         skip,
         limit,
         keyword,
+        role,
+        premiumUnlocked,
         city,
         state,
-        country
+        country,
+        status
       }: {
         keyword?: string;
+        role?: string;
+        premiumUnlocked?: boolean;
         limit?: number;
         skip?: number;
         city?: string;
         state?: string;
-        country?: string
+        country?: string;
+        status?: string
       } = {}) => {
         const params = new URLSearchParams();
 
         if (keyword) params.append("keyword", keyword);
+        if (role) params.append("role", role);
+        if (typeof premiumUnlocked === "boolean") params.append("premiumUnlocked", premiumUnlocked.toString());
         if (typeof limit === "number") params.append("limit", limit.toString());
         if (typeof skip === "number") params.append("skip", skip.toString());
         if (city) params.append("city", city);
         if (state) params.append("state", state);
         if (country) params.append("country", country);
+        if (status) params.append("status", status);
 
         return {
           url: `/user?${params.toString()}`,
@@ -52,7 +60,7 @@ const userApi = baseApi.injectEndpoints({
         body: data,
         method: "PATCH",
       }),
-      invalidatesTags: ["users", "tutor", "guardian", "staff"],
+      invalidatesTags: ["users"],
     }),
 
     deleteAccount: builder.mutation({
@@ -61,7 +69,7 @@ const userApi = baseApi.injectEndpoints({
         body: data,
         method: "PATCH",
       }),
-      invalidatesTags: ["users", "tutor", "guardian", "staff"],
+      invalidatesTags: ["users"],
     }),
 
     restoreDeletedAccount: builder.mutation({
@@ -69,7 +77,7 @@ const userApi = baseApi.injectEndpoints({
         url: `/user/account/restore/${id}`,
         method: "PATCH",
       }),
-      invalidatesTags: ["users", "tutor", "guardian", "staff"],
+      invalidatesTags: ["users"],
     }),
 
     suspendUser: builder.mutation({
@@ -78,7 +86,7 @@ const userApi = baseApi.injectEndpoints({
         body: data,
         method: "PATCH",
       }),
-      invalidatesTags: ["users", "tutor", "guardian"],
+      invalidatesTags: ["users"],
     }),
 
     activeUser: builder.mutation({
@@ -86,7 +94,7 @@ const userApi = baseApi.injectEndpoints({
         url: `/user/active/${userId}`,
         method: "PATCH",
       }),
-      invalidatesTags: ["users", "tutor", "guardian"],
+      invalidatesTags: ["users"],
     }),
 
     requestToUnlockProfile: builder.mutation({
@@ -95,7 +103,7 @@ const userApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: data,
       }),
-      invalidatesTags: ["tutor", "guardian", "users"],
+      invalidatesTags: ["users"],
     }),
 
     toggleProfileStatus: builder.mutation({
@@ -103,7 +111,7 @@ const userApi = baseApi.injectEndpoints({
         url: `/user/profile-lock/${id}`,
         method: "PATCH",
       }),
-      invalidatesTags: ["tutor", "guardian", "users"],
+      invalidatesTags: ["users"],
     }),
 
     giveRating: builder.mutation({
@@ -112,7 +120,7 @@ const userApi = baseApi.injectEndpoints({
         body: data,
         method: "PATCH",
       }),
-      invalidatesTags: ["tutor", "guardian", "users"],
+      invalidatesTags: ["users"],
     }),
   }),
 });

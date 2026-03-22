@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
-import { useGetAllReferralsOfAnUserQuery } from "../../redux/Features/Referral/referralApi";
-import Modal from "../../components/Reusable/Modal/Modal";
-import Loader from "../../components/Reusable/Loader/Loader";
-import { IMAGES } from "../../assets";
+import { useGetAllReferralsOfAnUserQuery } from "../../../redux/Features/Referral/referralApi";
+import Modal from "../../Reusable/Modal/Modal";
+import Loader from "../../Reusable/Loader/Loader";
+import { IMAGES } from "../../../assets";
 
 type TReferralListProps = {
   userName: string;

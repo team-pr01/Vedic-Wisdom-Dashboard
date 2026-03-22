@@ -2,76 +2,106 @@
 import { useState } from "react";
 import Table from "../../components/Reusable/Table/Table";
 import { formatDate } from "../../utils/formatDate";
-import { Eye, UserX, UserCheck, Trash2, RotateCcw } from "lucide-react";
-import ReferralList from "../ReferralList/ReferralList";
+import { Eye, UserX, UserCheck, Trash2, RotateCcw, Info } from "lucide-react";
+import ReferralList from "../../components/UsersPage/ReferralList/ReferralList";
+import { useGetAllUsersQuery } from "../../redux/Features/User/userApi";
+import AccountDeleteReason from "../../components/UsersPage/AccountDeleteReason/AccountDeleteReason";
 
 const Users = () => {
+  const [page, setPage] = useState<number>(1);
+  const [limit, setLimit] = useState<number>(10);
+  const skip = (page - 1) * limit;
+  const [keyword, setKeyword] = useState<string>("");
+  const [status, setStatus] = useState<string>("");
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [selectedUSerName, setSelectedUSerName] = useState<string>("");
+  const [accountDeleteReason, setAccountDeleteReason] = useState<string>("");
   const [isReferralListModalOpen, setIsReferralListModalOpen] =
     useState<boolean>(false);
+  const [isAccountDeleteReasonModalOpen, setIsAccountDeleteReasonModalOpen] =
+    useState<boolean>(false);
+  const { data, isLoading, isFetching } = useGetAllUsersQuery({
+    skip,
+    limit,
+    keyword,
+    status,
+  });
+
+  const users = data?.data?.data || [];
+
+  console.log(data);
   const userTheads: any[] = [
     { key: "userId", label: "User ID" },
     { key: "name", label: "Name" },
-    { key: "city", label: "City" },
+    { key: "address", label: "Location" },
     { key: "registeredOn", label: "Registered On" },
     { key: "referralInfo", label: "Referral Info" },
     { key: "role", label: "Role" },
     { key: "status", label: "Status" },
   ];
 
-  const users = [
-    {
-      _id: "1",
-      userId: "USR001",
-      name: "John Carter",
-      email: "john@example.com",
-      phone: "+8801712345678",
-      city: "Dhaka",
-      role: "Student",
-      isVerified: true,
-      isSuspended: false,
-      createdAt: "2026-03-01",
-    },
-    {
-      _id: "2",
-      userId: "USR002",
-      name: "Emily Watson",
-      email: "emily@example.com",
-      phone: "+8801812345678",
-      city: "Chittagong",
-      role: "Tutor",
-      isVerified: false,
-      isSuspended: true,
-      createdAt: "2026-02-15",
-    },
-    {
-      _id: "3",
-      userId: "USR003",
-      name: "Michael Brown",
-      email: "michael@example.com",
-      phone: "+8801912345678",
-      city: "Sylhet",
-      role: "Student",
-      isVerified: true,
-      isSuspended: false,
-      createdAt: "2026-01-10",
-    },
-  ];
-
-  const userTableData = users.map((user) => ({
+  const userTableData = users?.map((user) => ({
     _id: user._id,
-    userId: user.userId,
+    userId: (
+      <p
+        className={`capitalize font-semibold ${user?.isDeleted ? "text-red-500" : "text-neutral-5"}`}
+      >
+        {user.userId}
+      </p>
+    ),
 
     name: (
       <div>
-        <p className="capitalize font-semibold">{user.name}</p>
+        <div className="flex items-center gap-2">
+          <p
+            className={`capitalize font-semibold ${user?.isDeleted ? "text-red-500" : "text-neutral-5"}`}
+          >
+            {user.name}
+          </p>
+          {user?.isDeleted && (
+            <Info onClick={() => {
+              setAccountDeleteReason(user.accountDeleteReason)
+              setIsAccountDeleteReasonModalOpen(true)
+            }} size={16} className="text-red-500 cursor-pointer" />
+          )}
+        </div>
         <p>{user.email}</p>
-        <p>{user.phone}</p>
+        <p>
+          {user.countryCode} {user.phoneNumber}
+        </p>
       </div>
     ),
 
-    city: user.city,
+    address: (
+      <div>
+        {(() => {
+          const locationParts = [user.city, user.state, user.country].filter(
+            Boolean,
+          );
+          const hasLocation = locationParts.length > 0;
+          const hasAddress = user.address;
+
+          if (!hasLocation && !hasAddress) {
+            return <p className="text-neutral-45">N/A</p>;
+          }
+
+          return (
+            <>
+              {hasLocation && (
+                <p className="capitalize font-semibold">
+                  {locationParts.join(", ")}
+                </p>
+              )}
+              {hasAddress && (
+                <p className="text-sm text-neutral-45">
+                  {hasLocation ? `Address: ${user.address}` : user.address}
+                </p>
+              )}
+            </>
+          );
+        })()}
+      </div>
+    ),
 
     registeredOn: formatDate(user.createdAt),
 
@@ -80,18 +110,21 @@ const Users = () => {
         <p className="capitalize font-semibold">
           Referred User: {user.referralCount || 0}
         </p>
-        <button onClick={() => {
-          setSelectedUSerName(user.name);
-          setSelectedUserId(user._id);
-          setIsReferralListModalOpen(true);
-        }} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary-10 bg-primary-10/10 rounded-lg hover:bg-primary-10/20 transition-colors cursor-pointer">
+        <button
+          onClick={() => {
+            setSelectedUSerName(user.name);
+            setSelectedUserId(user._id);
+            setIsReferralListModalOpen(true);
+          }}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary-10 bg-primary-10/10 rounded-lg hover:bg-primary-10/20 transition-colors cursor-pointer"
+        >
           <Eye size={14} />
           View Referrals
         </button>
       </div>
     ),
     role: (
-      <span className="px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-600">
+      <span className="px-3 py-1 text-xs rounded-full bg-primary-10 text-white capitalize">
         {user.role}
       </span>
     ),
@@ -146,6 +179,38 @@ const Users = () => {
       },
     },
   ];
+
+  const statues = [
+    {
+      label: "All",
+      value: "all",
+    },
+    {
+      label: "Suspended",
+      value: "true",
+    },
+  ];
+
+  const children = (
+    <div className="flex items-center gap-3">
+      <select
+        value={status ?? ""}
+        onChange={(e) => setStatus(e.target.value)}
+        className="input input-sm px-3 py-2 border border-neutral-55/60 focus:border-primary-10 transition duration-300 focus:outline-none rounded-md text-sm shadow-sm cursor-pointer"
+      >
+        <option value="">Select Status </option>
+        {statues?.map((status: any) => (
+          <option key={status?.label} value={status?.value}>
+            {status?.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+
+  const handleSearch = (k: string) => {
+    setKeyword(k);
+  };
   return (
     <div className="">
       <Table<any>
@@ -153,22 +218,40 @@ const Users = () => {
         description="Manage all registered users of the platform."
         theads={userTheads}
         data={userTableData}
-        totalPages={1}
-        currentPage={1}
-        onPageChange={() => {}}
-        isLoading={false}
-        onSearch={() => {}}
-        actions={userActions}
+        totalPages={data?.data?.meta?.totalPages || 1}
+        currentPage={page}
+        onPageChange={(p) => setPage(p)}
+        isLoading={isLoading || isFetching}
+        onSearch={handleSearch}
         limit={10}
-        setLimit={() => {}}
+        setLimit={setLimit}
+        children={children}
+        actions={userActions}
+        onEditItem={(row: any) => {
+          // setModalType("edit");
+          // setRecipeId(row?._id);
+          // setIsAddOrEditRecipeModalOpen(true);
+        }}
+        onDeleteItem={(row: any) => {
+          // setRecipeId(row?._id);
+          // setShowDeleteConfirmationModal(true);
+        }}
       />
 
       {isReferralListModalOpen && (
         <ReferralList
-        userName={selectedUSerName}
-          userId={"69a339d7e01ca10667ff02df"}
+          userName={selectedUSerName}
+          userId={selectedUserId}
           isReferralListModalOpen={isReferralListModalOpen}
           setIsReferralListModalOpen={setIsReferralListModalOpen}
+        />
+      )}
+
+      {isAccountDeleteReasonModalOpen && (
+        <AccountDeleteReason
+          isAccountDeleteReasonModalOpen={isAccountDeleteReasonModalOpen}
+          setIsAccountDeleteReasonModalOpen={setIsAccountDeleteReasonModalOpen}
+          reason={accountDeleteReason}
         />
       )}
     </div>

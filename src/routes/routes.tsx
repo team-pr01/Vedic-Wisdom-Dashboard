@@ -20,7 +20,7 @@ import Vastu from "../pages/Vastu/Vastu";
 import Shop from "../pages/Shop/Shop";
 import VendorDetails from "../components/ShopPage/VendorSection/VendorDetails/VendorDetails";
 import VendorsProducts from "../pages/Shop/VendorsProducts";
-import ReferralList from "../pages/ReferralList/ReferralList";
+import ReferralList from "../components/UsersPage/ReferralList/ReferralList";
 
 export const router = createBrowserRouter([
   {
