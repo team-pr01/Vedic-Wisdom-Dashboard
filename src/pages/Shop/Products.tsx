@@ -180,7 +180,7 @@ const Products = () => {
   return (
     <div>
       <Table<any>
-        title={`Products (${data?.data?.length || 0})`}
+        title={`Products (${products?.length || 0})`}
         description="Manage all your products here. You can add, edit, and delete products from this page."
         theads={productTheads}
         data={productTableData}

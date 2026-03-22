@@ -338,20 +338,22 @@ export default function Table<T extends Record<string, any>>({
                                 Edit
                               </button>
                             )}
-                            <button
-                              onClick={() => {
-                                onDeleteItem!(row);
-                                setClosingMenuId(rowId);
-                                setTimeout(() => {
-                                  setOpenMenuId(null);
-                                  setClosingMenuId(null);
-                                }, 180);
-                              }}
-                              className="w-full text-left px-3 py-2 text-sm hover:bg-slate-100 cursor-pointer flex items-center gap-1"
-                            >
-                              <Trash2 className="inline mr-2 size-4" />
-                              Delete
-                            </button>
+                            {onDeleteItem && (
+                              <button
+                                onClick={() => {
+                                  onDeleteItem!(row);
+                                  setClosingMenuId(rowId);
+                                  setTimeout(() => {
+                                    setOpenMenuId(null);
+                                    setClosingMenuId(null);
+                                  }, 180);
+                                }}
+                                className="w-full text-left px-3 py-2 text-sm hover:bg-slate-100 cursor-pointer flex items-center gap-1"
+                              >
+                                <Trash2 className="inline mr-2 size-4" />
+                                Delete
+                              </button>
+                            )}
                             {actions.map((act, i) => (
                               <button
                                 key={i}

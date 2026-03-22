@@ -68,7 +68,13 @@ export const baseApi = createApi({
     "news",
     "vastu",
     "vastuTips",
-    "product"
+    "product",
+    "vendor",
+    "",
+    "",
+    "",
+    "",
+    "",
   ],
   endpoints: () => ({}),
 });
