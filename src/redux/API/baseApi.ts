@@ -70,7 +70,7 @@ export const baseApi = createApi({
     "vastuTips",
     "product",
     "vendor",
-    "",
+    "referral",
     "",
     "",
     "",

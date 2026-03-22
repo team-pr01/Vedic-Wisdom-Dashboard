@@ -17,6 +17,7 @@ import {
   LogOut,
   Siren,
   Newspaper,
+  Share2,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { IMAGES } from "../../assets";
@@ -40,6 +41,7 @@ const Sidebar = () => {
     { path: "/dashboard/course", label: "Course", icon: GraduationCap },
     { path: "/dashboard/video", label: "Video", icon: Video },
     { path: "/dashboard/food", label: "Food", icon: Utensils },
+    { path: "/dashboard/referral-list", label: "Referral List", icon: Share2 },
   ];
 
   return (

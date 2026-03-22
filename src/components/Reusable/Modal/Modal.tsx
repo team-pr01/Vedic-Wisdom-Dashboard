@@ -1,7 +1,7 @@
 import { X } from "lucide-react";
 
 type TModalProps = {
-  heading?: string;
+  heading?: string | React.ReactNode;
   isModalOpen: boolean;
   setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   children: React.ReactNode;

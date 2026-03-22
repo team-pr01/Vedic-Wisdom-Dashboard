@@ -20,6 +20,7 @@ import Vastu from "../pages/Vastu/Vastu";
 import Shop from "../pages/Shop/Shop";
 import VendorDetails from "../components/ShopPage/VendorSection/VendorDetails/VendorDetails";
 import VendorsProducts from "../pages/Shop/VendorsProducts";
+import ReferralList from "../pages/ReferralList/ReferralList";
 
 export const router = createBrowserRouter([
   {
@@ -105,6 +106,10 @@ export const router = createBrowserRouter([
       {
         path: "vendor-products/:id",
         element: <VendorsProducts />,
+      },
+      {
+        path: "referral-list",
+        element: <ReferralList />,
       },
     ],
   },

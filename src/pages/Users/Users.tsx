@@ -1,19 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState } from "react";
 import Table from "../../components/Reusable/Table/Table";
 import { formatDate } from "../../utils/formatDate";
 import { Eye, UserX, UserCheck, Trash2, RotateCcw } from "lucide-react";
+import ReferralList from "../ReferralList/ReferralList";
 
 const Users = () => {
+  const [selectedUserId, setSelectedUserId] = useState<string>("");
+  const [selectedUSerName, setSelectedUSerName] = useState<string>("");
+  const [isReferralListModalOpen, setIsReferralListModalOpen] =
+    useState<boolean>(false);
   const userTheads: any[] = [
     { key: "userId", label: "User ID" },
     { key: "name", label: "Name" },
-    { key: "email", label: "Email" },
-    { key: "phone", label: "Phone" },
     { key: "city", label: "City" },
     { key: "registeredOn", label: "Registered On" },
+    { key: "referralInfo", label: "Referral Info" },
     { key: "role", label: "Role" },
     { key: "status", label: "Status" },
-    { key: "isVerified", label: "Verified" },
   ];
 
   const users = [
@@ -61,16 +65,31 @@ const Users = () => {
 
     name: (
       <div>
-        <p className="capitalize">{user.name}</p>
+        <p className="capitalize font-semibold">{user.name}</p>
+        <p>{user.email}</p>
+        <p>{user.phone}</p>
       </div>
     ),
 
-    email: user.email,
-    phone: user.phone,
     city: user.city,
 
     registeredOn: formatDate(user.createdAt),
 
+    referralInfo: (
+      <div className="space-y-2">
+        <p className="capitalize font-semibold">
+          Referred User: {user.referralCount || 0}
+        </p>
+        <button onClick={() => {
+          setSelectedUSerName(user.name);
+          setSelectedUserId(user._id);
+          setIsReferralListModalOpen(true);
+        }} className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary-10 bg-primary-10/10 rounded-lg hover:bg-primary-10/20 transition-colors cursor-pointer">
+          <Eye size={14} />
+          View Referrals
+        </button>
+      </div>
+    ),
     role: (
       <span className="px-3 py-1 text-xs rounded-full bg-blue-100 text-blue-600">
         {user.role}
@@ -86,18 +105,6 @@ const Users = () => {
         }`}
       >
         {user.isSuspended ? "Suspended" : "Active"}
-      </span>
-    ),
-
-    isVerified: (
-      <span
-        className={`px-3 py-1 rounded-full text-xs font-medium ${
-          user.isVerified
-            ? "bg-green-100 text-green-600"
-            : "bg-red-100 text-red-600"
-        }`}
-      >
-        {user.isVerified ? "Yes" : "No"}
       </span>
     ),
   }));
@@ -155,6 +162,15 @@ const Users = () => {
         limit={10}
         setLimit={() => {}}
       />
+
+      {isReferralListModalOpen && (
+        <ReferralList
+        userName={selectedUSerName}
+          userId={"69a339d7e01ca10667ff02df"}
+          isReferralListModalOpen={isReferralListModalOpen}
+          setIsReferralListModalOpen={setIsReferralListModalOpen}
+        />
+      )}
     </div>
   );
 };

@@ -292,7 +292,7 @@ export default function Table<T extends Record<string, any>>({
                       );
                     })}
 
-                    <td className="p-3 text-sm border-b border-neutral-55/60 relative text-lef">
+                    <td className="p-3 text-sm border-b border-neutral-55/60 relative text-right">
                       <div className="inline-block relative">
                         <button
                           onClick={() => handleToggleMenu(rowId)}

@@ -21,7 +21,6 @@ const Vendors = () => {
 
   const vendorTheads: any[] = [
     { key: "sl", label: "SL" },
-    { key: "image", label: "Logo" },
     { key: "shopName", label: "Shop Name" },
     { key: "name", label: "Owner" },
     { key: "email", label: "Email" },
