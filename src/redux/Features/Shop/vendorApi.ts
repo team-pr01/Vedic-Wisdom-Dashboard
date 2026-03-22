@@ -40,6 +40,35 @@ const vendorApi = baseApi.injectEndpoints({
       providesTags: ["vendor"],
     }),
 
+    getAllProductsOfAVendor: builder.query({
+      query: ({
+        vendorId,
+        skip,
+        limit,
+        keyword,
+        category
+      }: {
+        vendorId?: string;
+        keyword?: string;
+        limit?: number;
+        skip?: number;
+        category?: string
+      } = {}) => {
+        const params = new URLSearchParams();
+        if (keyword) params.append("keyword", keyword);
+        if (typeof limit === "number") params.append("limit", limit.toString());
+        if (typeof skip === "number") params.append("skip", skip.toString());
+        if (category) params.append("category", category);
+
+        return {
+          url: `/vendor/${vendorId}/products?${params.toString()}`,
+          method: "GET",
+          credentials: "include",
+        };
+      },
+      providesTags: ["vendor"],
+    }),
+
     updateVendorStatus: builder.mutation<any, any>({
       query: ({ id, data }) => ({
         url: `/vendor/update-status/${id}`,
@@ -75,6 +104,7 @@ const vendorApi = baseApi.injectEndpoints({
 export const {
   useGetAllVendorsQuery,
   useGetSingleVendorByIdQuery,
+  useGetAllProductsOfAVendorQuery,
   useUpdateVendorStatusMutation,
   useSuspendVendorMutation,
   useWithdrawVendorSuspensionMutation

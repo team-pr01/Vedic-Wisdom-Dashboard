@@ -2,13 +2,9 @@
 import { useState } from "react";
 import Table from "../../components/Reusable/Table/Table";
 import { ExternalLink, Eye } from "lucide-react";
-import toast from "react-hot-toast";
-import DeleteConfirmationModal from "../../components/Reusable/DeleteConfirmationModal/DeleteConfirmationModal";
-import {
-  useGetAllVendorsQuery,
-  useUpdateVendorStatusMutation,
-} from "../../redux/Features/Shop/vendorApi";
+import { useGetAllVendorsQuery } from "../../redux/Features/Shop/vendorApi";
 import type { TVendor } from "../../types/vendor.types";
+import { Link } from "react-router-dom";
 
 const Vendors = () => {
   const [page, setPage] = useState<number>(1);
@@ -16,32 +12,12 @@ const Vendors = () => {
   const skip = (page - 1) * limit;
   const [keyword, setKeyword] = useState<string>("");
   const [status, setStatus] = useState<string>("");
-  const [isVendorDetailsModalOpen, setIsVendorDetailsModalOpen] =
-    useState<boolean>(false);
-  const [showDeleteConfirmationModal, setShowDeleteConfirmationModal] =
-    useState<boolean>(false);
-  const [vendorId, setVendorId] = useState<string | null>(null);
   const { data, isLoading, isFetching } = useGetAllVendorsQuery({
     skip,
     limit,
     keyword,
     status,
   });
-
-  const [updateVendorStatus] = useUpdateVendorStatusMutation();
-
-  const handleDeleteProduct = async (status: string, id: string) => {
-    try {
-      const payload = { status };
-      await toast.promise(updateVendorStatus({ id, data: payload }).unwrap(), {
-        loading: "Loading...",
-        success: "Status updated successfully!",
-        error: "Failed to update status. Please try again.",
-      });
-    } catch (err) {
-      console.error("Error updating status:", err);
-    }
-  };
 
   const vendorTheads: any[] = [
     { key: "sl", label: "SL" },
@@ -148,18 +124,13 @@ const Vendors = () => {
       ),
 
       actions: (
-        <div className="flex items-center gap-2">
-          <button
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary-10 bg-primary-10/10 rounded-lg hover:bg-primary-10/20 transition-colors"
-            onClick={() => {
-              setVendorId(vendor._id);
-              setIsVendorDetailsModalOpen(true);
-            }}
-          >
-            <Eye size={14} />
-            View Details
-          </button>
-        </div>
+        <Link
+          to={`/dashboard/vendor/${vendor._id}`}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary-10 bg-primary-10/10 rounded-lg hover:bg-primary-10/20 transition-colors"
+        >
+          <Eye size={14} />
+          View Details
+        </Link>
       ),
     };
   });
@@ -208,21 +179,6 @@ const Vendors = () => {
         setLimit={setLimit}
         children={children}
       />
-{/* 
-      {isProductDetailsModalOpen && (
-        <ProductDetails
-          isProductDetailsModalOpen={isProductDetailsModalOpen}
-          setIsProductDetailsModalOpen={setIsProductDetailsModalOpen}
-          productId={productId as string}
-        />
-      )} */}
-
-      {showDeleteConfirmationModal && (
-        <DeleteConfirmationModal
-          onClose={() => setShowDeleteConfirmationModal(false)}
-          onConfirm={handleDeleteProduct}
-        />
-      )}
     </div>
   );
 };

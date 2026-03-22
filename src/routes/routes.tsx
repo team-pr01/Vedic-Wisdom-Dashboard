@@ -18,6 +18,8 @@ import Emergency from "../pages/Emergency/Emergency";
 import News from "../pages/News/News";
 import Vastu from "../pages/Vastu/Vastu";
 import Shop from "../pages/Shop/Shop";
+import VendorDetails from "../components/ShopPage/VendorSection/VendorDetails/VendorDetails";
+import VendorsProducts from "../pages/Shop/VendorsProducts";
 
 export const router = createBrowserRouter([
   {
@@ -95,6 +97,14 @@ export const router = createBrowserRouter([
       {
         path: "shop",
         element: <Shop />,
+      },
+      {
+        path: "vendor/:id",
+        element: <VendorDetails />,
+      },
+      {
+        path: "vendor-products/:id",
+        element: <VendorsProducts />,
       },
     ],
   },
