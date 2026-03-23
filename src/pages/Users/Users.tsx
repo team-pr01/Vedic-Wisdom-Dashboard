@@ -21,8 +21,10 @@ import SuspendUserModal from "../../components/UsersPage/SuspendUserModal/Suspen
 import toast from "react-hot-toast";
 import IconButtonWithToolTip from "../../components/Reusable/IconButtonWithToolTip/IconButtonWithToolTip";
 import AssignPage from "../../components/UsersPage/AssignPage/AssignPage";
+import { useNavigate } from "react-router-dom";
 
 const Users = () => {
+  const navigate = useNavigate();
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(10);
   const skip = (page - 1) * limit;
@@ -235,7 +237,7 @@ const Users = () => {
       label: "View Profile",
       icon: <Eye className="inline mr-2 size-4" />,
       onClick: (row: any) => {
-        console.log("View Profile:", row);
+        navigate(`/dashboard/user/${row?._id}`)
       },
     },
     {

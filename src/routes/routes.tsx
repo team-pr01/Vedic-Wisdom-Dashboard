@@ -20,7 +20,7 @@ import Vastu from "../pages/Vastu/Vastu";
 import Shop from "../pages/Shop/Shop";
 import VendorDetails from "../components/ShopPage/VendorSection/VendorDetails/VendorDetails";
 import VendorsProducts from "../pages/Shop/VendorsProducts";
-import ReferralList from "../components/UsersPage/ReferralList/ReferralList";
+import UserDetails from "../pages/Users/UserDetails";
 
 export const router = createBrowserRouter([
   {
@@ -54,6 +54,10 @@ export const router = createBrowserRouter([
       {
         path: "users",
         element: <Users />,
+      },
+      {
+        path: "user/:id",
+        element: <UserDetails />,
       },
       {
         path: "audio-books",
@@ -106,10 +110,6 @@ export const router = createBrowserRouter([
       {
         path: "vendor-products/:id",
         element: <VendorsProducts />,
-      },
-      {
-        path: "referral-list",
-        element: <ReferralList />,
       },
     ],
   },
