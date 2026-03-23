@@ -16,7 +16,7 @@ const userApi = baseApi.injectEndpoints({
       }: {
         keyword?: string;
         role?: string;
-        premiumUnlocked?: boolean;
+        premiumUnlocked?: string;
         limit?: number;
         skip?: number;
         city?: string;
@@ -28,7 +28,7 @@ const userApi = baseApi.injectEndpoints({
 
         if (keyword) params.append("keyword", keyword);
         if (role) params.append("role", role);
-        if (typeof premiumUnlocked === "boolean") params.append("premiumUnlocked", premiumUnlocked.toString());
+        if (premiumUnlocked) params.append("premiumUnlocked", premiumUnlocked);
         if (typeof limit === "number") params.append("limit", limit.toString());
         if (typeof skip === "number") params.append("skip", skip.toString());
         if (city) params.append("city", city);
@@ -42,6 +42,15 @@ const userApi = baseApi.injectEndpoints({
           credentials: "include",
         };
       },
+      providesTags: ["users"],
+    }),
+
+    getSingleUserById: builder.query({
+      query: (id) => ({
+        url: `/user/${id}`,
+        method: "GET",
+        credentials: "include",
+      }),
       providesTags: ["users"],
     }),
 
@@ -91,7 +100,7 @@ const userApi = baseApi.injectEndpoints({
 
     activeUser: builder.mutation({
       query: (userId) => ({
-        url: `/user/active/${userId}`,
+        url: `/user/suspension/withdraw/${userId}`,
         method: "PATCH",
       }),
       invalidatesTags: ["users"],
@@ -114,15 +123,16 @@ const userApi = baseApi.injectEndpoints({
       invalidatesTags: ["users"],
     }),
 
-    giveRating: builder.mutation({
-      query: ({ data, id }) => ({
-        url: `/user/give-rating/${id}`,
-        body: data,
+    assignPages: builder.mutation({
+      query: (data) => ({
+        url: `/user/assign-page`,
         method: "PATCH",
+        body: data,
+        credentials: "include",
       }),
       invalidatesTags: ["users"],
     }),
   }),
 });
 
-export const { useGetAllUsersQuery, useGetMeQuery, useUpdateProfileMutation, useDeleteAccountMutation, useRestoreDeletedAccountMutation, useSuspendUserMutation, useActiveUserMutation, useRequestToUnlockProfileMutation, useToggleProfileStatusMutation, useGiveRatingMutation } = userApi;
+export const { useGetAllUsersQuery, useGetSingleUserByIdQuery, useGetMeQuery, useUpdateProfileMutation, useDeleteAccountMutation, useRestoreDeletedAccountMutation, useSuspendUserMutation, useActiveUserMutation, useRequestToUnlockProfileMutation, useToggleProfileStatusMutation, useAssignPagesMutation } = userApi;

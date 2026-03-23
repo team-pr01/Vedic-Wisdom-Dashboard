@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import {
   LayoutDashboard,
   Users,
@@ -22,27 +23,28 @@ import {
 import { Link, useLocation } from "react-router-dom";
 import { IMAGES } from "../../assets";
 
+export const navItems = [
+  { path: "/dashboard/home", label: "Dashboard", icon: LayoutDashboard },
+  { path: "/dashboard/users", label: "Users", icon: Users },
+  { path: "/dashboard/books", label: "Books", icon: BookOpen },
+  { path: "/dashboard/audio-books", label: "Audio Books", icon: Headphones },
+  { path: "/dashboard/temple", label: "Temple", icon: Landmark },
+  { path: "/dashboard/quiz", label: "Quiz", icon: HelpCircle },
+  { path: "/dashboard/shop", label: "Shop", icon: ShoppingBag },
+  { path: "/dashboard/emergency", label: "Emergency", icon: Siren },
+  { path: "/dashboard/news", label: "News", icon: Newspaper },
+  { path: "/dashboard/vastu", label: "Vastu", icon: Compass },
+  { path: "/dashboard/jyotish", label: "Jyotish", icon: Star },
+  { path: "/dashboard/consultancy", label: "Consultancy", icon: Briefcase },
+  { path: "/dashboard/ayurveda", label: "Ayurveda", icon: Leaf },
+  { path: "/dashboard/course", label: "Course", icon: GraduationCap },
+  { path: "/dashboard/video", label: "Video", icon: Video },
+  { path: "/dashboard/food", label: "Food", icon: Utensils },
+  { path: "/dashboard/referral-list", label: "Referral List", icon: Share2 },
+];
+
 const Sidebar = () => {
   const pathname = useLocation().pathname;
-  const navItems = [
-    { path: "/dashboard/home", label: "Dashboard", icon: LayoutDashboard },
-    { path: "/dashboard/users", label: "Users", icon: Users },
-    { path: "/dashboard/books", label: "Books", icon: BookOpen },
-    { path: "/dashboard/audio-books", label: "Audio Books", icon: Headphones },
-    { path: "/dashboard/temple", label: "Temple", icon: Landmark },
-    { path: "/dashboard/quiz", label: "Quiz", icon: HelpCircle },
-    { path: "/dashboard/shop", label: "Shop", icon: ShoppingBag },
-    { path: "/dashboard/emergency", label: "Emergency", icon: Siren  },
-    { path: "/dashboard/news", label: "News", icon: Newspaper },
-    { path: "/dashboard/vastu", label: "Vastu", icon: Compass },
-    { path: "/dashboard/jyotish", label: "Jyotish", icon: Star },
-    { path: "/dashboard/consultancy", label: "Consultancy", icon: Briefcase },
-    { path: "/dashboard/ayurveda", label: "Ayurveda", icon: Leaf },
-    { path: "/dashboard/course", label: "Course", icon: GraduationCap },
-    { path: "/dashboard/video", label: "Video", icon: Video },
-    { path: "/dashboard/food", label: "Food", icon: Utensils },
-    { path: "/dashboard/referral-list", label: "Referral List", icon: Share2 },
-  ];
 
   return (
     <div className="w-72 h-screen top-0 left-0 bg-white border-r border-neutral-55 flex flex-col font-Inter">
