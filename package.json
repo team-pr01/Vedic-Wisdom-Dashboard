@@ -11,9 +11,11 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.11.2",
+    "country-state-city": "^3.2.1",
     "framer-motion": "^12.37.0",
     "lucide-react": "^0.563.0",
     "react": "^19.2.0",
+    "react-country-state-city": "^1.1.12",
     "react-dom": "^19.2.0",
     "react-hook-form": "^7.71.1",
     "react-hot-toast": "^2.6.0",

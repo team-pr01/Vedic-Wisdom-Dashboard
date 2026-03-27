@@ -18,7 +18,6 @@ import {
   LogOut,
   Siren,
   Newspaper,
-  Share2,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { IMAGES } from "../../assets";
@@ -31,6 +30,7 @@ export const navItems = [
   { path: "/dashboard/temple", label: "Temple", icon: Landmark },
   { path: "/dashboard/quiz", label: "Quiz", icon: HelpCircle },
   { path: "/dashboard/shop", label: "Shop", icon: ShoppingBag },
+  { path: "/dashboard/job", label: "Job", icon: Briefcase },
   { path: "/dashboard/emergency", label: "Emergency", icon: Siren },
   { path: "/dashboard/news", label: "News", icon: Newspaper },
   { path: "/dashboard/vastu", label: "Vastu", icon: Compass },
@@ -40,7 +40,6 @@ export const navItems = [
   { path: "/dashboard/course", label: "Course", icon: GraduationCap },
   { path: "/dashboard/video", label: "Video", icon: Video },
   { path: "/dashboard/food", label: "Food", icon: Utensils },
-  { path: "/dashboard/referral-list", label: "Referral List", icon: Share2 },
 ];
 
 const Sidebar = () => {

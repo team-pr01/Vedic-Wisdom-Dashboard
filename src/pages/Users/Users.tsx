@@ -57,7 +57,6 @@ const Users = () => {
 
   const users = data?.data?.data || [];
 
-  console.log(data);
   const userTheads: any[] = [
     { key: "userId", label: "User ID" },
     { key: "name", label: "Name" },

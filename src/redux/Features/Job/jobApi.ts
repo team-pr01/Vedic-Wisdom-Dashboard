@@ -1,81 +1,91 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { baseApi } from "../../API/baseApi";
 
-const foodApi = baseApi.injectEndpoints({
+const jobApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-
-    getAllRecipes: builder.query({
+    getAllJobs: builder.query({
       query: ({
         skip,
         limit,
         keyword,
-        category
+        status
       }: {
         keyword?: string;
         limit?: number;
         skip?: number;
-        category?: string
+        status?: string
       } = {}) => {
         const params = new URLSearchParams();
 
         if (keyword) params.append("keyword", keyword);
         if (typeof limit === "number") params.append("limit", limit.toString());
         if (typeof skip === "number") params.append("skip", skip.toString());
-        if (category) params.append("category", category);
+        if (status) params.append("status", status);
 
         return {
-          url: `/food?${params.toString()}`,
+          url: `/job?${params.toString()}`,
           method: "GET",
           credentials: "include",
         };
       },
-      providesTags: ["food"],
+      providesTags: ["job"],
     }),
 
-    getSingleRecipeById: builder.query({
+    getSingleJobById: builder.query({
       query: (id) => ({
-        url: `/food/${id}`,
+        url: `/job/${id}`,
         method: "GET",
         credentials: "include",
       }),
-      providesTags: ["food"],
+      providesTags: ["job"],
     }),
 
-    addRecipe: builder.mutation<any, any>({
+    postJob: builder.mutation<any, any>({
       query: (data) => ({
-        url: `/food/add-recipe`,
+        url: `/job/post`,
         method: "POST",
         body: data,
         credentials: "include",
       }),
-      invalidatesTags: ["food"],
+      invalidatesTags: ["job"],
     }),
 
-    updateRecipe: builder.mutation<any, any>({
+    updateJob: builder.mutation<any, any>({
       query: ({ id, data }) => ({
-        url: `/food/update/${id}`,
+        url: `/job/update/${id}`,
         method: "PUT",
         body: data,
         credentials: "include",
       }),
-      invalidatesTags: ["food"],
+      invalidatesTags: ["job"],
     }),
 
-    deleteRecipe: builder.mutation<any, string>({
+    updateJobStatus: builder.mutation<any, any>({
+      query: ({ id, data }) => ({
+        url: `/job/update-status/${id}`,
+        method: "PATCH",
+        body: data,
+        credentials: "include",
+      }),
+      invalidatesTags: ["job"],
+    }),
+
+    deleteJob: builder.mutation<any, string>({
       query: (id) => ({
-        url: `/food/delete/${id}`,
+        url: `/job/delete/${id}`,
         method: "DELETE",
         credentials: "include",
       }),
-      invalidatesTags: ["food"],
+      invalidatesTags: ["job"],
     }),
   }),
 });
 
 export const {
-  useGetAllRecipesQuery,
-  useGetSingleRecipeByIdQuery,
-  useAddRecipeMutation,
-  useUpdateRecipeMutation,
-  useDeleteRecipeMutation
-} = foodApi;
+  useGetAllJobsQuery,
+  useGetSingleJobByIdQuery,
+  usePostJobMutation,
+  useUpdateJobMutation,
+  useUpdateJobStatusMutation,
+  useDeleteJobMutation,
+} = jobApi;

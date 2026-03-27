@@ -21,6 +21,8 @@ import Shop from "../pages/Shop/Shop";
 import VendorDetails from "../components/ShopPage/VendorSection/VendorDetails/VendorDetails";
 import VendorsProducts from "../pages/Shop/VendorsProducts";
 import UserDetails from "../pages/Users/UserDetails";
+import Job from "../pages/Job/Job";
+import PostJob from "../components/JobPage/PostJob/PostJob";
 
 export const router = createBrowserRouter([
   {
@@ -110,6 +112,18 @@ export const router = createBrowserRouter([
       {
         path: "vendor-products/:id",
         element: <VendorsProducts />,
+      },
+      {
+        path: "job",
+        element: <Job />,
+      },
+      {
+        path: "job/post",
+        element: <PostJob />,
+      },
+      {
+        path: "job/update/:jobId",
+        element: <PostJob />,
       },
     ],
   },

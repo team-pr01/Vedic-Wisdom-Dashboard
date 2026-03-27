@@ -83,7 +83,7 @@ const UserDetails = () => {
   const StatusIcon = statusConfig.icon;
 
   const handleSuspend = () => {
-    setSelectedUserId(userDetails.userId || userDetails._id);
+    setSelectedUserId(userDetails?._id);
     setIsSuspendUserModalOpen(true);
   };
 

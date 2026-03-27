@@ -38,9 +38,9 @@ const SelectDropdown = forwardRef<HTMLSelectElement, DropdownProps>(
     };
 
     return (
-      <div className="flex flex-col gap-2 font-Nunito w-full">
+      <div className="flex flex-col gap-2 font-Inter w-full cursor-pointer">
         {label && (
-          <label className="flex flex-row items-center w-full justify-between text-neutral-65">
+          <label className="flex flex-row items-center w-full justify-between text-neutral-65 cursor-pointer">
             <span className="text-neutral-20 leading-[18px] text-[15px] font-medium tracking-[-0.16] ">
               {label}{" "}
               <span className="text-primary-10">{isRequired ? "*" : ""}</span>
@@ -53,7 +53,7 @@ const SelectDropdown = forwardRef<HTMLSelectElement, DropdownProps>(
           value={value}
           required={isRequired}
           onChange={handleChange}
-          className={`appearance-none relative block w-full px-4 py-3 border text-neutral-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-10 focus:border-transparent font-Roboto transition-all duration-200 ${
+          className={`appearance-none relative block w-full px-4 py-3 border text-neutral-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-10 focus:border-transparent font-Roboto transition-all duration-200 cursor-pointer ${
             isDisabled ? "cursor-not-allowed bg-neutral-50/20" : "bg-white"
           } ${error ? "border-red-500" : "border-neutral-50"}`}
           {...rest}
