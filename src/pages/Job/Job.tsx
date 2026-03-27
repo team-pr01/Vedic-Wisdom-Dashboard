@@ -15,6 +15,7 @@ import {
   XCircle,
   Clock,
   Lock,
+  Briefcase,
 } from "lucide-react";
 import { formatDate } from "../../utils/formatDate";
 import Button from "../../components/Reusable/Button/Button";
@@ -54,6 +55,60 @@ const Job = () => {
     }
   };
 
+  // Calculate counts by status from frontend
+  const jobs = data?.data?.jobs || [];
+  
+  const counts = {
+    pending: jobs.filter((job: TJob) => job.status === "pending").length,
+    active: jobs.filter((job: TJob) => job.status === "active").length,
+    rejected: jobs.filter((job: TJob) => job.status === "rejected").length,
+    closed: jobs.filter((job: TJob) => job.status === "closed").length,
+    total: jobs.length,
+  };
+
+  const overviewCards = [
+    {
+      title: "Total Jobs",
+      count: counts.total,
+      icon: Briefcase,
+      bgColor: "bg-blue-50",
+      textColor: "text-blue-600",
+      iconColor: "text-blue-500",
+    },
+    {
+      title: "Pending",
+      count: counts.pending,
+      icon: Clock,
+      bgColor: "bg-yellow-50",
+      textColor: "text-yellow-600",
+      iconColor: "text-yellow-500",
+    },
+    {
+      title: "Active",
+      count: counts.active,
+      icon: CheckCircle,
+      bgColor: "bg-green-50",
+      textColor: "text-green-600",
+      iconColor: "text-green-500",
+    },
+    {
+      title: "Rejected",
+      count: counts.rejected,
+      icon: XCircle,
+      bgColor: "bg-red-50",
+      textColor: "text-red-600",
+      iconColor: "text-red-500",
+    },
+    {
+      title: "Closed",
+      count: counts.closed,
+      icon: Lock,
+      bgColor: "bg-gray-50",
+      textColor: "text-gray-600",
+      iconColor: "text-gray-500",
+    },
+  ];
+
   const jobTheads: any[] = [
     { key: "sl", label: "SL" },
     { key: "title", label: "Job Title" },
@@ -65,8 +120,6 @@ const Job = () => {
     { key: "status", label: "Status" },
     { key: "actions", label: "Actions" },
   ];
-
-  const jobs = data?.data?.jobs || [];
 
   const getStatusConfig = (status?: string) => {
     switch (status) {
@@ -319,8 +372,41 @@ const Job = () => {
   const handleSearch = (k: string) => {
     setKeyword(k);
   };
+
   return (
     <div>
+      {/* Overview Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+        {overviewCards.map((card, index) => {
+          const Icon = card.icon;
+          return (
+            <div
+              key={index}
+              className={`${card.bgColor} rounded-xl p-4 border border-neutral-50 hover:shadow-md transition-shadow cursor-pointer`}
+              onClick={() => {
+                if (card.title !== "Total Jobs") {
+                  setStatus(card.title.toLowerCase());
+                } else {
+                  setStatus("");
+                }
+              }}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-neutral-45 mb-1">{card.title}</p>
+                  <p className={`text-2xl font-bold ${card.textColor}`}>
+                    {card.count}
+                  </p>
+                </div>
+                <div className={`p-2 rounded-lg bg-white/50`}>
+                  <Icon size={24} className={card.iconColor} />
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
       <Table<any>
         title={`Jobs (${jobs?.length || 0})`}
         description="Manage all your jobs"
