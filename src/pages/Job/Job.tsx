@@ -59,6 +59,7 @@ const Job = () => {
     { key: "title", label: "Job Title" },
     { key: "location", label: "Location" },
     { key: "salary", label: "Salary" },
+    { key: "applicationCount", label: "Applications" },
     { key: "jobType", label: "Job Type" },
     { key: "applicationDeadline", label: "Deadline" },
     { key: "status", label: "Status" },
@@ -165,6 +166,14 @@ const Job = () => {
             </span>
           )}
         </div>
+      ),
+      applicationCount: (
+        <Link
+          to={`/dashboard/job/applications/${job?._id}`}
+          className={`text-primary-10 underline`}
+        >
+          {job?.applicationCount || 0}
+        </Link>
       ),
 
       jobType: (
@@ -334,17 +343,6 @@ const Job = () => {
         }}
         actions={jobActions}
       />
-
-      {/* {isAddOrEditRecipeModalOpen && (
-        <AddOrEditRecipe
-          isAddOrEditRecipeModalOpen={isAddOrEditRecipeModalOpen}
-          setIsAddOrEditRecipeModalOpen={setIsAddOrEditRecipeModalOpen}
-          modalType={modalType}
-          setModalType={setModalType}
-          recipeId={recipeId as string}
-          categories={categories?.data || []}
-        />
-      )} */}
 
       {showDeleteConfirmationModal && (
         <DeleteConfirmationModal

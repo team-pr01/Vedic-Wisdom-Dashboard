@@ -23,6 +23,7 @@ import VendorsProducts from "../pages/Shop/VendorsProducts";
 import UserDetails from "../pages/Users/UserDetails";
 import Job from "../pages/Job/Job";
 import PostJob from "../components/JobPage/PostJob/PostJob";
+import JobApplications from "../pages/Job/JobApplications";
 
 export const router = createBrowserRouter([
   {
@@ -124,6 +125,10 @@ export const router = createBrowserRouter([
       {
         path: "job/update/:jobId",
         element: <PostJob />,
+      },
+      {
+        path: "job/applications/:jobId",
+        element: <JobApplications />,
       },
     ],
   },
