@@ -3,12 +3,12 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
-  Download,
   CheckCircle,
   XCircle,
   Clock,
   UserCheck,
   UserX,
+  Eye,
 } from "lucide-react";
 import { formatDate } from "../../utils/formatDate";
 import Table from "../../components/Reusable/Table/Table";
@@ -152,7 +152,7 @@ const JobApplications = () => {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 text-primary-10 hover:underline text-sm"
           >
-            <Download size={14} />
+            <Eye size={14} />
             View Resume
           </a>
         ),
