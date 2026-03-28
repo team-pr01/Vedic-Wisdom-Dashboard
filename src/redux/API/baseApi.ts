@@ -73,8 +73,9 @@ export const baseApi = createApi({
     "referral",
     "job",
     "application",
-    "",
-    "",
+    "book",
+    "texts",
+    "reportMantra",
   ],
   endpoints: () => ({}),
 });

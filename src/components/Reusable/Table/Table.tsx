@@ -271,7 +271,7 @@ export default function Table<T extends Record<string, any>>({
                 </tr>
               )}
 
-              {data.map((row, idx) => {
+              {data?.map((row, idx) => {
                 const rowId = (row.id ?? row._id ?? idx) as string | number;
                 return (
                   <tr
