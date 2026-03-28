@@ -10,17 +10,18 @@ import {
   useAddTextMutation,
   useUpdateTextMutation,
 } from "../../../redux/Features/Book/textsApi";
-import type { TBooks } from "../AllBooksTable/AllBooksTable";
 import Loader from "../../Reusable/Loader/Loader";
 import Button from "../../Reusable/Button/Button";
+import { useGetAllBooksQuery } from "../../../redux/Features/Book/bookApi";
+import Modal from "../../Reusable/Modal/Modal";
 
-export type TAddorEditBookTextFormProps = {
-  setShowForm: (show: boolean) => void;
-  mode?: "add" | "edit";
-  setMode: (mode: "add" | "edit") => void;
+export type TAddOrEditBookTextFormProps = {
+  isAddOrEditBookTextModalOpen: boolean;
+  setIsAddOrEditBookTextModalOpen: any;
+  modalType?: "add" | "edit";
+  setModalType: (mode: "add" | "edit") => void;
   defaultValues?: any;
   isSingleDataLoading?: boolean;
-  bookNames: TBooks[];
 };
 
 type TLocation = {
@@ -37,14 +38,15 @@ type TFormValues = {
   isVerified: boolean;
 };
 
-const AddorEditBookTextForm: React.FC<TAddorEditBookTextFormProps> = ({
-  setShowForm,
-  mode = "add",
-  setMode,
+const AddOrEditBookTextForm: React.FC<TAddOrEditBookTextFormProps> = ({
+  isAddOrEditBookTextModalOpen,
+  setIsAddOrEditBookTextModalOpen,
+  modalType = "add",
+  setModalType,
   defaultValues,
   isSingleDataLoading,
-  bookNames,
 }) => {
+  const { data } = useGetAllBooksQuery({});
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [selectedBook, setSelectedBook] = useState<any>(null);
@@ -73,7 +75,7 @@ const AddorEditBookTextForm: React.FC<TAddorEditBookTextFormProps> = ({
     name: "location",
   });
 
-  const allBookNames = bookNames?.map((b) => ({
+  const allBookNames = data?.data?.data?.map((b: any) => ({
     _id: b._id,
     name: b.name,
     structure: b.structure,
@@ -82,12 +84,12 @@ const AddorEditBookTextForm: React.FC<TAddorEditBookTextFormProps> = ({
 
   // 🟢 Handle selecting a book to auto-load structure levels
   const handleBookChange = (bookId: string) => {
-    const book = allBookNames.find((b) => b._id === bookId);
+    const book = allBookNames.find((b: any) => b._id === bookId);
     setSelectedBook(book);
 
     if (book?.levels?.length) {
       replace(
-        book.levels.map((level: any) => ({ levelName: level.name, value: "" }))
+        book.levels.map((level: any) => ({ levelName: level.name, value: "" })),
       );
     } else {
       replace([]); // Empty if custom
@@ -96,7 +98,7 @@ const AddorEditBookTextForm: React.FC<TAddorEditBookTextFormProps> = ({
 
   // 🟢 Setup defaults on edit or add
   useEffect(() => {
-    if (mode === "edit" && defaultValues) {
+    if (modalType === "edit" && defaultValues) {
       reset({
         bookId: defaultValues.bookId?._id ?? "",
         location: defaultValues.location ?? [],
@@ -105,7 +107,7 @@ const AddorEditBookTextForm: React.FC<TAddorEditBookTextFormProps> = ({
         tags: defaultValues.tags ?? [],
       });
       setTags(defaultValues.tags || []);
-    } else if (mode === "add") {
+    } else if (modalType === "add") {
       reset({
         bookId: "",
         location: [],
@@ -115,7 +117,7 @@ const AddorEditBookTextForm: React.FC<TAddorEditBookTextFormProps> = ({
       });
       setTags([]);
     }
-  }, [defaultValues, mode, reset]);
+  }, [defaultValues, modalType, reset]);
 
   // 🟢 Tag input handlers
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -143,7 +145,7 @@ const AddorEditBookTextForm: React.FC<TAddorEditBookTextFormProps> = ({
 
     try {
       let response;
-      if (mode === "edit" && defaultValues?._id) {
+      if (modalType === "edit" && defaultValues?._id) {
         response = await updateText({
           id: defaultValues._id,
           data: payload,
@@ -155,41 +157,26 @@ const AddorEditBookTextForm: React.FC<TAddorEditBookTextFormProps> = ({
       }
 
       reset();
-      setShowForm(false);
-      setMode("add");
+      setIsAddOrEditBookTextModalOpen(false);
+      setModalType("add");
     } catch (error: any) {
       toast.error(error?.data?.message || "Something went wrong");
     }
   };
 
-  if (isSingleDataLoading) {
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <Loader />
-      </div>
-    );
-  }
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xl font-semibold">
-              {mode === "edit" ? "Edit" : "Add"} Book Text
-            </h3>
-            <button
-              type="button"
-              onClick={() => {
-                reset();
-                setShowForm(false);
-                setMode("add");
-              }}
-            >
-              <X className="h-6 w-6 text-gray-500 hover:text-gray-700" />
-            </button>
+    <Modal
+      isModalOpen={isAddOrEditBookTextModalOpen}
+      setIsModalOpen={setIsAddOrEditBookTextModalOpen}
+      heading={`${modalType === "add" ? "Add" : "Update"} Book Text`}
+    >
+      <div className="relative">
+        {isSingleDataLoading && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center backdrop-blur-[2px] bg-white/30 z-50">
+            <Loader size="lg" text="Please wait..." />
           </div>
-
+        )}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Book Dropdown */}
           <div className="flex flex-col gap-2">
             <label>
@@ -198,10 +185,10 @@ const AddorEditBookTextForm: React.FC<TAddorEditBookTextFormProps> = ({
             <select
               {...register("bookId", { required: "Please select book" })}
               onChange={(e) => handleBookChange(e.target.value)}
-              className="border rounded-lg p-3"
+              className="appearance-none relative block w-full px-4 py-3 border text-neutral-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-10 focus:border-transparent font-Roboto transition-all duration-200 cursor-pointer bg-white border-neutral-50"
             >
               <option value="">Select Book</option>
-              {allBookNames.map((book) => (
+              {allBookNames?.map((book: any) => (
                 <option key={book._id} value={book._id}>
                   {book.name}
                 </option>
@@ -265,11 +252,11 @@ const AddorEditBookTextForm: React.FC<TAddorEditBookTextFormProps> = ({
               {tags.map((tag, i) => (
                 <div
                   key={i}
-                  className="bg-blue-100 px-3 py-1 rounded-full flex items-center gap-2"
+                  className="bg-white border border-primary-10 px-3 py-1 rounded-full flex items-center gap-2"
                 >
                   <span>{tag}</span>
                   <button type="button" onClick={() => removeTag(tag)}>
-                    <X className="w-4 h-4 text-blue-500 hover:text-red-500" />
+                    <X className="w-4 h-4 text-primary-10 hover:text-red-500" />
                   </button>
                 </div>
               ))}
@@ -277,19 +264,18 @@ const AddorEditBookTextForm: React.FC<TAddorEditBookTextFormProps> = ({
           </div>
 
           <div className="flex justify-end gap-3">
-            <button
-              type="button"
-              onClick={() => setShowForm(false)}
-              className="px-4 py-2 border rounded-md"
-            >
-              Cancel
-            </button>
-            <Button label="Save" variant="primary" isLoading={isLoading || isUpdating} />
+            <Button
+              label="Cancel"
+              variant="secondary"
+              onClick={() => setIsAddOrEditBookTextModalOpen(false)}
+            />
+
+            <Button label="Save" isLoading={isLoading || isUpdating} />
           </div>
         </form>
       </div>
-    </div>
+    </Modal>
   );
 };
 
-export default AddorEditBookTextForm;
+export default AddOrEditBookTextForm;

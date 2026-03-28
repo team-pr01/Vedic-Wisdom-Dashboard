@@ -9,19 +9,16 @@ const bookApi = baseApi.injectEndpoints({
         skip,
         limit,
         keyword,
-        category
       }: {
         keyword?: string;
         limit?: number;
         skip?: number;
-        category?: string
       } = {}) => {
         const params = new URLSearchParams();
 
         if (keyword) params.append("keyword", keyword);
         if (typeof limit === "number") params.append("limit", limit.toString());
         if (typeof skip === "number") params.append("skip", skip.toString());
-        if (category) params.append("category", category);
 
         return {
           url: `/book?${params.toString()}`,

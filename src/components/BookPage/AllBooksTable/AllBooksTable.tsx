@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   useDeleteBookMutation,
   useGetAllBooksQuery,
+  useGetSingleBookQuery,
 } from "../../../redux/Features/Book/bookApi";
 import toast from "react-hot-toast";
 import DeleteConfirmationModal from "../../Reusable/DeleteConfirmationModal/DeleteConfirmationModal";
 import Table from "../../Reusable/Table/Table";
-import Category from "../../Shared/Category/Category";
 import Button from "../../Reusable/Button/Button";
-import { useGetAllCategoriesByAreaNameQuery } from "../../../redux/Features/Categories/categoriesApi";
+import AddOrEditBookForm from "../AddOrEditBookForm/AddOrEditBookForm";
 
 export type TBooks = {
   _id: string;
@@ -26,30 +26,27 @@ export type TBooks = {
   level3Name?: string;
 };
 
-type AllBooksTableProps = {
-  onAddBook: () => void;
-  onEdit: (bookId: string) => void;
-};
-
-const AllBooksTable: React.FC<AllBooksTableProps> = ({ onAddBook, onEdit }) => {
+const AllBooksTable = () => {
   const [page, setPage] = useState<number>(1);
   const [limit, setLimit] = useState<number>(10);
   const skip = (page - 1) * limit;
   const [keyword, setKeyword] = useState<string>("");
-  const [category, setCategory] = useState<string>("");
   const [selectedBookId, setSelectedBookId] = useState<any>(null);
   const [showDeleteConfirmationModal, setShowDeleteConfirmationModal] =
     useState<boolean>(false);
+  const [modalType, setModalType] = useState<string>("add");
+  const [isAddOrEditBookModalOpen, setIsAddOrEditBookModalOpen] =
+    useState<boolean>(false);
+
+  const { data: singleBook, isLoading: isSingleBookLoading } =
+    useGetSingleBookQuery(selectedBookId);
 
   const { data, isLoading, isFetching } = useGetAllBooksQuery({
     skip,
     limit,
     keyword,
-    category,
   });
 
-
-  const { data: categories } = useGetAllCategoriesByAreaNameQuery("Book");
   const [deleteBook] = useDeleteBookMutation();
 
   const handleDeleteBook = async () => {
@@ -71,7 +68,7 @@ const AllBooksTable: React.FC<AllBooksTableProps> = ({ onAddBook, onEdit }) => {
     { key: "structure", label: "Structure" },
   ];
 
-    const books = data?.data?.data;
+  const books = data?.data?.data;
   const booksTableData = books?.map((book: any, index: number) => ({
     _id: book?._id,
 
@@ -102,20 +99,14 @@ const AllBooksTable: React.FC<AllBooksTableProps> = ({ onAddBook, onEdit }) => {
 
   const children = (
     <div className="flex items-center gap-3">
-      <select
-        value={category ?? ""}
-        onChange={(e) => setCategory(e.target.value)}
-        className="input input-sm px-3 py-2 border border-neutral-55/60 focus:border-primary-10 transition duration-300 focus:outline-none rounded-md text-sm shadow-sm cursor-pointer"
-      >
-        <option value="">Select Category </option>
-        {categories?.data?.map((category: any) => (
-          <option key={category?.category} value={category?.category}>
-            {category?.category}
-          </option>
-        ))}
-      </select>
-      <Category areaName="Book" />
-      <Button label="Add New Book" onClick={onAddBook} className="px-3 py-2" />
+      <Button
+        label="Add New Book"
+        onClick={() => {
+          setModalType("add");
+          setIsAddOrEditBookModalOpen(true);
+        }}
+        className="px-3 py-2"
+      />
     </div>
   );
 
@@ -135,10 +126,14 @@ const AllBooksTable: React.FC<AllBooksTableProps> = ({ onAddBook, onEdit }) => {
         onPageChange={(p) => setPage(p)}
         isLoading={isLoading || isFetching}
         onSearch={handleSearch}
-        limit={10}
+        limit={limit}
         setLimit={setLimit}
         children={children}
-        onEditItem={onEdit}
+        onEditItem={(row) => {
+          setSelectedBookId(row?._id);
+          setModalType("edit");
+          setIsAddOrEditBookModalOpen(true);
+        }}
         onDeleteItem={(row: any) => {
           setSelectedBookId(row?._id);
           setShowDeleteConfirmationModal(true);
@@ -149,6 +144,18 @@ const AllBooksTable: React.FC<AllBooksTableProps> = ({ onAddBook, onEdit }) => {
         <DeleteConfirmationModal
           onClose={() => setShowDeleteConfirmationModal(false)}
           onConfirm={handleDeleteBook}
+        />
+      )}
+
+      {/* Add Form Modal */}
+      {isAddOrEditBookModalOpen && (
+        <AddOrEditBookForm
+          isAddOrEditBookModalOpen={isAddOrEditBookModalOpen}
+          setIsAddOrEditBookModalOpen={setIsAddOrEditBookModalOpen}
+          defaultValues={singleBook?.data}
+          modalType={modalType as "add" | "edit"}
+          setModalType={setModalType}
+          isSingleDataLoading={isSingleBookLoading}
         />
       )}
     </div>

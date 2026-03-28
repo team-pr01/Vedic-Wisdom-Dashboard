@@ -1,14 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
-import AddBookForm from "../../components/BookPage/AddBookForm/AddBookForm";
-import { useGetSingleBookQuery } from "../../redux/Features/Book/bookApi";
 import AllBooksTable from "../../components/BookPage/AllBooksTable/AllBooksTable";
 import AllTextsTable from "../../components/BookPage/AllTextsTable/AllTextsTable";
-import {
-  useGetAllTextsQuery,
-  useGetSingleTextQuery,
-} from "../../redux/Features/Book/textsApi";
-import AddorEditBookTextForm from "../../components/BookPage/AddorEditBookTextForm/AddorEditBookTextForm";
 import Translations from "../../components/BookPage/Translations/Translations";
 import { useGetAllReportedMantrasQuery } from "../../redux/Features/Book/reportedMantraApi";
 import AllReportedMantrasTable from "../../components/BookPage/AllReportedMantrasTable/AllReportedMantrasTable";
@@ -25,23 +18,9 @@ export type TBook = {
 };
 
 const Books = () => {
-  const [mode, setMode] = useState<"add" | "edit">("add");
-  const [addOrEditBookModalOpen, setIsAddOrEditBookModalOpen] =
-    useState<boolean>(false);
-  const [showBookTextForm, setShowBookTextForm] = useState<boolean>(false);
   const [isReviewMantraModalOpen, setIsReviewMantraModalOpen] =
     useState<boolean>(false);
   const [reportedMantraStatus, setReportedMantraStatus] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedBookId, setSelectedBookId] = useState<null | string>("");
-  const [selectedBookTextId, setSelectedBookTextId] = useState<null | string>(
-    "",
-  );
-  const { data: singleBook, isLoading: isSingleBookLoading } =
-    useGetSingleBookQuery(selectedBookId);
-
-  const { data: singleBookText, isLoading: isSingleBookTextLoading } =
-    useGetSingleTextQuery(selectedBookTextId);
 
   const {
     data: reportedMantras,
@@ -57,17 +36,6 @@ const Books = () => {
     "Translations",
     "Mantra Reports",
   ];
-
-  // const buttonOnclick = () => {
-  //   if (activeTab === "Manage Books") {
-  //     setIsAddOrEditBookModalOpen(true);
-  //     setMode("add");
-  //   }
-  //   if (activeTab === "Manage Texts") {
-  //     setShowBookTextForm(true);
-  //     setMode("add");
-  //   }
-  // };
 
   return (
     <div className="flex flex-col bg-white rounded-2xl p-5">
@@ -93,29 +61,9 @@ const Books = () => {
         ))}
       </div>
 
-      {activeTab === "Manage Books" && (
-        <AllBooksTable
-          onAddBook={() => {
-            setMode("add");
-            setIsAddOrEditBookModalOpen(true);
-          }}
-          onEdit={(bookId) => {
-            setSelectedBookId(bookId);
-            setMode("edit");
-            setIsAddOrEditBookModalOpen(true);
-          }}
-        />
-      )}
+      {activeTab === "Manage Books" && <AllBooksTable />}
 
-      {activeTab === "Manage Texts" && (
-        <AllTextsTable
-          onEdit={(bookTextId) => {
-            setSelectedBookTextId(bookTextId);
-            setMode("edit");
-            setShowBookTextForm(true);
-          }}
-        />
-      )}
+      {activeTab === "Manage Texts" && <AllTextsTable />}
 
       {activeTab === "Translations" && <Translations />}
 
@@ -146,29 +94,6 @@ const Books = () => {
           />
         </div>
       )}
-
-      {/* Add Form Modal */}
-      {addOrEditBookModalOpen && (
-        <AddBookForm
-          setShowForm={setIsAddOrEditBookModalOpen}
-          defaultValues={singleBook?.data}
-          mode={mode}
-          setMode={setMode}
-          isSingleDataLoading={isSingleBookLoading}
-        />
-      )}
-
-      {/* Add Form Modal */}
-      {/* {showBookTextForm && (
-        <AddorEditBookTextForm
-          setShowForm={setShowBookTextForm}
-          defaultValues={singleBookText?.data}
-          mode={mode}
-          setMode={setMode}
-          isSingleDataLoading={isSingleBookTextLoading}
-          bookNames={books?.data}
-        />
-      )} */}
     </div>
   );
 };

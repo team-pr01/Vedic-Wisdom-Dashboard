@@ -73,8 +73,8 @@ const bookTextApi = baseApi.injectEndpoints({
       invalidatesTags: ["texts"],
     }),
 
-    deleteText: builder.mutation<any, { id: string }>({
-      query: ({ id }) => ({
+     deleteText: builder.mutation<any, string>({
+      query: (id) => ({
         url: `/book-text/delete/${id}`,
         method: "DELETE",
         credentials: "include",

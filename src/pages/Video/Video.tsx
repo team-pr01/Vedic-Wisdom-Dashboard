@@ -154,7 +154,7 @@ const videoTableData = videos?.map((video: TReels, index: number) => ({
         onPageChange={(p) => setPage(p)}
         isLoading={isLoading || isFetching}
         onSearch={handleSearch}
-        limit={10}
+        limit={limit}
         setLimit={setLimit}
         children={children}
         onEditItem={(row: any) => {

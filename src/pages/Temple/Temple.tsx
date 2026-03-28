@@ -228,7 +228,7 @@ const Temple = () => {
         isLoading={isLoading || isFetching}
         onSearch={handleSearch}
         actions={templeActions}
-        limit={10}
+        limit={limit}
         setLimit={setLimit}
         children={children}
       />
