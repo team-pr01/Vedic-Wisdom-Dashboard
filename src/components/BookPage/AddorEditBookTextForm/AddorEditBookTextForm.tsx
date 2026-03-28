@@ -8,6 +8,7 @@ import TextInput from "../../Reusable/TextInput/TextInput";
 import Textarea from "../../Reusable/TextArea/TextArea";
 import {
   useAddTextMutation,
+  useGetSingleTextQuery,
   useUpdateTextMutation,
 } from "../../../redux/Features/Book/textsApi";
 import Loader from "../../Reusable/Loader/Loader";
@@ -20,8 +21,7 @@ export type TAddOrEditBookTextFormProps = {
   setIsAddOrEditBookTextModalOpen: any;
   modalType?: "add" | "edit";
   setModalType: (mode: "add" | "edit") => void;
-  defaultValues?: any;
-  isSingleDataLoading?: boolean;
+  textId: string | undefined;
 };
 
 type TLocation = {
@@ -43,14 +43,15 @@ const AddOrEditBookTextForm: React.FC<TAddOrEditBookTextFormProps> = ({
   setIsAddOrEditBookTextModalOpen,
   modalType = "add",
   setModalType,
-  defaultValues,
-  isSingleDataLoading,
+  textId,
 }) => {
   const { data } = useGetAllBooksQuery({});
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [selectedBook, setSelectedBook] = useState<any>(null);
-
+  const { data: textData, isLoading: isSingleBookTextLoading } =
+    useGetSingleTextQuery(textId || "", { skip: !textId });
+  const singleTextData = textData?.data || {};
   const [addText, { isLoading }] = useAddTextMutation();
   const [updateText, { isLoading: isUpdating }] = useUpdateTextMutation();
 
@@ -82,7 +83,7 @@ const AddOrEditBookTextForm: React.FC<TAddOrEditBookTextFormProps> = ({
     levels: b.levels,
   }));
 
-  // 🟢 Handle selecting a book to auto-load structure levels
+  // Handle selecting a book to auto-load structure levels
   const handleBookChange = (bookId: string) => {
     const book = allBookNames.find((b: any) => b._id === bookId);
     setSelectedBook(book);
@@ -96,17 +97,17 @@ const AddOrEditBookTextForm: React.FC<TAddOrEditBookTextFormProps> = ({
     }
   };
 
-  // 🟢 Setup defaults on edit or add
+  // Setup defaults on edit or add
   useEffect(() => {
-    if (modalType === "edit" && defaultValues) {
+    if (modalType === "edit" && singleTextData) {
       reset({
-        bookId: defaultValues.bookId?._id ?? "",
-        location: defaultValues.location ?? [],
-        originalText: defaultValues.originalText ?? "",
-        primaryTranslation: defaultValues.primaryTranslation ?? "",
-        tags: defaultValues.tags ?? [],
+        bookId: singleTextData.bookId?._id ?? "",
+        location: singleTextData.location ?? [],
+        originalText: singleTextData.originalText ?? "",
+        primaryTranslation: singleTextData.primaryTranslation ?? "",
+        tags: singleTextData.tags ?? [],
       });
-      setTags(defaultValues.tags || []);
+      setTags(singleTextData.tags || []);
     } else if (modalType === "add") {
       reset({
         bookId: "",
@@ -117,9 +118,9 @@ const AddOrEditBookTextForm: React.FC<TAddOrEditBookTextFormProps> = ({
       });
       setTags([]);
     }
-  }, [defaultValues, modalType, reset]);
+  }, [singleTextData, modalType, reset]);
 
-  // 🟢 Tag input handlers
+  // Tag input handlers
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -133,7 +134,7 @@ const AddOrEditBookTextForm: React.FC<TAddOrEditBookTextFormProps> = ({
   const removeTag = (tag: string) =>
     setTags((prev) => prev.filter((t) => t !== tag));
 
-  // 🟢 Submit handler
+  // Submit handler
   const onSubmit = async (data: TFormValues) => {
     const payload = {
       bookId: data.bookId,
@@ -145,9 +146,9 @@ const AddOrEditBookTextForm: React.FC<TAddOrEditBookTextFormProps> = ({
 
     try {
       let response;
-      if (modalType === "edit" && defaultValues?._id) {
+      if (modalType === "edit" && singleTextData?._id) {
         response = await updateText({
-          id: defaultValues._id,
+          id: singleTextData._id,
           data: payload,
         }).unwrap();
         toast.success(response?.message || "Book text updated successfully");
@@ -171,7 +172,7 @@ const AddOrEditBookTextForm: React.FC<TAddOrEditBookTextFormProps> = ({
       heading={`${modalType === "add" ? "Add" : "Update"} Book Text`}
     >
       <div className="relative">
-        {isSingleDataLoading && (
+        {isSingleBookTextLoading && (
           <div className="absolute inset-0 flex flex-col items-center justify-center backdrop-blur-[2px] bg-white/30 z-50">
             <Loader size="lg" text="Please wait..." />
           </div>
@@ -270,7 +271,11 @@ const AddOrEditBookTextForm: React.FC<TAddOrEditBookTextFormProps> = ({
               onClick={() => setIsAddOrEditBookTextModalOpen(false)}
             />
 
-            <Button label="Save" isLoading={isLoading || isUpdating} />
+            <Button
+              label="Save"
+              type="submit"
+              isLoading={isLoading || isUpdating}
+            />
           </div>
         </form>
       </div>

@@ -31,8 +31,7 @@ const AllTextsTable = () => {
     useState<boolean>(false);
   const [showDeleteConfirmationModal, setShowDeleteConfirmationModal] =
     useState<boolean>(false);
-  const { data: singleBookText, isLoading: isSingleBookTextLoading } =
-    useGetSingleTextQuery(selectedTextId || "", { skip: !selectedTextId });
+  
   const [deleteText] = useDeleteTextMutation();
 
   const handleDeleteBookText = async () => {
@@ -145,10 +144,9 @@ const AllTextsTable = () => {
         <AddOrEditBookTextForm
           isAddOrEditBookTextModalOpen={isAddOrEditBookTextModalOpen}
           setIsAddOrEditBookTextModalOpen={setIsAddOrEditBookTextModalOpen}
-          defaultValues={singleBookText?.data}
           modalType={modalType as "add" | "edit"}
           setModalType={setModalType}
-          isSingleDataLoading={isSingleBookTextLoading}
+          textId={selectedTextId}
         />
       )}
     </div>

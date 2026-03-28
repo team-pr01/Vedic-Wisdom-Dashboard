@@ -30,7 +30,7 @@ const bookTextApi = baseApi.injectEndpoints({
 
     getSingleText: builder.query({
       query: (id) => ({
-        url: `/book-text/${id}`,
+        url: `/book-text/single/${id}`,
         method: "GET",
         credentials: "include",
       }),
