@@ -8,7 +8,6 @@ import {
   HelpCircle,
   Compass,
   ShoppingBag,
-  Star,
   Briefcase,
   Leaf,
   GraduationCap,
@@ -18,6 +17,8 @@ import {
   LogOut,
   Siren,
   Newspaper,
+  Expand,
+  HeartHandshake,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { IMAGES } from "../../assets";
@@ -34,12 +35,13 @@ export const navItems = [
   { path: "/dashboard/emergency", label: "Emergency", icon: Siren },
   { path: "/dashboard/news", label: "News", icon: Newspaper },
   { path: "/dashboard/vastu", label: "Vastu", icon: Compass },
-  { path: "/dashboard/jyotish", label: "Jyotish", icon: Star },
   { path: "/dashboard/consultancy", label: "Consultancy", icon: Briefcase },
   { path: "/dashboard/ayurveda", label: "Ayurveda", icon: Leaf },
   { path: "/dashboard/course", label: "Course", icon: GraduationCap },
   { path: "/dashboard/video", label: "Video", icon: Video },
   { path: "/dashboard/food", label: "Food", icon: Utensils },
+  { path: "/dashboard/popup", label: "Popup", icon: Expand },
+  { path: "/dashboard/donation-program", label: "Donation Program", icon: HeartHandshake },
 ];
 
 const Sidebar = () => {

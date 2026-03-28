@@ -76,6 +76,10 @@ export const baseApi = createApi({
     "book",
     "texts",
     "reportMantra",
+    "popup",
+    "",
+    "",
+    ""
   ],
   endpoints: () => ({}),
 });
