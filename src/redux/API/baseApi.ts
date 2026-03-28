@@ -77,7 +77,7 @@ export const baseApi = createApi({
     "texts",
     "reportMantra",
     "popup",
-    "",
+    "donation",
     "",
     ""
   ],
