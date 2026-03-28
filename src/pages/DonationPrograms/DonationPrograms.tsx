@@ -9,6 +9,7 @@ import {
   useGetAllDonationProgramsQuery,
 } from "../../redux/Features/DonationPrograms/donationProgramApi";
 import AddOrEditDonationProgram from "../../components/DonationProgramPage/AddOrEditDonationProgram/AddOrEditDonationProgram";
+import { formatDate } from "../../utils/formatDate";
 
 const DonationPrograms = () => {
   const [page, setPage] = useState<number>(1);
@@ -31,8 +32,6 @@ const DonationPrograms = () => {
     limit,
     keyword,
   });
-
-  console.log(data);
 
   const [deleteDonationProgram] = useDeleteDonationProgramMutation();
 
@@ -131,9 +130,7 @@ const DonationPrograms = () => {
 
       createdAt: (
         <span className="text-sm text-neutral-500">
-          {program?.createdAt
-            ? new Date(program.createdAt).toLocaleDateString()
-            : "-"}
+          {formatDate(program?.createdAt)}
         </span>
       ),
     }),

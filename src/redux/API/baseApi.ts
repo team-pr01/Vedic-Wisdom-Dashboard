@@ -78,7 +78,7 @@ export const baseApi = createApi({
     "reportMantra",
     "popup",
     "donation",
-    "",
+    "consultant",
     ""
   ],
   endpoints: () => ({}),

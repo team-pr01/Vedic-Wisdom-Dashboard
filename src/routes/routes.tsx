@@ -27,6 +27,7 @@ import JobApplications from "../pages/Job/JobApplications";
 import Books from "../pages/Books/Books";
 import Popup from "../pages/Popup/Popup";
 import DonationPrograms from "../pages/DonationPrograms/DonationPrograms";
+import Consultants from "../pages/Consultants/Consultants";
 
 export const router = createBrowserRouter([
   {
@@ -144,6 +145,10 @@ export const router = createBrowserRouter([
       {
         path: "donation-program",
         element: <DonationPrograms />,
+      },
+      {
+        path: "consultants",
+        element: <Consultants />,
       },
     ],
   },
