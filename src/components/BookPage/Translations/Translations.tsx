@@ -2,10 +2,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
 import { useGetAllBooksQuery } from "../../../redux/Features/Book/bookApi";
-import { Book } from "lucide-react";
 import TranslateBookModal from "./TranslateBookModal";
 import { useGetTextByDetailsQuery } from "../../../redux/Features/Book/textsApi";
 import Loader from "../../Reusable/Loader/Loader";
+import Button from "../../Reusable/Button/Button";
 
 type TSelectedBook = {
   _id: string;
@@ -20,7 +20,7 @@ const Translations = () => {
     useState<boolean>(false);
   const [selectedBook, setSelectedBook] = useState<TSelectedBook>(null);
   const [locationValues, setLocationValues] = useState<Record<string, string>>(
-    {}
+    {},
   );
 
   const shouldFetch =
@@ -38,7 +38,7 @@ const Translations = () => {
     },
     {
       skip: !shouldFetch,
-    }
+    },
   );
 
   const allBookNames = books?.map((item: any) => ({
@@ -68,7 +68,7 @@ const Translations = () => {
   };
 
   return (
-    <div className="bg-gray-100 p-4 rounded-2xl mt-8">
+    <div className="bg-gray-100 p-4 rounded-2xl mt-8 font-Inter">
       <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-200">
         Find Text by Location
       </h3>
@@ -76,15 +76,16 @@ const Translations = () => {
       <div className="flex justify-between items-center gap-4 mt-3">
         <div className="flex items-center gap-4">
           {/* Books dropdown */}
-          <div className="flex flex-col gap-2 font-Inter w-[600px]">
-            <label className="text-neutral-65">
-              Book
-              <span className="text-red-600"> *</span>
+          <div className="flex flex-col gap-2 font-Inter w-150">
+            <label className="flex flex-row items-center w-full justify-between text-neutral-65">
+              <span className="text-neutral-20 leading-4.5 text-[15px] font-medium tracking-[-0.16]">
+                Book
+              </span>
             </label>
             <select
               value={selectedBook?._id || ""}
               onChange={handleBookChange}
-              className="px-[18px] py-2 rounded-lg bg-neutral-70 border text-neutral-65 focus:outline-none focus:border-primary-10 transition duration-300"
+              className="relative block w-full px-4 py-3 border text-neutral-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-10 focus:border-transparent font-Roboto transition-all duration-200 cursor-pointer bg-white border-neutral-50"
             >
               <option value="" disabled>
                 Select Book
@@ -100,12 +101,14 @@ const Translations = () => {
           {/* Dynamic location fields */}
           {selectedBook && (
             <div className="flex flex-col gap-2 font-Inter w-full">
-              <label className="text-neutral-65">
-                Enter Location
-                <span className="text-red-600"> *</span>
+              <label className="flex flex-row items-center w-full justify-between text-neutral-65">
+                <span className="text-neutral-20 leading-4.5 text-[15px] font-medium tracking-[-0.16]">
+                  Enter Location <span className="text-primary-10">*</span>
+                </span>
               </label>
+
               <div className="flex items-center gap-2">
-                {selectedBook.levels.map((lvl) => (
+                {selectedBook?.levels?.map((lvl) => (
                   <input
                     key={lvl._id}
                     placeholder={lvl.name}
@@ -113,7 +116,7 @@ const Translations = () => {
                     onChange={(e) =>
                       handleLocationChange(lvl.name, e.target.value)
                     }
-                    className="px-[18px] py-2 rounded-lg border focus:outline-none focus:border-primary-500 transition duration-300 bg-neutral-50 w-[200px]"
+                    className="relative block w-full px-4 py-3 border text-neutral-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-10 focus:border-transparent font-Roboto transition-all duration-200 border-neutral-50"
                   />
                 ))}
               </div>
@@ -121,6 +124,17 @@ const Translations = () => {
           )}
         </div>
 
+        <Button
+          type="button"
+          label={
+            isSingleTextFetching || isSingleTextLoading
+              ? "Finding Text..."
+              : "Translate"
+          }
+          onClick={() => setIsTranslateModalOpen(true)}
+          disabled={!shouldFetch || isSingleTextFetching}
+        />
+        {/* 
         <button
           onClick={() => setIsTranslateModalOpen(true)}
           disabled={!shouldFetch || isSingleTextFetching}
@@ -134,7 +148,7 @@ const Translations = () => {
               Translate
             </p>
           )}
-        </button>
+        </button> */}
       </div>
 
       {isTranslateModalOpen && (

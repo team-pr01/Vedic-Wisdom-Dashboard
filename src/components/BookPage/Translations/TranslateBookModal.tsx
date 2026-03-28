@@ -10,6 +10,7 @@ import {
 } from "../../../redux/Features/Book/textsApi";
 import toast from "react-hot-toast";
 import { LANGUAGES } from "../../../constants/allLanguages";
+import Button from "../../Reusable/Button/Button";
 
 interface TranslationFormData {
   translations: {
@@ -59,7 +60,8 @@ const TranslateBookModal = ({
   data: BookTextData;
   setIsTranslateModalOpen: (isOpen: boolean) => void;
 }) => {
-  const [updateTranslation, { isLoading: isUpdating }] = useUpdateTranslationMutation();
+  const [updateTranslation, { isLoading: isUpdating }] =
+    useUpdateTranslationMutation();
   const [translateText, { isLoading: isTranslating }] =
     useTranslateTextMutation();
   const [selectedLanguages, setSelectedLanguages] = useState<any[]>([]);
@@ -110,7 +112,7 @@ const TranslateBookModal = ({
       setSelectedLanguages((prev) => [...prev, language]);
     } else {
       setSelectedLanguages((prev) =>
-        prev.filter((lang) => lang.code !== language.code)
+        prev.filter((lang) => lang.code !== language.code),
       );
     }
   };
@@ -147,7 +149,7 @@ const TranslateBookModal = ({
           const wordMeanings =
             trans.sanskritWordBreakdown
               ?.map(
-                (word) => `${word.sanskritWord} - ${word.descriptiveMeaning}`
+                (word) => `${word.sanskritWord} - ${word.descriptiveMeaning}`,
               )
               .join("\n") || "";
 
@@ -171,7 +173,7 @@ const TranslateBookModal = ({
     try {
       // Convert translations object to array
       const translationsArray: Translation[] = Object.entries(
-        formData.translations
+        formData.translations,
       ).map(([langCode, trans]) => {
         const sanskritWordBreakdown: SanskritWord[] = [];
 
@@ -221,7 +223,7 @@ const TranslateBookModal = ({
   const currentTranslations = watch("translations") || {};
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-neutral-5/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="p-6 flex flex-col max-h-[75vh]">
@@ -237,7 +239,7 @@ const TranslateBookModal = ({
                       <input
                         type="checkbox"
                         checked={selectedLanguages.some(
-                          (lang) => lang.code === language.code
+                          (lang) => lang.code === language.code,
                         )}
                         onChange={(e) =>
                           toggleLanguage(language, e.target.checked)
@@ -250,15 +252,15 @@ const TranslateBookModal = ({
                         type="button"
                         onClick={() => {
                           const isChecked = selectedLanguages.some(
-                            (lang) => lang.code === language.code
+                            (lang) => lang.code === language.code,
                           );
                           toggleLanguage(language, !isChecked);
                         }}
-                        className={`flex items-center justify-center px-2 py-1 rounded shadow-sm text-xs font-medium whitespace-nowrap
+                        className={`flex items-center justify-center px-2 py-1 rounded shadow-sm text-xs font-medium whitespace-nowrap transition duration-300 border border-primary-10
       ${
         selectedLanguages.some((lang) => lang.code === language.code)
-          ? "bg-blue-600 text-white"
-          : "bg-gray-400 text-white hover:bg-gray-700"
+          ? "bg-primary-10 text-white"
+          : "bg-white text-primary-10 hover:bg-primary-10 hover:text-white"
       }`}
                       >
                         {language.name}
@@ -319,7 +321,7 @@ const TranslateBookModal = ({
                           onChange={(e) =>
                             setValue(
                               `translations.${lang.code}.translation`,
-                              e.target.value
+                              e.target.value,
                             )
                           }
                           error={
@@ -336,7 +338,7 @@ const TranslateBookModal = ({
                           onChange={(e) =>
                             setValue(
                               `translations.${lang.code}.wordByWord`,
-                              e.target.value
+                              e.target.value,
                             )
                           }
                           error={
@@ -354,7 +356,7 @@ const TranslateBookModal = ({
                           onChange={(e) =>
                             setValue(
                               `translations.${lang.code}.wordMeanings`,
-                              e.target.value
+                              e.target.value,
                             )
                           }
                           error={
@@ -374,19 +376,21 @@ const TranslateBookModal = ({
           </div>
 
           <div className="p-4 bg-slate-100 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3">
-            <button
-              onClick={() => setIsTranslateModalOpen(false)}
+            <Button
+              label={"Cancel"}
               type="button"
-              className="px-4 py-2 bg-slate-200 dark:bg-slate-600 text-slate-800 dark:text-white font-semibold rounded-lg hover:bg-slate-300 dark:hover:bg-slate-500 disabled:opacity-50"
-            >
-              Cancel
-            </button>
-            <button
+              variant="secondary"
+              className="py-1.75 w-full md:w-fit"
+              onClick={() => setIsTranslateModalOpen(false)}
+            />
+            <Button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50"
-            >
-              {isUpdating ? "Please wait..." : "Save All Changes"}
-            </button>
+              label={isUpdating ? "Please wait..." : "Save All Changes"}
+              variant="primary"
+              className="py-1.75 w-full md:w-fit"
+              isLoading={isUpdating || isUpdating}
+              isDisabled={isUpdating || isUpdating}
+            />
           </div>
         </form>
       </div>

@@ -48,7 +48,7 @@ const AddOrEditBookTextForm: React.FC<TAddOrEditBookTextFormProps> = ({
   const { data } = useGetAllBooksQuery({});
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>([]);
-  const [selectedBook, setSelectedBook] = useState<any>(null);
+  // const [selectedBook, setSelectedBook] = useState<any>(null);
   const { data: textData, isLoading: isSingleBookTextLoading } =
     useGetSingleTextQuery(textId || "", { skip: !textId });
   const singleTextData = textData?.data || {};
@@ -86,7 +86,7 @@ const AddOrEditBookTextForm: React.FC<TAddOrEditBookTextFormProps> = ({
   // Handle selecting a book to auto-load structure levels
   const handleBookChange = (bookId: string) => {
     const book = allBookNames.find((b: any) => b._id === bookId);
-    setSelectedBook(book);
+    // setSelectedBook(book);
 
     if (book?.levels?.length) {
       replace(
