@@ -32,7 +32,7 @@ const consultantsApi = baseApi.injectEndpoints({
     /* ADD */
     addConsultant: builder.mutation<any, any>({
       query: (data) => ({
-        url: `/consultant`,
+        url: `/consultant/add`,
         method: "POST",
         body: data,
         credentials: "include",
@@ -43,7 +43,7 @@ const consultantsApi = baseApi.injectEndpoints({
     /* UPDATE */
     updateConsultant: builder.mutation<any, any>({
       query: ({ id, data }) => ({
-        url: `/consultant/${id}`,
+        url: `/consultant/update/${id}`,
         method: "PUT",
         body: data,
         credentials: "include",
@@ -54,7 +54,7 @@ const consultantsApi = baseApi.injectEndpoints({
     /* DELETE */
     deleteConsultant: builder.mutation<any, string>({
       query: (id) => ({
-        url: `/consultant/${id}`,
+        url: `/consultant/delete/${id}`,
         method: "DELETE",
         credentials: "include",
       }),

@@ -36,7 +36,7 @@ export const navItems = [
   { path: "/dashboard/news", label: "News", icon: Newspaper },
   { path: "/dashboard/vastu", label: "Vastu", icon: Compass },
   { path: "/dashboard/consultants", label: "Consultants", icon: Briefcase },
-  { path: "/dashboard/consultancy", label: "Consultancy", icon: Briefcase },
+  { path: "/dashboard/consultations", label: "Consultations", icon: Briefcase },
   { path: "/dashboard/ayurveda", label: "Ayurveda", icon: Leaf },
   { path: "/dashboard/course", label: "Course", icon: GraduationCap },
   { path: "/dashboard/video", label: "Video", icon: Video },

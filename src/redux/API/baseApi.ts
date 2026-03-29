@@ -79,7 +79,7 @@ export const baseApi = createApi({
     "popup",
     "donation",
     "consultant",
-    ""
+    "consultation"
   ],
   endpoints: () => ({}),
 });

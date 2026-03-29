@@ -28,6 +28,7 @@ import Books from "../pages/Books/Books";
 import Popup from "../pages/Popup/Popup";
 import DonationPrograms from "../pages/DonationPrograms/DonationPrograms";
 import Consultants from "../pages/Consultants/Consultants";
+import Consultations from "../pages/Consultations/Consultations";
 
 export const router = createBrowserRouter([
   {
@@ -149,6 +150,10 @@ export const router = createBrowserRouter([
       {
         path: "consultants",
         element: <Consultants />,
+      },
+      {
+        path: "consultations",
+        element: <Consultations />,
       },
     ],
   },

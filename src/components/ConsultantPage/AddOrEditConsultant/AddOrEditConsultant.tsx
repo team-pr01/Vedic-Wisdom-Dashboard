@@ -82,7 +82,7 @@ const AddOrEditConsultant: React.FC<TAddOrEditConsultantProps> = ({
     },
   });
 
-  // Sync form with existing consultant data
+  // Setting default values
   useEffect(() => {
     if (modalType === "edit" && data?.data) {
       const consultant = data.data;
@@ -90,7 +90,7 @@ const AddOrEditConsultant: React.FC<TAddOrEditConsultantProps> = ({
       setValue("name", consultant.name);
       setValue("email", consultant.email || "");
       setValue("phoneNumber", consultant.phoneNumber);
-      setSpecialties(consultant.specialty || []);
+      setSpecialties(consultant.specialties || []);
       setValue("experience", consultant.experience);
       setValue("category", consultant.category);
       setValue("fees", consultant.fees);
@@ -114,11 +114,11 @@ const AddOrEditConsultant: React.FC<TAddOrEditConsultantProps> = ({
       payload.append("rating", formData.rating);
 
       // Append specialties array from local state
-      specialties.forEach((sp) => payload.append("specialty", sp));
+      specialties.forEach((sp) => payload.append("specialties", sp));
 
       // Append image file if selected
       if (formData.imageUrl?.[0]) {
-        payload.append("imageUrl", formData.imageUrl[0]);
+        payload.append("file", formData.imageUrl[0]);
       }
 
       if (modalType === "add") {
@@ -230,7 +230,7 @@ const AddOrEditConsultant: React.FC<TAddOrEditConsultantProps> = ({
           {/* Fees */}
           <TextInput
             label="Fees"
-            placeholder="Enter fees"
+            placeholder="Ex: USD 10/hr"
             error={errors.fees}
             {...register("fees", { required: "Fees are required" })}
           />
