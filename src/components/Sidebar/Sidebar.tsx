@@ -19,6 +19,7 @@ import {
   Newspaper,
   Expand,
   HeartHandshake,
+  User,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { IMAGES } from "../../assets";
@@ -35,7 +36,7 @@ export const navItems = [
   { path: "/dashboard/emergency", label: "Emergency", icon: Siren },
   { path: "/dashboard/news", label: "News", icon: Newspaper },
   { path: "/dashboard/vastu", label: "Vastu", icon: Compass },
-  { path: "/dashboard/consultants", label: "Consultants", icon: Briefcase },
+  { path: "/dashboard/consultants", label: "Consultants", icon: User },
   { path: "/dashboard/consultations", label: "Consultations", icon: Briefcase },
   { path: "/dashboard/ayurveda", label: "Ayurveda", icon: Leaf },
   { path: "/dashboard/course", label: "Course", icon: GraduationCap },

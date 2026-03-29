@@ -22,6 +22,7 @@ import { formatDate } from "../../utils/formatDate";
 import type { TConsultation } from "../../types/consultations.types";
 import IconButtonWithToolTip from "../../components/Reusable/IconButtonWithToolTip/IconButtonWithToolTip";
 import ScheduleConsultation from "../../components/ConsultationPage/ScheduleConsultation/ScheduleConsultation";
+import UpdateConsultationStatus from "../../components/ConsultationPage/UpdateConsultationStatus/UpdateConsultationStatus";
 
 const Consultations = () => {
   const [page, setPage] = useState<number>(1);
@@ -33,7 +34,7 @@ const Consultations = () => {
     useState<boolean>(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] =
     useState<boolean>(false);
-  const [isUpdateStatusStatusModalOpen, setIsUpdateStatusModalOpen] =
+  const [isUpdateStatusModalOpen, setIsUpdateStatusModalOpen] =
     useState<boolean>(false);
   const [consultationId, setConsultationId] = useState<string | null>(null);
 
@@ -103,6 +104,7 @@ const Consultations = () => {
     { key: "consultationId", label: "Consultation ID" },
     { key: "user", label: "User" },
     { key: "consultant", label: "Consultant" },
+    { key: "category", label: "Category" },
     { key: "concern", label: "Concern" },
     { key: "scheduledAt", label: "Scheduled At" },
     { key: "meetingLink", label: "Meeting" },
@@ -169,6 +171,11 @@ const Consultations = () => {
           </div>
         ),
 
+        category: (
+          <span className="px-2 py-1 bg-primary-10/10 text-primary-10 text-xs font-medium rounded-full capitalize">
+            {consultation?.consultantId?.category}
+          </span>
+        ),
         concern: (
           <div className="max-w-52">
             <p className="text-sm text-neutral-45 line-clamp-2">
@@ -233,8 +240,8 @@ const Consultations = () => {
               Icon={Edit}
               tooltip="Update Status"
               onClick={() => {
-                console.log("Update status for:", consultation._id);
-                // Open update status dropdown/modal
+                setConsultationId(consultation._id);
+                setIsUpdateStatusModalOpen(true);
               }}
               textColor="text-green-500"
             />
@@ -297,6 +304,14 @@ const Consultations = () => {
         <ScheduleConsultation
           isScheduleModalOpen={isScheduleModalOpen}
           setIsScheduleModalOpen={setIsScheduleModalOpen}
+          consultationId={consultationId as string}
+        />
+      )}
+
+      {isUpdateStatusModalOpen && (
+        <UpdateConsultationStatus
+          isUpdateStatusStatusModalOpen={isUpdateStatusModalOpen}
+          setIsUpdateStatusStatusModalOpen={setIsUpdateStatusModalOpen}
           consultationId={consultationId as string}
         />
       )}
