@@ -124,11 +124,7 @@ const Consultations = () => {
 
         sl: skip + index + 1,
 
-        consultationId: (
-          <span className="font-mono text-xs font-medium text-primary-10">
-            {consultation?.consultationId}
-          </span>
-        ),
+        consultationId: consultation?.consultationId,
 
         user: (
           <div className="max-w-48">

@@ -29,6 +29,8 @@ import Popup from "../pages/Popup/Popup";
 import DonationPrograms from "../pages/DonationPrograms/DonationPrograms";
 import Consultants from "../pages/Consultants/Consultants";
 import Consultations from "../pages/Consultations/Consultations";
+import Subscriptions from "../pages/Subscriptions/Subscriptions";
+import Chat from "../pages/Chat/Chat";
 
 export const router = createBrowserRouter([
   {
@@ -154,6 +156,14 @@ export const router = createBrowserRouter([
       {
         path: "consultations",
         element: <Consultations />,
+      },
+      {
+        path: "subscriptions",
+        element: <Subscriptions />,
+      },
+      {
+        path: "chat",
+        element: <Chat />,
       },
     ],
   },

@@ -1,8 +1,10 @@
-import { Outlet } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 import Sidebar from "../../components/Sidebar/Sidebar";
 import DashboardHeader from "../../components/DashboardHeader/DashboardHeader";
+import { MessageSquareText } from "lucide-react";
 
 const DashboardLayout = () => {
+  const pathname = useLocation().pathname;
   return (
     <div className="flex w-full h-screen bg-background-10 overflow-x-hidden">
       <Sidebar />
@@ -16,6 +18,19 @@ const DashboardLayout = () => {
           <Outlet />
         </div>
       </div>
+
+      {pathname !== "/dashboard/chat" && (
+        <Link
+          to="/dashboard/chat"
+          className="bg-primary-10 rounded-full text-white size-17 flex items-center justify-center fixed right-5 bottom-5"
+        >
+          <div className="bg-white size-16 rounded-full flex items-center justify-center">
+            <div className="bg-primary-10 rounded-full size-15 flex items-center justify-center">
+              <MessageSquareText className="size-7" />
+            </div>
+          </div>
+        </Link>
+      )}
     </div>
   );
 };
