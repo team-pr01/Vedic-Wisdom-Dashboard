@@ -1,14 +1,17 @@
 import { Check, CheckCheck, User } from "lucide-react";
+import { formatDate } from "../../../../utils/formatDate";
 
 type TMessage = {
   id: string;
   name: string;
-  message: string;
   time: string;
   status?: "sent" | "delivered" | "read";
-  unreadCount?: number;
+  unreadCount: number;
   isGroup?: boolean;
-  avatar?: string;
+  profilePicture?: string;
+  isRead?: boolean;
+  lastMessage?: string;
+  lastMessageTime?: string;
 };
 
 const MessageCard = ({ message }: { message: TMessage }) => {
@@ -31,43 +34,43 @@ const MessageCard = ({ message }: { message: TMessage }) => {
       <div className="flex items-center gap-3 flex-1">
         <div className="relative">
           <div className="w-12 h-12 rounded-full bg-primary-10/10 flex items-center justify-center overflow-hidden">
-            {message.avatar ? (
+            {message?.profilePicture ? (
               <img
-                src={message.avatar}
-                alt={message.name}
+                src={message?.profilePicture}
+                alt={message?.name}
                 className="w-full h-full object-cover"
               />
             ) : (
               <User size={20} className="text-primary-10" />
             )}
           </div>
-          {message.unreadCount && message.unreadCount > 0 && (
+          {message?.unreadCount > 0 && (
             <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs flex items-center justify-center rounded-full">
-              {message.unreadCount}
+              {message?.unreadCount}
             </span>
           )}
         </div>
 
-        {/* Name and Message */}
+        {/* Name and Message? */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h3 className="font-medium text-neutral-10 truncate">
-              {message.name}
+              {message?.name}
             </h3>
-            {message.isGroup && (
+            {message?.isGroup && (
               <span className="px-1.5 py-0.5 bg-neutral-100 text-neutral-45 text-xs rounded">
                 Group
               </span>
             )}
           </div>
           <div className="flex items-center gap-1.5 mt-0.5">
-            {message.status === "read" && message.message.startsWith("✔") ? (
+            {message?.isRead? (
               <CheckCheck size={14} className="text-blue-500" />
-            ) : message.status === "delivered" && message.message.startsWith("✔") ? (
+            ) : message?.status === "delivered"? (
               <CheckCheck size={14} className="text-neutral-45" />
             ) : null}
             <p className="text-sm text-neutral-45 truncate">
-              {message.message}
+              {message?.lastMessage}
             </p>
           </div>
         </div>
@@ -75,7 +78,7 @@ const MessageCard = ({ message }: { message: TMessage }) => {
 
       {/* Time and Status */}
       <div className="flex flex-col items-end gap-1 ml-2">
-        <span className="text-xs text-neutral-45">{message.time}</span>
+        <span className="text-xs text-neutral-45">{formatDate(message?.lastMessageTime as string)}</span>
         {getStatusIcon()}
       </div>
     </div>

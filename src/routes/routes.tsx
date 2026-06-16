@@ -31,6 +31,7 @@ import Consultants from "../pages/Consultants/Consultants";
 import Consultations from "../pages/Consultations/Consultations";
 import Subscriptions from "../pages/Subscriptions/Subscriptions";
 import Chat from "../pages/Chat/Chat";
+import Quiz from "../pages/Quiz/Quiz";
 
 export const router = createBrowserRouter([
   {
@@ -160,6 +161,10 @@ export const router = createBrowserRouter([
       {
         path: "subscriptions",
         element: <Subscriptions />,
+      },
+      {
+        path: "quiz",
+        element: <Quiz />,
       },
       {
         path: "chat",

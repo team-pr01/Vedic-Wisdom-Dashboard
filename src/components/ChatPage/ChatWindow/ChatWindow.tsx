@@ -1,89 +1,218 @@
-import { useState } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState, useEffect, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Send, User, MoreVertical, CheckCheck } from "lucide-react";
-
-type TChatMessage = {
-  id: string;
-  message: string;
-  time: string;
-  isOwn: boolean;
-  isRead?: boolean;
-};
+import { useSocket } from "../../../contexts/SocketContext";
+import {
+  addMessage,
+  updateMessageId,
+  selectSelectedChatData,
+  selectSelectedChatMessages,
+  setSelectedChatMessages,
+} from "../../../redux/Features/Chat/chatSlice";
+import { useGetMyMessagesWithOtherSingleUserQuery } from "../../../redux/Features/Chat/messageApi";
 
 const ChatWindow = () => {
   const [newMessage, setNewMessage] = useState("");
+  const dispatch = useDispatch();
+  const { socket } = useSocket();
+  const selectedChatData = useSelector(selectSelectedChatData);
+  const selectedChatMessages = useSelector(selectSelectedChatMessages);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const hasInitialized = useRef(false);
+  const processedMessageIds = useRef<Set<string>>(new Set());
 
-  const chatMessages: TChatMessage[] = [
-    {
-      id: "1",
-      message: "Hi! your last shot was really good!",
-      time: "9:23",
-      isOwn: false,
-    },
-    { id: "2", message: "What tools do you use?", time: "9:23", isOwn: false },
-    {
-      id: "3",
-      message: "Figma for prototype i use principle",
-      time: "9:23",
-      isOwn: true,
-    },
-    {
-      id: "4",
-      message: "Cool! Your design inspire me a lot",
-      time: "9:23",
-      isOwn: false,
-    },
-    { id: "5", message: "Thank u so much Antoan", time: "9:23", isOwn: true, isRead: true },
-    { id: "6", message: "you're welcome", time: "9:23", isOwn: false },
-    {
-      id: "1",
-      message: "Hi! your last shot was really good!",
-      time: "9:23",
-      isOwn: false,
-    },
-    { id: "2", message: "What tools do you use?", time: "9:23", isOwn: false },
-    {
-      id: "3",
-      message: "Figma for prototype i use principle",
-      time: "9:23",
-      isOwn: true,
-    },
-    {
-      id: "4",
-      message: "Cool! Your design inspire me a lot",
-      time: "9:23",
-      isOwn: false,
-    },
-    { id: "5", message: "Thank u so much Antoan", time: "9:23", isOwn: true, isRead: true },
-    { id: "6", message: "you're welcome", time: "9:23", isOwn: false },
-    {
-      id: "1",
-      message: "Hi! your last shot was really good!",
-      time: "9:23",
-      isOwn: false,
-    },
-    { id: "2", message: "What tools do you use?", time: "9:23", isOwn: false },
-    {
-      id: "3",
-      message: "Figma for prototype i use principle",
-      time: "9:23",
-      isOwn: true,
-    },
-    {
-      id: "4",
-      message: "Cool! Your design inspire me a lot",
-      time: "9:23",
-      isOwn: false,
-    },
-    { id: "5", message: "Thank u so much Antoan", time: "9:23", isOwn: true, isRead: true },
-    { id: "6", message: "you're welcome", time: "9:23", isOwn: false },
-  ];
+  const currentUser = useSelector((state: any) => state.auth.user);
+
+  // ✅ Fetch messages when chat is selected
+  const { data } = useGetMyMessagesWithOtherSingleUserQuery(
+    selectedChatData?._id,
+    { skip: !selectedChatData?._id }
+  );
+
+  // ✅ Set messages to Redux when fetched from API (only once per chat)
+  useEffect(() => {
+    if (data?.data && !hasInitialized.current) {
+      dispatch(setSelectedChatMessages(data.data));
+      hasInitialized.current = true;
+      processedMessageIds.current = new Set();
+      data.data.forEach((msg: any) => {
+        if (msg._id) processedMessageIds.current.add(msg._id);
+      });
+    }
+  }, [data, dispatch]);
+
+  // ✅ Reset initialization when chat changes
+  useEffect(() => {
+    hasInitialized.current = false;
+    processedMessageIds.current = new Set();
+    // ✅ Refetch messages when switching chats
+    // if (selectedChatData?._id) {
+    //   refetch();
+    // }
+    // Optionally clear messages on unmount
+    return () => {
+      // Don't clear messages here, let the next chat load
+    };
+  }, [selectedChatData?._id]);
+
+  // Scroll to bottom on new messages
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [selectedChatMessages]);
+
+  // ✅ Listen for incoming messages (from other users)
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleReceiveMessage = (message: any) => {
+      console.log("📩 Received message in ChatWindow:", message);
+
+      const messageId = message._id;
+      const tempId = message.tempId;
+
+      // ✅ Skip if already processed
+      if (processedMessageIds.current.has(messageId) || 
+          (tempId && processedMessageIds.current.has(tempId))) {
+        console.log("⏭️ Skipping duplicate receiveMessage:", messageId || tempId);
+        return;
+      }
+
+      // Check if message belongs to current chat
+      const senderId = message.sender?._id || message.sender;
+      const receiverId = message.receiver?._id || message.receiver;
+
+      if (
+        selectedChatData?._id === senderId ||
+        selectedChatData?._id === receiverId
+      ) {
+        // ✅ Mark as processed
+        if (messageId) processedMessageIds.current.add(messageId);
+        if (tempId) processedMessageIds.current.add(tempId);
+
+        // ✅ Add message to Redux
+        dispatch(addMessage(message));
+      }
+    };
+
+    // ✅ Handle message sent confirmation
+    const handleMessageSent = (message: any) => {
+      console.log("✅ Message sent confirmation in ChatWindow:", message);
+
+      const messageId = message._id;
+      const tempId = message.tempId;
+
+      // ✅ Skip if already processed
+      if (messageId && processedMessageIds.current.has(messageId)) {
+        console.log("⏭️ Skipping duplicate messageSent:", messageId);
+        return;
+      }
+
+      // Check if message belongs to current chat
+      const senderId = message.sender?._id || message.sender;
+      const receiverId = message.receiver?._id || message.receiver;
+
+      if (
+        selectedChatData?._id === senderId ||
+        selectedChatData?._id === receiverId
+      ) {
+        // ✅ Update the temporary message with real data
+        if (tempId) {
+          // Check if temp message exists in Redux
+          const tempExists = selectedChatMessages.some(
+            (m: any) => m._id === tempId || m.tempId === tempId
+          );
+
+          if (tempExists) {
+            // ✅ Mark real ID as processed
+            if (messageId) processedMessageIds.current.add(messageId);
+            
+            // ✅ Update existing temp message
+            dispatch(
+              updateMessageId({
+                tempId: tempId,
+                realId: messageId,
+                createdAt: message.createdAt,
+              })
+            );
+          } else {
+            // ✅ Add as new if temp doesn't exist
+            if (messageId && !processedMessageIds.current.has(messageId)) {
+              processedMessageIds.current.add(messageId);
+              dispatch(addMessage(message));
+            }
+          }
+        } else {
+          // No tempId, check if already exists
+          if (messageId && !processedMessageIds.current.has(messageId)) {
+            processedMessageIds.current.add(messageId);
+            dispatch(addMessage(message));
+          }
+        }
+      }
+    };
+
+    socket.on("receiveMessage", handleReceiveMessage);
+    socket.on("messageSent", handleMessageSent);
+
+    return () => {
+      socket.off("receiveMessage", handleReceiveMessage);
+      socket.off("messageSent", handleMessageSent);
+    };
+  }, [socket, selectedChatData, selectedChatMessages, dispatch]);
 
   const handleSendMessage = () => {
-    if (newMessage.trim()) {
-      console.log("Sending message:", newMessage);
+    if (newMessage.trim() && selectedChatData && socket) {
+      const tempId = `temp-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+
+      const messageData = {
+        sender: currentUser?._id,
+        receiver: selectedChatData._id,
+        content: newMessage.trim(),
+        messageType: "text",
+        tempId,
+      };
+
+      // ✅ Add optimistically to UI
+      const optimisticMessage = {
+        _id: tempId,
+        tempId: tempId,
+        sender: {
+          _id: currentUser?._id,
+          name: currentUser?.name,
+          profilePicture: currentUser?.profilePicture,
+        },
+        receiver: {
+          _id: selectedChatData._id,
+          name: selectedChatData.name,
+        },
+        content: newMessage.trim(),
+        messageType: "text",
+        createdAt: new Date().toISOString(),
+        isTemp: true,
+        isRead: false,
+      };
+
+      // ✅ Mark temp ID as processed
+      processedMessageIds.current.add(tempId);
+      dispatch(addMessage(optimisticMessage));
+
+      // ✅ Send via socket
+      socket.emit("sendMessage", messageData);
       setNewMessage("");
     }
   };
+
+  if (!selectedChatData) {
+    return (
+      <div className="flex items-center justify-center h-full bg-white">
+        <div className="text-center">
+          <User size={48} className="text-neutral-30 mx-auto mb-4" />
+          <p className="text-neutral-45">Select a chat to start messaging</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full bg-white">
@@ -91,13 +220,23 @@ const ChatWindow = () => {
       <div className="p-4 border-b border-neutral-50 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="relative">
-            <div className="w-10 h-10 rounded-full bg-primary-10/10 flex items-center justify-center">
-              <User size={18} className="text-primary-10" />
+            <div className="w-10 h-10 rounded-full bg-primary-10/10 flex items-center justify-center overflow-hidden">
+              {selectedChatData.profilePicture ? (
+                <img
+                  src={selectedChatData.profilePicture}
+                  alt={selectedChatData.name || "User"}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <User size={18} className="text-primary-10" />
+              )}
             </div>
             <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
           </div>
           <div>
-            <p className="font-medium text-neutral-10">Bessie Cooper</p>
+            <p className="font-medium text-neutral-10">
+              {selectedChatData.name}
+            </p>
             <p className="text-xs text-green-500">Online</p>
           </div>
         </div>
@@ -115,35 +254,55 @@ const ChatWindow = () => {
           </span>
         </div>
 
-        {chatMessages.map((msg, idx) => (
-          <div
-            key={idx}
-            className={`flex ${msg.isOwn ? "justify-end" : "justify-start"}`}
-          >
+        {selectedChatMessages.map((msg: any, idx: number) => {
+          const isOwn =
+            msg.sender?._id === currentUser?._id ||
+            msg.sender === currentUser?._id;
+          const isTemp = msg.isTemp;
+
+          return (
             <div
-              className={`max-w-[70%] rounded-2xl px-4 py-2 ${
-                msg.isOwn
-                  ? "bg-primary-10 text-white"
-                  : "bg-neutral-50/60 text-neutral-10"
-              }`}
+              key={msg._id || msg.tempId || idx}
+              className={`flex ${isOwn ? "justify-end" : "justify-start"}`}
             >
-              <p className="text-sm">{msg.message}</p>
-              <div className="flex items-center justify-end gap-1 mt-1">
-                <span
-                  className={`text-xs ${msg.isOwn ? "text-white/70" : "text-neutral-45"}`}
-                >
-                  {msg.time}
-                </span>
-                {msg.isOwn && (
-                  <CheckCheck
-                    size={12}
-                    className={msg.isRead ? "text-white" : "text-white/50"}
-                  />
-                )}
+              <div
+                className={`max-w-[70%] rounded-2xl px-4 py-2 ${
+                  isOwn
+                    ? "bg-primary-10 text-white"
+                    : "bg-neutral-50/60 text-neutral-10"
+                } ${isTemp ? "opacity-80" : ""}`}
+              >
+                <p className="text-sm">{msg.content}</p>
+                <div className="flex items-center justify-end gap-1 mt-1">
+                  <span
+                    className={`text-xs ${
+                      isOwn ? "text-white/70" : "text-neutral-45"
+                    }`}
+                  >
+                    {isTemp
+                      ? "Sending..."
+                      : msg.createdAt
+                      ? new Date(msg.createdAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : ""}
+                  </span>
+                  {isOwn && isTemp && (
+                    <span className="text-xs text-white/50">⌛</span>
+                  )}
+                  {isOwn && !isTemp && (
+                    <CheckCheck
+                      size={12}
+                      className={msg.isRead ? "text-white" : "text-white/50"}
+                    />
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
+        <div ref={messagesEndRef} />
       </div>
 
       {/* Message Input */}
@@ -155,11 +314,11 @@ const ChatWindow = () => {
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
             placeholder="Type a message"
-            className="flex-1 px-4 py-2 border border-neutral-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-10"
+            className="flex-1 px-4 py-2 border border-neutral-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-10 disabled:opacity-50"
           />
           <button
             onClick={handleSendMessage}
-            className="px-4 py-2 bg-primary-10 text-white rounded-lg hover:bg-primary-10/90 transition-colors"
+            className="px-4 py-2 bg-primary-10 text-white rounded-lg hover:bg-primary-10/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Send size={18} />
           </button>

@@ -1,103 +1,53 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import MessageCard from "../MessageCard/MessageCard";
-
-// Sample data
-const chatList: any = [
-  {
-    id: "1",
-    name: "Antonio Banderas",
-    message: "You're welcome",
-    time: "9:23",
-    status: "sent",
-  },
-  {
-    id: "2",
-    name: "Annette Black",
-    message: "✔ Hello there?",
-    time: "8:45",
-    status: "read",
-  },
-  {
-    id: "3",
-    name: "Bessie Cooper",
-    message: "Thanks ray!",
-    time: "9:23",
-    status: "delivered",
-    unreadCount: 2,
-  },
-  {
-    id: "4",
-    name: "Darlene Robertson",
-    message: "✔ Okay thank you robbert",
-    time: "9:23",
-    status: "read",
-  },
-  {
-    id: "1",
-    name: "Antonio Banderas",
-    message: "You're welcome",
-    time: "9:23",
-    status: "sent",
-  },
-  {
-    id: "2",
-    name: "Annette Black",
-    message: "✔ Hello there?",
-    time: "8:45",
-    status: "read",
-  },
-  {
-    id: "3",
-    name: "Bessie Cooper",
-    message: "Thanks ray!",
-    time: "9:23",
-    status: "delivered",
-    unreadCount: 2,
-  },
-  {
-    id: "4",
-    name: "Darlene Robertson",
-    message: "✔ Okay thank you robbert",
-    time: "9:23",
-    status: "read",
-  },
-  {
-    id: "1",
-    name: "Antonio Banderas",
-    message: "You're welcome",
-    time: "9:23",
-    status: "sent",
-  },
-  {
-    id: "2",
-    name: "Annette Black",
-    message: "✔ Hello there?",
-    time: "8:45",
-    status: "read",
-  },
-  {
-    id: "3",
-    name: "Bessie Cooper",
-    message: "Thanks ray!",
-    time: "9:23",
-    status: "delivered",
-    unreadCount: 2,
-  },
-  {
-    id: "4",
-    name: "Darlene Robertson",
-    message: "✔ Okay thank you robbert",
-    time: "9:23",
-    status: "read",
-  },
-];
+import { useSocket } from "../../../../contexts/SocketContext";
+import { selectChatList, setChatList, setSelectedChatData, setSelectedChatType } from "../../../../redux/Features/Chat/chatSlice";
 
 const ChatList = () => {
+  const dispatch = useDispatch();
+  const { socket } = useSocket();
+  const chatList = useSelector(selectChatList);
+
+  // Listen for chat list updates from socket
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleUpdateChatList = (updatedChatList: any[]) => {
+      console.log("📋 Chat list updated:", updatedChatList);
+      dispatch(setChatList(updatedChatList));
+    };
+
+    socket.on("updateChatList", handleUpdateChatList);
+
+    return () => {
+      socket.off("updateChatList", handleUpdateChatList);
+    };
+  }, [socket, dispatch]);
+
+  const handleSelectChat = (user: any) => {
+    dispatch(setSelectedChatType("contact"));
+    dispatch(setSelectedChatData(user));
+  };
+
+  if (chatList.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p className="text-neutral-45 text-sm">No chats yet</p>
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-hidden">
       <div className="divide-y divide-neutral-50 space-y-2">
-        {chatList.map((message:any) => (
-          <MessageCard key={message.id} message={message} />
+        {chatList.map((user: any) => (
+          <div key={user._id} onClick={() => handleSelectChat(user)}>
+            <MessageCard
+              message={user}
+            />
+          </div>
         ))}
       </div>
     </div>

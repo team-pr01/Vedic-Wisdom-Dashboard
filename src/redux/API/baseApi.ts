@@ -79,7 +79,9 @@ export const baseApi = createApi({
     "popup",
     "donation",
     "consultant",
-    "consultation"
+    "consultation",
+    "chat",
+    "message"
   ],
   endpoints: () => ({}),
 });
