@@ -9,6 +9,7 @@ const ChatList = () => {
   const dispatch = useDispatch();
   const { socket } = useSocket();
   const chatList = useSelector(selectChatList);
+  console.log(chatList);
 
   // Listen for chat list updates from socket
   useEffect(() => {
@@ -42,7 +43,7 @@ const ChatList = () => {
   return (
     <div className="overflow-hidden">
       <div className="divide-y divide-neutral-50 space-y-2">
-        {chatList.map((user: any) => (
+        {chatList?.map((user: any) => (
           <div key={user._id} onClick={() => handleSelectChat(user)}>
             <MessageCard
               message={user}

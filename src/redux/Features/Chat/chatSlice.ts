@@ -3,6 +3,7 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 export interface Message {
   _id?: string;
+  tempId?: string;
   sender?: string | { _id: string; name?: string; profilePicture?: string };
   receiver?: string | { _id: string; name?: string; profilePicture?: string };
   content?: string;

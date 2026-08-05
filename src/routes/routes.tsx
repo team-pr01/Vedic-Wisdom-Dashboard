@@ -32,6 +32,7 @@ import Consultations from "../pages/Consultations/Consultations";
 import Subscriptions from "../pages/Subscriptions/Subscriptions";
 import Chat from "../pages/Chat/Chat";
 import Quiz from "../pages/Quiz/Quiz";
+import DataCenter from "../pages/DataCenter/DataCenter";
 
 export const router = createBrowserRouter([
   {
@@ -65,6 +66,10 @@ export const router = createBrowserRouter([
       {
         path: "users",
         element: <Users />,
+      },
+      {
+        path: "data-center",
+        element: <DataCenter />,
       },
       {
         path: "user/:id",

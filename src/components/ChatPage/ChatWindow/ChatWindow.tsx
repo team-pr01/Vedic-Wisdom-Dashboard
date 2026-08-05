@@ -10,12 +10,15 @@ import {
   selectSelectedChatMessages,
   setSelectedChatMessages,
 } from "../../../redux/Features/Chat/chatSlice";
-import { useGetMyMessagesWithOtherSingleUserQuery } from "../../../redux/Features/Chat/messageApi";
+import {
+  useGetMyMessagesWithOtherSingleUserQuery,
+  useMarkMessageAsReadMutation,
+} from "../../../redux/Features/Chat/messageApi";
 
 const ChatWindow = () => {
   const [newMessage, setNewMessage] = useState("");
   const dispatch = useDispatch();
-  const { socket } = useSocket();
+  const { socket, isConnected } = useSocket();
   const selectedChatData = useSelector(selectSelectedChatData);
   const selectedChatMessages = useSelector(selectSelectedChatMessages);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -24,10 +27,13 @@ const ChatWindow = () => {
 
   const currentUser = useSelector((state: any) => state.auth.user);
 
+  // ✅ API to mark messages as read
+  const [markMessageAsRead] = useMarkMessageAsReadMutation();
+
   // ✅ Fetch messages when chat is selected
-  const { data } = useGetMyMessagesWithOtherSingleUserQuery(
+  const { data, refetch } = useGetMyMessagesWithOtherSingleUserQuery(
     selectedChatData?._id,
-    { skip: !selectedChatData?._id }
+    { skip: !selectedChatData?._id },
   );
 
   // ✅ Set messages to Redux when fetched from API (only once per chat)
@@ -46,22 +52,35 @@ const ChatWindow = () => {
   useEffect(() => {
     hasInitialized.current = false;
     processedMessageIds.current = new Set();
-    // ✅ Refetch messages when switching chats
-    // if (selectedChatData?._id) {
-    //   refetch();
-    // }
-    // Optionally clear messages on unmount
-    return () => {
-      // Don't clear messages here, let the next chat load
-    };
-  }, [selectedChatData?._id]);
+    if (selectedChatData?._id) {
+      refetch();
+    }
+  }, [selectedChatData?._id, refetch]);
+
+  // ✅ Mark messages as read when chat window is opened
+  useEffect(() => {
+    if (selectedChatData?._id && currentUser?._id) {
+      // Mark all messages as read
+      markMessageAsRead(selectedChatData._id)
+        .unwrap()
+        .then(() => {
+          console.log("✅ Messages marked as read");
+
+          // ✅ Update the chat list to reflect 0 unread count
+          // This will be handled by the socket event
+        })
+        .catch((error) => {
+          console.error("❌ Failed to mark messages as read:", error);
+        });
+    }
+  }, [selectedChatData?._id, currentUser?._id, markMessageAsRead]);
 
   // Scroll to bottom on new messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [selectedChatMessages]);
 
-  // ✅ Listen for incoming messages (from other users)
+  // ✅ Listen for incoming messages
   useEffect(() => {
     if (!socket) return;
 
@@ -71,10 +90,11 @@ const ChatWindow = () => {
       const messageId = message._id;
       const tempId = message.tempId;
 
-      // ✅ Skip if already processed
-      if (processedMessageIds.current.has(messageId) || 
-          (tempId && processedMessageIds.current.has(tempId))) {
-        console.log("⏭️ Skipping duplicate receiveMessage:", messageId || tempId);
+      // Skip if already processed
+      if (
+        processedMessageIds.current.has(messageId) ||
+        (tempId && processedMessageIds.current.has(tempId))
+      ) {
         return;
       }
 
@@ -86,68 +106,54 @@ const ChatWindow = () => {
         selectedChatData?._id === senderId ||
         selectedChatData?._id === receiverId
       ) {
-        // ✅ Mark as processed
+        // Mark as processed
         if (messageId) processedMessageIds.current.add(messageId);
         if (tempId) processedMessageIds.current.add(tempId);
 
-        // ✅ Add message to Redux
+        // Add message to Redux
         dispatch(addMessage(message));
+
+        // ✅ Auto-mark as read if current user is receiver
+        if (receiverId === currentUser?._id && selectedChatData?._id) {
+          markMessageAsRead(selectedChatData._id).catch(console.error);
+        }
       }
     };
 
-    // ✅ Handle message sent confirmation
     const handleMessageSent = (message: any) => {
-      console.log("✅ Message sent confirmation in ChatWindow:", message);
+      console.log("✅ Message sent confirmation:", message);
 
       const messageId = message._id;
       const tempId = message.tempId;
 
-      // ✅ Skip if already processed
       if (messageId && processedMessageIds.current.has(messageId)) {
-        console.log("⏭️ Skipping duplicate messageSent:", messageId);
         return;
       }
 
-      // Check if message belongs to current chat
-      const senderId = message.sender?._id || message.sender;
-      const receiverId = message.receiver?._id || message.receiver;
+      if (tempId) {
+        const tempExists = selectedChatMessages.some(
+          (m: any) => m._id === tempId || m.tempId === tempId,
+        );
 
-      if (
-        selectedChatData?._id === senderId ||
-        selectedChatData?._id === receiverId
-      ) {
-        // ✅ Update the temporary message with real data
-        if (tempId) {
-          // Check if temp message exists in Redux
-          const tempExists = selectedChatMessages.some(
-            (m: any) => m._id === tempId || m.tempId === tempId
+        if (tempExists) {
+          if (messageId) processedMessageIds.current.add(messageId);
+          dispatch(
+            updateMessageId({
+              tempId: tempId,
+              realId: messageId,
+              createdAt: message.createdAt,
+            }),
           );
-
-          if (tempExists) {
-            // ✅ Mark real ID as processed
-            if (messageId) processedMessageIds.current.add(messageId);
-            
-            // ✅ Update existing temp message
-            dispatch(
-              updateMessageId({
-                tempId: tempId,
-                realId: messageId,
-                createdAt: message.createdAt,
-              })
-            );
-          } else {
-            // ✅ Add as new if temp doesn't exist
-            if (messageId && !processedMessageIds.current.has(messageId)) {
-              processedMessageIds.current.add(messageId);
-              dispatch(addMessage(message));
-            }
-          }
         } else {
-          // No tempId, check if already exists
           if (messageId && !processedMessageIds.current.has(messageId)) {
             processedMessageIds.current.add(messageId);
             dispatch(addMessage(message));
           }
+        }
+      } else {
+        if (messageId && !processedMessageIds.current.has(messageId)) {
+          processedMessageIds.current.add(messageId);
+          dispatch(addMessage(message));
         }
       }
     };
@@ -159,7 +165,14 @@ const ChatWindow = () => {
       socket.off("receiveMessage", handleReceiveMessage);
       socket.off("messageSent", handleMessageSent);
     };
-  }, [socket, selectedChatData, selectedChatMessages, dispatch]);
+  }, [
+    socket,
+    selectedChatData,
+    selectedChatMessages,
+    dispatch,
+    currentUser,
+    markMessageAsRead,
+  ]);
 
   const handleSendMessage = () => {
     if (newMessage.trim() && selectedChatData && socket) {
@@ -173,7 +186,7 @@ const ChatWindow = () => {
         tempId,
       };
 
-      // ✅ Add optimistically to UI
+      // Add optimistically to UI
       const optimisticMessage = {
         _id: tempId,
         tempId: tempId,
@@ -191,13 +204,12 @@ const ChatWindow = () => {
         createdAt: new Date().toISOString(),
         isTemp: true,
         isRead: false,
+        status: "sent",
       };
 
-      // ✅ Mark temp ID as processed
       processedMessageIds.current.add(tempId);
       dispatch(addMessage(optimisticMessage));
 
-      // ✅ Send via socket
       socket.emit("sendMessage", messageData);
       setNewMessage("");
     }
@@ -259,6 +271,7 @@ const ChatWindow = () => {
             msg.sender?._id === currentUser?._id ||
             msg.sender === currentUser?._id;
           const isTemp = msg.isTemp;
+          const isRead = msg.isRead || false;
 
           return (
             <div
@@ -282,11 +295,11 @@ const ChatWindow = () => {
                     {isTemp
                       ? "Sending..."
                       : msg.createdAt
-                      ? new Date(msg.createdAt).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
-                      : ""}
+                        ? new Date(msg.createdAt).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : ""}
                   </span>
                   {isOwn && isTemp && (
                     <span className="text-xs text-white/50">⌛</span>
@@ -294,7 +307,7 @@ const ChatWindow = () => {
                   {isOwn && !isTemp && (
                     <CheckCheck
                       size={12}
-                      className={msg.isRead ? "text-white" : "text-white/50"}
+                      className={isRead ? "text-white" : "text-white/50"}
                     />
                   )}
                 </div>
@@ -313,11 +326,13 @@ const ChatWindow = () => {
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-            placeholder="Type a message"
+            placeholder={isConnected ? "Type a message" : "Connecting..."}
             className="flex-1 px-4 py-2 border border-neutral-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-10 disabled:opacity-50"
+            disabled={!isConnected}
           />
           <button
             onClick={handleSendMessage}
+            disabled={!isConnected}
             className="px-4 py-2 bg-primary-10 text-white rounded-lg hover:bg-primary-10/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Send size={18} />

@@ -52,7 +52,7 @@ export const SocketProvider = ({ children }: any) => {
   // ✅ Update refs when selected chat changes
   const selectedChatData = useSelector(selectSelectedChatData);
   const selectedChatType = useSelector(selectSelectedChatType);
-  
+
   useEffect(() => {
     selectedChatDataRef.current = selectedChatData;
     selectedChatTypeRef.current = selectedChatType;
@@ -64,7 +64,7 @@ export const SocketProvider = ({ children }: any) => {
       return;
     }
 
-    console.log("Initializing socket connection for user:", user._id);
+    // console.log("Initializing socket connection for user:", user._id);
 
     // Close existing connection if any
     if (socket.current) {
@@ -95,49 +95,49 @@ export const SocketProvider = ({ children }: any) => {
       setIsConnected(false);
     });
 
-    // ✅ Handle receiving message - ALWAYS add message
+    // Handle receiving message - ALWAYS add message
     socket.current.on("receiveMessage", (message: Message) => {
-      console.log("📩 Received message in SocketProvider:", message);
-      
+      // console.log("Received message in SocketProvider:", message);
+
       // Add to chat list if it's a new contact
-      if (message.sender && typeof message.sender === 'object') {
+      if (message.sender && typeof message.sender === "object") {
         dispatch(addToChatList(message.sender as any));
       }
-      if (message.recipient && typeof message.recipient === 'object') {
+      if (message.recipient && typeof message.recipient === "object") {
         dispatch(addToChatList(message.recipient as any));
       }
 
-      // ✅ ALWAYS add message to store (ChatWindow will filter by selected chat)
+      // ALWAYS add message to store (ChatWindow will filter by selected chat)
       dispatch(addMessage(message));
     });
 
-    // ✅ Handle message sent confirmation - ALWAYS add message
+    // Handle message sent confirmation - ALWAYS add message
     socket.current.on("messageSent", (message: Message) => {
-      console.log("✅ Message sent confirmation in SocketProvider:", message);
-      
-      // ✅ ALWAYS add message to store
+      // console.log("Message sent confirmation in SocketProvider:", message);
+
+      // ALWAYS add message to store
       dispatch(addMessage(message));
     });
 
-    // ✅ Handle chat list update
+    // Handle chat list update
     socket.current.on("updateChatList", (chatList: any[]) => {
-      console.log("📋 Chat list updated in SocketProvider:", chatList);
+      // console.log("📋 Chat list updated in SocketProvider:", chatList);
       dispatch(setChatList(chatList));
     });
 
     // Handle online users
     socket.current.on("onlineUsers", (users: string[]) => {
-      console.log("👥 Online users:", users);
+      // console.log("👥 Online users:", users);
       dispatch(setOnlineUsers(users));
     });
 
     socket.current.on("userOnline", (userId: string) => {
-      console.log("🟢 User online:", userId);
+      // console.log("🟢 User online:", userId);
       dispatch(addOnlineUser(userId));
     });
 
     socket.current.on("userOffline", (userId: string) => {
-      console.log("🔴 User offline:", userId);
+      // console.log("🔴 User offline:", userId);
       dispatch(removeOnlineUser(userId));
     });
 

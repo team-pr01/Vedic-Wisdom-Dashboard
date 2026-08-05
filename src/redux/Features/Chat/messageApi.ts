@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { baseApi } from "../../API/baseApi";
 
 const messageApi = baseApi.injectEndpoints({
@@ -11,27 +12,18 @@ const messageApi = baseApi.injectEndpoints({
             providesTags: ["message", "chat"],
         }),
 
-        // addCategory: builder.mutation<any, any>({
-        //   query: (data) => ({
-        //     url: `/category/add`,
-        //     method: "POST",
-        //     body: data,
-        //     credentials: "include",
-        //   }),
-        //   invalidatesTags: ["category"],
-        // }),
-
-        // deleteCategory: builder.mutation<any, string>({
-        //   query: (id) => ({
-        //     url: `/category/delete/${id}`,
-        //     method: "DELETE",
-        //     credentials: "include",
-        //   }),
-        //   invalidatesTags: ["category"],
-        // }),
+        markMessageAsRead: builder.mutation<any, any>({
+            query: (otherUserId) => ({
+                url: `/message/read/${otherUserId}`,
+                method: "PATCH",
+                credentials: "include",
+            }),
+            invalidatesTags: ["message", "chat"],
+        }),
     }),
 });
 
 export const {
-    useGetMyMessagesWithOtherSingleUserQuery
+    useGetMyMessagesWithOtherSingleUserQuery,
+    useMarkMessageAsReadMutation,
 } = messageApi;

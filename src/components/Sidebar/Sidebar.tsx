@@ -21,6 +21,7 @@ import {
   HeartHandshake,
   User,
   CreditCard,
+  File,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { IMAGES } from "../../assets";
@@ -28,6 +29,7 @@ import { IMAGES } from "../../assets";
 export const navItems = [
   { path: "/dashboard/home", label: "Dashboard", icon: LayoutDashboard },
   { path: "/dashboard/users", label: "Users", icon: Users },
+  { path: "/dashboard/data-center", label: "Data Center", icon: File },
   { path: "/dashboard/books", label: "Books", icon: BookOpen },
   { path: "/dashboard/audio-books", label: "Audio Books", icon: Headphones },
   { path: "/dashboard/temple", label: "Temple", icon: Landmark },
@@ -35,7 +37,11 @@ export const navItems = [
   { path: "/dashboard/shop", label: "Shop", icon: ShoppingBag },
   { path: "/dashboard/job", label: "Job", icon: Briefcase },
   { path: "/dashboard/emergency", label: "Emergency", icon: Siren },
-  { path: "/dashboard/subscriptions", label: "Subscriptions", icon: CreditCard },
+  {
+    path: "/dashboard/subscriptions",
+    label: "Subscriptions",
+    icon: CreditCard,
+  },
   { path: "/dashboard/news", label: "News", icon: Newspaper },
   { path: "/dashboard/vastu", label: "Vastu", icon: Compass },
   { path: "/dashboard/consultants", label: "Consultants", icon: User },
@@ -45,7 +51,11 @@ export const navItems = [
   { path: "/dashboard/video", label: "Video", icon: Video },
   { path: "/dashboard/food", label: "Food", icon: Utensils },
   { path: "/dashboard/popup", label: "Popup", icon: Expand },
-  { path: "/dashboard/donation-program", label: "Donation Program", icon: HeartHandshake },
+  {
+    path: "/dashboard/donation-program",
+    label: "Donation Program",
+    icon: HeartHandshake,
+  },
 ];
 
 const Sidebar = () => {
