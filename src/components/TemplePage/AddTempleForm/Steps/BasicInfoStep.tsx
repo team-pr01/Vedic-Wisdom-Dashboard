@@ -5,11 +5,20 @@ import TextInput from "../../../Reusable/TextInput/TextInput";
 import Textarea from "../../../Reusable/TextArea/TextArea";
 import SelectDropdown from "../../../Reusable/SelectDropdown/SelectDropdown";
 
+type BasicInfoFormValues = {
+  category: string;
+  basicInfo: {
+    templeName: string;
+    mainDeity: string;
+    description: string;
+  };
+};
+
 const BasicInfoStep = () => {
   const {
     register,
     formState: { errors },
-  } = useFormContext();
+  } = useFormContext<BasicInfoFormValues>();
 
   const categories = [
     {

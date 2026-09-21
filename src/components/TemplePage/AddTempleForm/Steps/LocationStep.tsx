@@ -3,11 +3,22 @@ import { useFormContext } from "react-hook-form";
 import { MapPin } from "lucide-react";
 import TextInput from "../../../Reusable/TextInput/TextInput";
 
+type LocationFormValues = {
+  location: {
+    address: string;
+    city: string;
+    state: string;
+    country: string;
+    area?: string;
+    googleMapUrl?: string;
+  };
+};
+
 const LocationStep = () => {
   const {
     register,
     formState: { errors },
-  } = useFormContext();
+  } = useFormContext<LocationFormValues>();
 
   return (
     <div className="space-y-6">

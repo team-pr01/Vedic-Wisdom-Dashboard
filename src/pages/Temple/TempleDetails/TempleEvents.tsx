@@ -13,7 +13,7 @@ interface TempleEventsProps {
 }
 
 // Event Card Component
-const EventCard = ({ event }: { event: TEvent }) => {
+const EventCard = ({ event, templeId }: { event: TEvent; templeId: string }) => {
   const [deleteEvent] = useDeleteEventMutation();
   const handleDeleteEvent = async () => {
 
@@ -142,7 +142,7 @@ const TempleEvents = ({ events, templeId }: TempleEventsProps) => {
             </h4>
             <div className="space-y-4">
               {pastEvents.slice(0, 3).map((event, index) => (
-                <EventCard key={`past-${index}`} event={event} />
+                <EventCard key={`past-${index}`} event={event} templeId={templeId} />
               ))}
               {pastEvents.length > 3 && (
                 <div className="text-center py-3 bg-neutral-50/50 rounded-lg">

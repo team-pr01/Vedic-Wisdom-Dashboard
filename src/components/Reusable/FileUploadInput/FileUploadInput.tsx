@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { forwardRef, useState, useRef } from "react";
 import { Upload, X, File, Image, FileText } from "lucide-react";
@@ -39,6 +40,8 @@ const FileUploadInput = forwardRef<HTMLInputElement, FileUploadInputProps>(
       onFileRemove,
       helpText,
       variant = "default",
+      value: _value,
+      onChange,
       ...rest
     },
     ref,
@@ -85,8 +88,8 @@ const FileUploadInput = forwardRef<HTMLInputElement, FileUploadInputProps>(
       );
 
       // Trigger onChange if needed
-      if (rest.onChange) {
-        rest.onChange(e);
+      if (onChange) {
+        onChange(e);
       }
     };
 

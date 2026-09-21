@@ -67,7 +67,7 @@ const Users = () => {
     { key: "status", label: "Status" },
   ];
 
-  const userTableData = users?.map((user) => ({
+  const userTableData = users?.map((user:any) => ({
     _id: user._id,
     userId: (
       <p

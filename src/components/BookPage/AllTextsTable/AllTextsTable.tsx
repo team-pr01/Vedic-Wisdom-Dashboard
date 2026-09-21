@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from "react";
+import { useState } from "react";
 import toast from "react-hot-toast";
 import {
   useDeleteTextMutation,
   useGetAllTextsQuery,
-  useGetSingleTextQuery,
 } from "../../../redux/Features/Book/textsApi";
 import DeleteConfirmationModal from "../../Reusable/DeleteConfirmationModal/DeleteConfirmationModal";
 import Button from "../../Reusable/Button/Button";
@@ -146,7 +145,7 @@ const AllTextsTable = () => {
           setIsAddOrEditBookTextModalOpen={setIsAddOrEditBookTextModalOpen}
           modalType={modalType as "add" | "edit"}
           setModalType={setModalType}
-          textId={selectedTextId}
+          textId={selectedTextId as string}
         />
       )}
     </div>

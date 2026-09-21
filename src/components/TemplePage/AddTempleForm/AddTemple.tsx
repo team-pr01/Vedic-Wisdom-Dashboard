@@ -45,7 +45,7 @@ const AddTemple = ({
   const [addTemple, { isLoading: isAdding }] = useAddTempleMutation();
   const [updateTemple, { isLoading: isUpdating }] = useUpdateTempleMutation();
 
-  const methods = useForm({
+  const methods = useForm<any>({
     defaultValues: {
       basicInfo: { templeName: "", mainDeity: "", description: "" },
       location: {
@@ -65,6 +65,7 @@ const AddTemple = ({
       },
       socialMedia: { facebook: "", youtube: "", instagram: "", linkedin: "" },
       media: { files: [], videoUrls: [] },
+      events: [],
       category: "",
     },
     mode: "onChange",
@@ -77,7 +78,15 @@ const AddTemple = ({
       reset({
         basicInfo: templeData.basicInfo,
         location: templeData.location,
-        otherInfo: templeData.otherInfo || {},
+        otherInfo: templeData.otherInfo
+          ? {
+              ...templeData.otherInfo,
+              establishedYear:
+                templeData.otherInfo.establishedYear !== undefined
+                  ? String(templeData.otherInfo.establishedYear)
+                  : "",
+            }
+          : {},
         socialMedia: templeData.socialMedia || {},
         events: templeData.event || [],
         category: templeData.category,
