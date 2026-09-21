@@ -8,7 +8,7 @@ import {
 import DeleteConfirmationModal from "../../Reusable/DeleteConfirmationModal/DeleteConfirmationModal";
 import Button from "../../Reusable/Button/Button";
 import Table from "../../Reusable/Table/Table";
-import AddOrEditBookTextForm from "../AddOrEditBookTextForm/AddOrEditBookTextForm";
+// import AddOrEditBookTextForm from "../AddOrEditBookTextForm/AddOrEditBookTextForm";
 
 const AllTextsTable = () => {
   const [page, setPage] = useState<number>(1);
@@ -28,6 +28,7 @@ const AllTextsTable = () => {
   const [modalType, setModalType] = useState<string>("add");
   const [isAddOrEditBookTextModalOpen, setIsAddOrEditBookTextModalOpen] =
     useState<boolean>(false);
+    console.log(isAddOrEditBookTextModalOpen, modalType);
   const [showDeleteConfirmationModal, setShowDeleteConfirmationModal] =
     useState<boolean>(false);
   
@@ -139,7 +140,7 @@ const AllTextsTable = () => {
       )}
 
       {/* Add Form Modal */}
-      {isAddOrEditBookTextModalOpen && (
+      {/* {isAddOrEditBookTextModalOpen && (
         <AddOrEditBookTextForm
           isAddOrEditBookTextModalOpen={isAddOrEditBookTextModalOpen}
           setIsAddOrEditBookTextModalOpen={setIsAddOrEditBookTextModalOpen}
@@ -147,7 +148,7 @@ const AllTextsTable = () => {
           setModalType={setModalType}
           textId={selectedTextId as string}
         />
-      )}
+      )} */}
     </div>
   );
 };
