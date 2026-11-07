@@ -1,30 +1,38 @@
-import { Check, CheckCheck, User } from "lucide-react";
-import { formatDate } from "../../../../utils/formatDate";
+import { User, CheckCheck } from "lucide-react";
+import { useSelector } from "react-redux";
+import { format, isToday, isYesterday } from "date-fns";
+import { useCurrentUser, type TLoggedInUser } from "../../../../redux/Features/Auth/authSlice";
 
 type TMessage = {
-  id: string;
+  _id: string;
   name: string;
-  time: string;
-  status?: "sent" | "delivered" | "read";
+  profilePicture: string;
+  lastMessage: string;
+  lastMessageTime: string;
+  isRead: boolean;
+  isGroup?: boolean;  
   unreadCount: number;
-  isGroup?: boolean;
-  profilePicture?: string;
-  isRead?: boolean;
-  lastMessage?: string;
-  lastMessageTime?: string;
+  senderId?: string;
 };
 
 const MessageCard = ({ message }: { message: TMessage }) => {
-  const getStatusIcon = () => {
-    switch (message.status) {
-      case "sent":
-        return <Check size={14} className="text-neutral-45" />;
-      case "delivered":
-        return <CheckCheck size={14} className="text-neutral-45" />;
-      case "read":
-        return <CheckCheck size={14} className="text-blue-500" />;
-      default:
-        return null;
+  const currentUser = useSelector(useCurrentUser) as TLoggedInUser;
+  const isOwnMessage = message?.senderId === currentUser?._id;
+
+  // ✅ Smart Date Formatter
+  const getSmartDate = (dateString?: string) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    
+    // Check if valid date
+    if (isNaN(date.getTime())) return "";
+
+    if (isToday(date)) {
+      return format(date, "h:mm a"); // e.g., 2:30 PM
+    } else if (isYesterday(date)) {
+      return "Yesterday";
+    } else {
+      return format(date, "dd/MM/yyyy"); // e.g., 25/10/2026
     }
   };
 
@@ -51,7 +59,7 @@ const MessageCard = ({ message }: { message: TMessage }) => {
           )}
         </div>
 
-        {/* Name and Message? */}
+        {/* Name and Message */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h3 className="font-medium text-neutral-10 truncate">
@@ -64,27 +72,28 @@ const MessageCard = ({ message }: { message: TMessage }) => {
             )}
           </div>
           <div className="flex items-center gap-1.5 mt-0.5">
-            {message?.isRead? (
-              <CheckCheck size={14} className="text-blue-500" />
-            ) : message?.status === "delivered"? (
-              <CheckCheck size={14} className="text-neutral-45" />
-            ) : null}
-            <p className="text-sm text-neutral-45 truncate">
+            {/* ✅ Show ticks ONLY if the last message was sent by the current user */}
+            {isOwnMessage && (
+              <CheckCheck 
+                size={14} 
+                className={message.isRead ? "text-blue-500" : "text-neutral-45"} 
+              />
+            )}
+            <p className={`text-sm truncate ${message?.unreadCount > 0 ? "text-neutral-90 font-medium" : "text-neutral-45"}`}>
               {message?.lastMessage}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Time and Status */}
+      {/* Time */}
       <div className="flex flex-col items-end gap-1 ml-2">
-        <span className="text-xs text-neutral-45">{formatDate(message?.lastMessageTime as string)}</span>
-        {getStatusIcon()}
+        <span className={`text-xs ${message?.unreadCount > 0 ? "text-primary-10 font-medium" : "text-neutral-45"}`}>
+          {getSmartDate(message?.lastMessageTime)}
+        </span>
       </div>
     </div>
   );
 };
-
-
 
 export default MessageCard;

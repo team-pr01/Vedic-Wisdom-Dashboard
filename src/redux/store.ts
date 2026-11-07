@@ -8,7 +8,6 @@ import {persistReducer, persistStore, FLUSH,
 import storage from 'redux-persist/lib/storage';
 import { baseApi } from './API/baseApi';
 import authReducer from "./Features/Auth/authSlice";
-import chatReducer from "./Features/Chat/chatSlice";
 
 const persistConfig = {
   key: 'auth',
@@ -23,7 +22,6 @@ export const store = configureStore({
         // Add the generated reducer as a specific top-level slice
         [baseApi.reducerPath]: baseApi.reducer,
         auth : persistedAuthReducer,
-        chat: chatReducer,
       },
 
       middleware: (getDefaultMiddleware) =>

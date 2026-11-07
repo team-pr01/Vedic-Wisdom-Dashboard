@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import toast from "react-hot-toast";
 import TextInput from "../../Reusable/TextInput/TextInput";
@@ -48,10 +48,12 @@ const AddOrEditBookTextForm: React.FC<TAddOrEditBookTextFormProps> = ({
   const { data } = useGetAllBooksQuery({});
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>([]);
-  // const [selectedBook, setSelectedBook] = useState<any>(null);
+  
   const { data: textData, isLoading: isSingleBookTextLoading } =
     useGetSingleTextQuery(textId || "", { skip: !textId });
-  const singleTextData = textData?.data || {};
+    
+  const singleTextData = textData?.data;
+
   const [addText, { isLoading }] = useAddTextMutation();
   const [updateText, { isLoading: isUpdating }] = useUpdateTextMutation();
 
@@ -76,28 +78,30 @@ const AddOrEditBookTextForm: React.FC<TAddOrEditBookTextFormProps> = ({
     name: "location",
   });
 
-  const allBookNames = data?.data?.data?.map((b: any) => ({
-    _id: b._id,
-    name: b.name,
-    structure: b.structure,
-    levels: b.levels,
-  }));
+  // ✅ FIX 1: Memoize the mapped array to prevent new object creation on every render
+  const allBookNames = useMemo(() => {
+    return data?.data?.data?.map((b: any) => ({
+      _id: b._id,
+      name: b.name,
+      structure: b.structure,
+      levels: b.levels,
+    })) || [];
+  }, [data]);
 
   // Handle selecting a book to auto-load structure levels
   const handleBookChange = (bookId: string) => {
     const book = allBookNames.find((b: any) => b._id === bookId);
-    // setSelectedBook(book);
 
     if (book?.levels?.length) {
       replace(
         book.levels.map((level: any) => ({ levelName: level.name, value: "" })),
       );
     } else {
-      replace([]); // Empty if custom
+      replace([]);
     }
   };
 
-  // Setup defaults on edit or add
+  // ✅ FIX 2: Safe useEffect dependency array & extracted data
   useEffect(() => {
     if (modalType === "edit" && singleTextData) {
       reset({
@@ -118,9 +122,9 @@ const AddOrEditBookTextForm: React.FC<TAddOrEditBookTextFormProps> = ({
       });
       setTags([]);
     }
-  }, [singleTextData, modalType, reset]);
+    // Only trigger when the ID or the mode changes, not when the component re-renders
+  }, [textId, modalType, reset]);
 
-  // Tag input handlers
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -134,7 +138,6 @@ const AddOrEditBookTextForm: React.FC<TAddOrEditBookTextFormProps> = ({
   const removeTag = (tag: string) =>
     setTags((prev) => prev.filter((t) => t !== tag));
 
-  // Submit handler
   const onSubmit = async (data: TFormValues) => {
     const payload = {
       bookId: data.bookId,
@@ -183,9 +186,12 @@ const AddOrEditBookTextForm: React.FC<TAddOrEditBookTextFormProps> = ({
             <label>
               Book<span className="text-red-600">*</span>
             </label>
+            {/* ✅ FIX 3: Pass onChange inside register rules to avoid overriding RHF */}
             <select
-              {...register("bookId", { required: "Please select book" })}
-              onChange={(e) => handleBookChange(e.target.value)}
+              {...register("bookId", { 
+                required: "Please select book",
+                onChange: (e) => handleBookChange(e.target.value)
+              })}
               className="appearance-none relative block w-full px-4 py-3 border text-neutral-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-10 focus:border-transparent font-Roboto transition-all duration-200 cursor-pointer bg-white border-neutral-50"
             >
               <option value="">Select Book</option>

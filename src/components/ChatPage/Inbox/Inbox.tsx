@@ -1,4 +1,3 @@
-import { Search } from "lucide-react";
 import { useState } from "react";
 import ChatList from "./ChatList/ChatList";
 
@@ -32,15 +31,7 @@ const Inbox = () => {
           ))}
         </div>
 
-        {/* Search */}
-        <div className="relative">
-          <input
-            placeholder="Search..."
-            className="w-full px-3 py-2 pr-10 border border-neutral-55/60 focus:border-primary-10 transition duration-300 focus:outline-none rounded-md text-sm shadow-sm"
-            aria-label="Search table"
-          />
-          <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-primary-10 size-4" />
-        </div>
+        
       </div>
 
       {/* Chat List */}

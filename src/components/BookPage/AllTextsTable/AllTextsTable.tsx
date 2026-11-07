@@ -8,6 +8,7 @@ import {
 import DeleteConfirmationModal from "../../Reusable/DeleteConfirmationModal/DeleteConfirmationModal";
 import Button from "../../Reusable/Button/Button";
 import Table from "../../Reusable/Table/Table";
+import AddOrEditBookTextForm from "../AddOrEditBookTextForm/AddOrEditBookTextForm";
 // import AddOrEditBookTextForm from "../AddOrEditBookTextForm/AddOrEditBookTextForm";
 
 const AllTextsTable = () => {
@@ -140,7 +141,7 @@ const AllTextsTable = () => {
       )}
 
       {/* Add Form Modal */}
-      {/* {isAddOrEditBookTextModalOpen && (
+      {isAddOrEditBookTextModalOpen && (
         <AddOrEditBookTextForm
           isAddOrEditBookTextModalOpen={isAddOrEditBookTextModalOpen}
           setIsAddOrEditBookTextModalOpen={setIsAddOrEditBookTextModalOpen}
@@ -148,7 +149,7 @@ const AllTextsTable = () => {
           setModalType={setModalType}
           textId={selectedTextId as string}
         />
-      )} */}
+      )}
     </div>
   );
 };
