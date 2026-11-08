@@ -8,7 +8,7 @@ const chatApi = baseApi.injectEndpoints({
                 method: "POST",
                 credentials: "include",
             }),
-            invalidatesTags: ["consultation"],
+            invalidatesTags: ["message", "chat"],
         }),
 
 
@@ -28,7 +28,17 @@ const chatApi = baseApi.injectEndpoints({
                 body: data,
                 credentials: "include",
             }),
-            invalidatesTags: ["consultation"],
+            invalidatesTags: ["message", "chat"],
+        }),
+
+        changeMessageRequestStatus: builder.mutation({
+            query: ({ id, data }) => ({
+                url: `/conversation/request/${id}`,
+                method: "PATCH",
+                body: data,
+                credentials: "include",
+            }),
+            invalidatesTags: ["message", "chat"],
         }),
     }),
 });
@@ -37,4 +47,5 @@ export const {
     useAccessChatMutation,
     useGetMyInboxQuery,
     useCreateGroupChatMutation,
+    useChangeMessageRequestStatusMutation
 } = chatApi;

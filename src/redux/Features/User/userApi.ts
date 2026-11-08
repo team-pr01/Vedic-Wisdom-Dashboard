@@ -45,6 +45,35 @@ const userApi = baseApi.injectEndpoints({
       providesTags: ["users"],
     }),
 
+    getAllUsersForChat: builder.query({
+      query: ({
+        skip,
+        limit,
+        keyword,
+        conversationId
+      }: {
+        keyword?: string;
+        conversationId?: string;
+        premiumUnlocked?: string;
+        limit?: number;
+        skip?: number;
+      } = {}) => {
+        const params = new URLSearchParams();
+
+        if (keyword) params.append("keyword", keyword);
+        if (conversationId) params.append("conversationId", conversationId);
+        if (typeof limit === "number") params.append("limit", limit.toString());
+        if (typeof skip === "number") params.append("skip", skip.toString());
+
+        return {
+          url: `/user/for-chat?${params.toString()}`,
+          method: "GET",
+          credentials: "include",
+        };
+      },
+      providesTags: ["users"],
+    }),
+
     getSingleUserById: builder.query({
       query: (id) => ({
         url: `/user/${id}`,
@@ -135,4 +164,4 @@ const userApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useGetAllUsersQuery, useGetSingleUserByIdQuery, useGetMeQuery, useUpdateProfileMutation, useDeleteAccountMutation, useRestoreDeletedAccountMutation, useSuspendUserMutation, useActiveUserMutation, useRequestToUnlockProfileMutation, useToggleProfileStatusMutation, useAssignPagesMutation } = userApi;
+export const { useGetAllUsersQuery, useGetAllUsersForChatQuery, useGetSingleUserByIdQuery, useGetMeQuery, useUpdateProfileMutation, useDeleteAccountMutation, useRestoreDeletedAccountMutation, useSuspendUserMutation, useActiveUserMutation, useRequestToUnlockProfileMutation, useToggleProfileStatusMutation, useAssignPagesMutation } = userApi;

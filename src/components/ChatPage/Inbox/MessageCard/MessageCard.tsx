@@ -19,7 +19,7 @@ const MessageCard = ({ message }: { message: TMessage }) => {
   const currentUser = useSelector(useCurrentUser) as TLoggedInUser;
   const isOwnMessage = message?.senderId === currentUser?._id;
 
-  // ✅ Smart Date Formatter
+  // Smart Date Formatter
   const getSmartDate = (dateString?: string) => {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -72,7 +72,7 @@ const MessageCard = ({ message }: { message: TMessage }) => {
             )}
           </div>
           <div className="flex items-center gap-1.5 mt-0.5">
-            {/* ✅ Show ticks ONLY if the last message was sent by the current user */}
+            {/* Show ticks ONLY if the last message was sent by the current user */}
             {isOwnMessage && (
               <CheckCheck 
                 size={14} 

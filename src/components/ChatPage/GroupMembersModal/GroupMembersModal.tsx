@@ -22,6 +22,7 @@ const GroupMembersModal = ({
           </div>
         )}
 
+        {/* Admins */}
         <div className="flex flex-col">
           <p className="text-neutral-5 text-sm font-semibold">Group Admin(s)</p>
           {admins?.map((admin) => (
@@ -29,7 +30,7 @@ const GroupMembersModal = ({
               key={admin?._id}
               className={`flex items-center justify-between border-b border-primary-10/20 py-3`}
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 {admin?.profilePicture ? (
                   <img
                     src={admin?.profilePicture}
@@ -51,6 +52,7 @@ const GroupMembersModal = ({
           ))}
         </div>
 
+        {/* Other members */}
         <div className="flex flex-col mt-8">
           <p className="text-neutral-5 text-sm font-semibold">Other Members</p>
           {members?.map((member) => (
@@ -58,7 +60,7 @@ const GroupMembersModal = ({
               key={member?._id}
               className={`flex items-center justify-between border-b border-primary-10/20 py-3`}
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 {member?.profilePicture ? (
                   <img
                     src={member?.profilePicture}

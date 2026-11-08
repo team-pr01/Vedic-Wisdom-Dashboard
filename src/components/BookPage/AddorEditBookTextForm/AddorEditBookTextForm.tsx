@@ -78,7 +78,7 @@ const AddOrEditBookTextForm: React.FC<TAddOrEditBookTextFormProps> = ({
     name: "location",
   });
 
-  // ✅ FIX 1: Memoize the mapped array to prevent new object creation on every render
+  // FIX 1: Memoize the mapped array to prevent new object creation on every render
   const allBookNames = useMemo(() => {
     return data?.data?.data?.map((b: any) => ({
       _id: b._id,
@@ -101,7 +101,7 @@ const AddOrEditBookTextForm: React.FC<TAddOrEditBookTextFormProps> = ({
     }
   };
 
-  // ✅ FIX 2: Safe useEffect dependency array & extracted data
+  // FIX 2: Safe useEffect dependency array & extracted data
   useEffect(() => {
     if (modalType === "edit" && singleTextData) {
       reset({
@@ -186,7 +186,7 @@ const AddOrEditBookTextForm: React.FC<TAddOrEditBookTextFormProps> = ({
             <label>
               Book<span className="text-red-600">*</span>
             </label>
-            {/* ✅ FIX 3: Pass onChange inside register rules to avoid overriding RHF */}
+            {/* FIX 3: Pass onChange inside register rules to avoid overriding RHF */}
             <select
               {...register("bookId", { 
                 required: "Please select book",

@@ -1,23 +1,64 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useSelector } from "react-redux";
-import { Send, User, CheckCheck } from "lucide-react";
+import { User } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useChat } from "../../../providers/ChatProvider";
 import { useGetMessagesByConversationIdQuery } from "../../../redux/Features/Chat/messageApi";
 import NoData from "../../Reusable/NoData/NoData";
-import GroupInfoCard from "./GroupInfoCard";
 import GroupMembersModal from "../GroupMembersModal/GroupMembersModal";
+import AddGroupMemberModal from "../AddGroupMemberModal/AddGroupMemberModal";
+import { useChangeMessageRequestStatusMutation } from "../../../redux/Features/Chat/chatApi";
+import toast from "react-hot-toast";
+import TypingIndicator from "./TypingIndicator";
+import MessageTextInput from "./MessageTextInput";
+import Messages from "./Messages";
 
 const ChatWindow = () => {
   const currentUser = useSelector((state: any) => state.auth.user);
-  const { selectedChat, socket, messages, setMessages, typingUsers } =
+  const { selectedChat, setSelectedChat, socket, messages, setMessages, typingUsers } =
     useChat();
+    console.log(selectedChat);
   const [isViewMembersModalOpen, setIsViewMembersModalOpen] =
+    useState<boolean>(false);
+  const [isAddGroupMemberModalOpen, setIsAddGroupMemberModalOpen] =
     useState<boolean>(false);
 
   const [newMessage, setNewMessage] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<any | null>(null);
+
+  const [changeMessageRequestStatus, { isLoading: isChangingStatus }] =
+    useChangeMessageRequestStatusMutation();
+
+  const handleChangeMessageRequestStatus = async (action: "accepted" | "rejected") => {
+    try {
+      const payload = { action };
+      
+      // 1. Update Database
+      await changeMessageRequestStatus({
+        id: selectedChat.conversationId,
+        data: payload,
+      }).unwrap();
+
+      // 2. Update Local State instantly
+      setSelectedChat({
+        ...selectedChat,
+        messageRequestStatus: action,
+      });
+
+      // 3. Tell the other user via Socket
+      if (socket && selectedChat) {
+        socket.emit("requestStatusChanged", {
+          targetUserId: selectedChat.otherUserId, // The person who sent the request
+          conversationId: selectedChat.conversationId,
+          status: action,
+        });
+      }
+      
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Something went wrong.");
+    }
+  };
 
   const { data: historyData, isLoading } = useGetMessagesByConversationIdQuery(
     selectedChat?.conversationId,
@@ -25,7 +66,8 @@ const ChatWindow = () => {
   );
 
   const groupDetails = historyData?.data?.conversationDetails || {};
-  console.log(groupDetails);
+  const isPending = selectedChat?.messageRequestStatus === "pending";
+  const isReceiver = selectedChat?.requestedBy !== currentUser?._id;
 
   useEffect(() => {
     if (historyData?.data?.messages) {
@@ -40,11 +82,17 @@ const ChatWindow = () => {
         userId: currentUser._id,
       });
     }
-  }, [socket, selectedChat, currentUser._id, messages.length]);
+  }, [socket, selectedChat, currentUser?._id, messages.length]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    if (socket && selectedChat?.conversationId) {
+      socket.emit("joinRoom", selectedChat.conversationId);
+    }
+  }, [socket, selectedChat?.conversationId]);
 
   const handleTyping = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewMessage(e.target.value);
@@ -141,134 +189,60 @@ const ChatWindow = () => {
         </div>
       </div>
 
-      {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-neutral-50/30">
-        {selectedChat.isGroup && (
-          <GroupInfoCard
-            groupName={groupDetails?.groupName}
-            membersCount={groupDetails?.members?.length || 0}
-            setIsViewMembersModalOpen={setIsViewMembersModalOpen}
-          />
-        )}
-
-        {isLoading ? (
-          <p className="text-center text-sm text-neutral-45">
-            Loading messages...
-          </p>
-        ) : (
-          messages.map((msg: any, idx: number) => {
-            const isOwn =
-              msg.sender === currentUser?._id ||
-              msg.sender?._id === currentUser?._id;
-            const isRead = msg.readBy?.some(
-              (id: any) =>
-                id === selectedChat.otherUserId ||
-                id?._id === selectedChat.otherUserId,
-            );
-
-            // ✅ Check if it's a group and someone else's message
-            const showSenderInfo = selectedChat.isGroup && !isOwn;
-
-            return (
-              <div
-                key={msg._id || idx}
-                className={`flex ${isOwn ? "justify-end" : "justify-start"} gap-2`}
-              >
-                {/* ✅ Show avatar on the left for group messages from others */}
-                {showSenderInfo && (
-                  <div className="w-8 h-8 rounded-full overflow-hidden bg-primary-10/10 shrink-0 mt-auto mb-1">
-                    {msg.sender?.profilePicture ? (
-                      <img
-                        src={msg.sender.profilePicture}
-                        alt={msg.sender.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <User size={16} className="text-primary-10 m-auto mt-2" />
-                    )}
-                  </div>
-                )}
-
-                <div
-                  className={`max-w-[70%] rounded-2xl px-4 py-2 ${
-                    isOwn
-                      ? "bg-primary-10 text-white"
-                      : "bg-white text-neutral-10 border border-neutral-50 shadow-sm"
-                  }`}
+      {/* Request Banners */}
+      {isPending && (
+        <div className="p-4 bg-yellow-50 border-b border-yellow-200 text-center">
+          {isReceiver ? (
+            <div>
+              <p className="text-sm text-yellow-800 mb-3">
+                This user wants to message you.
+              </p>
+              <div className="flex justify-center gap-3">
+                <button
+                  onClick={() => handleChangeMessageRequestStatus("accepted")}
+                  className="bg-green-500 text-white px-4 py-1 rounded"
                 >
-                  {/* ✅ Show Sender Name for group messages */}
-                  {showSenderInfo && (
-                    <p className="text-xs font-semibold text-primary-10 mb-1">
-                      {msg.sender?.name || "Unknown User"}
-                    </p>
-                  )}
-
-                  <p className="text-sm">{msg.text}</p>
-
-                  <div className="flex items-center justify-end gap-1 mt-1">
-                    <span
-                      className={`text-[10px] ${isOwn ? "text-white/70" : "text-neutral-45"}`}
-                    >
-                      {new Date(msg.createdAt).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                    {isOwn && (
-                      <CheckCheck
-                        size={12}
-                        className={isRead ? "text-blue-400" : "text-white/50"}
-                      />
-                    )}
-                  </div>
-                </div>
+                  {isChangingStatus ? "Loading..." : "Accept"}
+                </button>
+                <button
+                  onClick={() => handleChangeMessageRequestStatus("rejected")}
+                  className="bg-red-500 text-white px-4 py-1 rounded"
+                >
+                  {isChangingStatus ? "Loading..." : "Decline"}
+                </button>
               </div>
-            );
-          })
-        )}
-        <div ref={messagesEndRef} />
-      </div>
+            </div>
+          ) : (
+            <p className="text-sm text-yellow-800">
+              Message request sent. Waiting for them to accept.
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Messages Area */}
+      <Messages
+        selectedChat={selectedChat}
+        messages={messages}
+        isLoading={isLoading}
+        groupDetails={groupDetails}
+        messagesEndRef={messagesEndRef}
+        setIsViewMembersModalOpen={setIsViewMembersModalOpen}
+        setIsAddGroupMemberModalOpen={setIsAddGroupMemberModalOpen}
+        currentUser={currentUser}
+      />
 
       {/* Typing Indicator */}
-      <div className="px-4 h-6 flex items-center">
-        {typingUsers.length > 0 && (
-          <>
-            {!selectedChat.isGroup ? (
-              // 1-on-1: Show Animated Bouncing Dots
-              <div className="flex items-center gap-1 bg-neutral-100 px-3 py-1.5 rounded-full w-fit">
-                <span className="w-1.5 h-1.5 bg-neutral-45 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                <span className="w-1.5 h-1.5 bg-neutral-45 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                <span className="w-1.5 h-1.5 bg-neutral-45 rounded-full animate-bounce" />
-              </div>
-            ) : (
-              // Group: Show Text with Names
-              <p className="text-xs text-primary-10 font-medium animate-pulse">
-                {typingUsers.map((u) => u.userName).join(", ")}{" "}
-                {typingUsers.length === 1 ? "is" : "are"} typing...
-              </p>
-            )}
-          </>
-        )}
-      </div>
+      <TypingIndicator typingUsers={typingUsers} selectedChat={selectedChat} />
+
       {/* Input Area */}
-      <div className="p-4 border-t border-neutral-50 bg-white">
-        <form onSubmit={handleSendMessage} className="flex gap-2">
-          <input
-            type="text"
-            value={newMessage}
-            onChange={handleTyping}
-            placeholder="Type a message"
-            className="flex-1 px-4 py-2 border border-neutral-50 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-10 bg-neutral-50/50"
-          />
-          <button
-            type="submit"
-            disabled={!newMessage.trim()}
-            className="px-4 py-2 bg-primary-10 text-white rounded-lg hover:bg-primary-10/90 transition-colors disabled:opacity-50"
-          >
-            <Send size={18} />
-          </button>
-        </form>
-      </div>
+      <MessageTextInput
+        handleSendMessage={handleSendMessage}
+        handleTyping={handleTyping}
+        newMessage={newMessage}
+        isLoading={isLoading}
+        isPending={isPending}
+      />
 
       <GroupMembersModal
         isModalOpen={isViewMembersModalOpen}
@@ -276,6 +250,11 @@ const ChatWindow = () => {
         members={groupDetails?.members}
         admins={groupDetails?.admins}
         isLoading={isLoading}
+      />
+
+      <AddGroupMemberModal
+        isModalOpen={isAddGroupMemberModalOpen}
+        setIsModalOpen={setIsAddGroupMemberModalOpen}
       />
     </div>
   );

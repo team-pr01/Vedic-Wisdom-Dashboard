@@ -31,15 +31,18 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     isLoading: isLoadingInbox,
     refetch: refetchInbox,
   } = useGetMyInboxQuery(undefined);
-  
+
   const inbox = inboxData?.data || [];
 
   useEffect(() => {
     if (!currentUser?._id) return;
 
-    const newSocket = io(import.meta.env.VITE_BACKEND_URL || "http://localhost:5000", {
-      query: { userId: currentUser._id },
-    });
+    const newSocket = io(
+      import.meta.env.VITE_BACKEND_URL || "http://localhost:5000",
+      {
+        query: { userId: currentUser._id },
+      },
+    );
 
     setSocket(newSocket);
     newSocket.emit("addUser", currentUser._id);
@@ -49,6 +52,57 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [currentUser?._id]);
 
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("newMessageRequest", (newChat) => {
+      console.log(newChat);
+      // Refresh the inbox so the new request appears in the sidebar
+      refetchInbox();
+
+      // Optional: Show a notification toast
+      // toast.success("You have a new message request!");
+    });
+
+    return () => {
+      socket.off("newMessageRequest");
+    };
+  }, [socket, refetchInbox]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("requestAcceptedJoinRoom", (conversationId) => {
+      socket.emit("joinRoom", conversationId);
+      console.log(`Joined new room after acceptance: ${conversationId}`);
+    });
+
+    return () => {
+      socket.off("requestAcceptedJoinRoom");
+    };
+  }, [socket]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("requestUpdated", ({ conversationId, status }) => {
+      // If the active chat is the one that was accepted, update the UI instantly
+      if (selectedChat?.conversationId === conversationId) {
+        setSelectedChat((prev: any) => ({
+          ...prev,
+          messageRequestStatus: status,
+        }));
+      }
+
+      // Refresh the sidebar
+      refetchInbox();
+    });
+
+    return () => {
+      socket.off("requestUpdated");
+    };
+  }, [socket, selectedChat, refetchInbox]);
+
   // Listen for incoming messages (Both ChatWindow and Inbox)
   useEffect(() => {
     if (!socket) return;
@@ -56,12 +110,12 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     socket.on("receiveMessage", (message) => {
       // 1. Update the ChatWindow
       setMessages((prev) => [...prev, message]);
-      
+
       // 2. Update the Inbox Sidebar
-      refetchInbox(); 
+      refetchInbox();
     });
 
-     socket.on("userTyping", ({ userId, userName, isTyping }) => {
+    socket.on("userTyping", ({ userId, userName, isTyping }) => {
       setTypingUsers((prev) => {
         if (isTyping) {
           // Add user to typing list if not already there
@@ -91,19 +145,22 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
       if (selectedChat?.conversationId === conversationId) {
         setMessages((prevMessages) =>
           prevMessages.map((msg) => {
-            if (msg.sender === currentUser?._id || msg.sender?._id === currentUser?._id) {
+            if (
+              msg.sender === currentUser?._id ||
+              msg.sender?._id === currentUser?._id
+            ) {
               return {
                 ...msg,
                 readBy: [...(msg.readBy || []), userId],
               };
             }
             return msg;
-          })
+          }),
         );
       }
-      
+
       // 2. Update the Inbox Sidebar so the blue tick shows up in the ChatList
-      refetchInbox(); 
+      refetchInbox();
     });
 
     return () => {
@@ -127,7 +184,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         setSelectedChat,
         messages,
         setMessages,
-        typingUsers
+        typingUsers,
       }}
     >
       {children}

@@ -5,6 +5,7 @@ interface GroupInfoCardProps {
   groupAvatar?: string;
   membersCount: number;
   setIsViewMembersModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsAddGroupMemberModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const GroupInfoCard = ({
@@ -12,6 +13,7 @@ const GroupInfoCard = ({
   groupAvatar,
   membersCount,
   setIsViewMembersModalOpen,
+  setIsAddGroupMemberModalOpen
 }: GroupInfoCardProps) => {
   return (
     <div className="bg-white rounded-xl p-8 shadow-sm border border-neutral-50 flex flex-col items-center max-w-sm w-full mx-auto">
@@ -58,7 +60,7 @@ const GroupInfoCard = ({
 
       {/* Action Buttons */}
       <div className="w-full space-y-3">
-        <button className="w-full flex items-center justify-center gap-2 py-3 px-4 border border-neutral-200 rounded-full text-primary-10 font-semibold hover:bg-primary-10 hover:text-white transition-colors">
+        <button onClick={() => setIsAddGroupMemberModalOpen(true)} className="w-full flex items-center justify-center gap-2 py-3 px-4 border border-neutral-200 rounded-full text-primary-10 font-semibold hover:bg-primary-10 hover:text-white transition-colors">
           <UserPlus size={18} />
           Add members
         </button>

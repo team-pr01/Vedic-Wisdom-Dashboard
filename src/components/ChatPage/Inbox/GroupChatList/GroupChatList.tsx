@@ -12,7 +12,7 @@ const GroupChatList = () => {
   
   const { inbox, isLoadingInbox, setSelectedChat, selectedChat } = useChat();
 
-  // ✅ Filter ONLY groups
+  // Filter ONLY groups
   const groupChats = inbox?.filter((chat: any) => chat.isGroup) || [];
   
   // Filter by search keyword

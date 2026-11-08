@@ -2,70 +2,17 @@
 import MessageCard from "../MessageCard/MessageCard";
 import LogoLoader from "../../../Shared/LogoLoader/LogoLoader";
 import { useChat } from "../../../../providers/ChatProvider";
-import { 
-  useGetAllUsersQuery, 
-} from "../../../../redux/Features/User/userApi"; 
-import { Search, User } from "lucide-react";
+import { Search } from "lucide-react";
 import { useState } from "react";
-import { useSelector } from "react-redux";
-import toast from "react-hot-toast";
-import { useAccessChatMutation } from "../../../../redux/Features/Chat/chatApi";
+import { useDebounce } from "../../../../hooks/useDebounce";
 
 const ChatList = () => {
   const [keyword, setKeyword] = useState<string>("");
-  const [showDropdown, setShowDropdown] = useState<boolean>(false);
-  
-  const currentUser = useSelector((state: any) => state.auth.user);
+  const debouncedKeyword = useDebounce(keyword, 500);
+
   const { inbox, isLoadingInbox, setSelectedChat, selectedChat } = useChat();
-  
-  // ✅ 1. Get Access Chat Mutation
-  const [accessChat, { isLoading: isCreatingChat }] = useAccessChatMutation();
 
-  // 2. Fetch users for search (skip if keyword is empty)
-  const { data, isFetching } = useGetAllUsersQuery(
-    { keyword },
-    { skip: keyword.length < 2 } // Only search if 2+ characters
-  );
-  
-  // Filter out the current user from search results
-  const searchResults = data?.data?.data?.filter(
-    (user: any) => user._id !== currentUser?._id
-  ) || [];
-
-  // 3. Handle clicking a search result
-  const handleUserClick = async (targetUserId: string) => {
-    try {
-      // Call backend to create or get existing chat
-      const response = await accessChat(targetUserId).unwrap();
-      
-      // Format the conversation to match what ChatProvider expects
-      const chatData = response.data;
-      const otherUser = chatData.members.find(
-        (member: any) => member._id !== currentUser?._id
-      );
-
-      setSelectedChat({
-        conversationId: chatData._id,
-        isGroup: false,
-        name: otherUser?.name || "Unknown User",
-        avatar: otherUser?.profilePicture || "",
-        otherUserId: otherUser?._id || null,
-        lastMessage: chatData.lastMessage ? {
-            text: chatData.lastMessage.text,
-            createdAt: chatData.lastMessage.createdAt,
-            isRead: true,
-        } : null
-      });
-      
-      // Clear search
-      setKeyword("");
-      setShowDropdown(false);
-    } catch (error: any) {
-      toast.error(error?.data?.message || "Failed to start chat");
-    }
-  };
-
-  console.log(inbox);
+  const searchedInbox = inbox?.filter((chat: any) => chat.name.toLowerCase().includes(debouncedKeyword.toLowerCase())) || [];
 
   if (isLoadingInbox) {
     return <LogoLoader />;
@@ -80,19 +27,16 @@ const ChatList = () => {
           value={keyword}
           onChange={(e) => {
             setKeyword(e.target.value);
-            setShowDropdown(true);
           }}
-          onFocus={() => setShowDropdown(true)}
           placeholder="Search users to chat..."
           className="w-full px-3 py-2 pr-10 border border-neutral-55/60 focus:border-primary-10 transition duration-300 focus:outline-none rounded-md text-sm shadow-sm"
         />
         <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-primary-10 size-4" />
       </div>
 
-      {/* ✅ SEARCH DROPDOWN */}
-      {showDropdown && keyword.length >= 2 && (
+      {/* SEARCH DROPDOWN */}
+      {/* {showDropdown && keyword.length >= 2 && (
         <>
-          {/* Invisible overlay to close dropdown when clicking outside */}
           <div 
             className="fixed inset-0 z-10" 
             onClick={() => setShowDropdown(false)} 
@@ -126,17 +70,19 @@ const ChatList = () => {
             )}
           </div>
         </>
-      )}
+      )} */}
 
       {/* INBOX LIST */}
       <div className="flex-1 overflow-y-auto">
-        {inbox.length === 0 ? (
+        {searchedInbox?.length === 0 ? (
           <div className="flex items-center justify-center h-full mt-10">
-            <p className="text-neutral-45 text-sm">No chats yet. Search to start chatting!</p>
+            <p className="text-neutral-45 text-sm">
+              No chats yet. Search to start chatting!
+            </p>
           </div>
         ) : (
           <div className="divide-y divide-neutral-50 space-y-2">
-            {inbox?.map((chat: any) => (
+            {searchedInbox?.map((chat: any) => (
               <div
                 key={chat.conversationId}
                 onClick={() => setSelectedChat(chat)}
@@ -166,11 +112,11 @@ const ChatList = () => {
       </div>
 
       {/* Loading overlay when creating a chat */}
-      {isCreatingChat && (
+      {/* {isCreatingChat && (
         <div className="absolute inset-0 bg-white/50 z-30 flex items-center justify-center">
           <LogoLoader />
         </div>
-      )}
+      )} */}
     </div>
   );
 };
