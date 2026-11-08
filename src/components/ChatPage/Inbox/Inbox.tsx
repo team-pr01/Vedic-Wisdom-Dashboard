@@ -1,5 +1,6 @@
 import { useState } from "react";
 import ChatList from "./ChatList/ChatList";
+import GroupChatList from "./GroupChatList/GroupChatList";
 
 const Inbox = () => {
   const [activeTab, setActiveTab] = useState<"general" | "group">("general");
@@ -34,9 +35,11 @@ const Inbox = () => {
         
       </div>
 
+      
+
       {/* Chat List */}
       <div className="flex-1 overflow-y-auto">
-        <ChatList />
+        {activeTab === "general" ? <ChatList /> : <GroupChatList />}
       </div>
     </div>
   );

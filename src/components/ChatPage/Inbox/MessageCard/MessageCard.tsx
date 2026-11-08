@@ -10,7 +10,7 @@ type TMessage = {
   lastMessage: string;
   lastMessageTime: string;
   isRead: boolean;
-  isGroup?: boolean;  
+  isGroup?: boolean;
   unreadCount: number;
   senderId?: string;
 };

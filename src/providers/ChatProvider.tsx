@@ -14,6 +14,7 @@ interface ChatContextType {
   setSelectedChat: (chat: any) => void;
   messages: any[];
   setMessages: React.Dispatch<React.SetStateAction<any[]>>;
+  typingUsers: any[];
 }
 
 const ChatContext = createContext<ChatContextType | null>(null);
@@ -23,6 +24,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [selectedChat, setSelectedChat] = useState<any | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
+  const [typingUsers, setTypingUsers] = useState<any[]>([]);
 
   const {
     data: inboxData,
@@ -59,8 +61,24 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
       refetchInbox(); 
     });
 
+     socket.on("userTyping", ({ userId, userName, isTyping }) => {
+      setTypingUsers((prev) => {
+        if (isTyping) {
+          // Add user to typing list if not already there
+          if (!prev.find((u) => u.userId === userId)) {
+            return [...prev, { userId, userName }];
+          }
+          return prev;
+        } else {
+          // Remove user from typing list
+          return prev.filter((u) => u.userId !== userId);
+        }
+      });
+    });
+
     return () => {
       socket.off("receiveMessage");
+      socket.off("userTyping");
     };
   }, [socket, refetchInbox]);
 
@@ -109,6 +127,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         setSelectedChat,
         messages,
         setMessages,
+        typingUsers
       }}
     >
       {children}

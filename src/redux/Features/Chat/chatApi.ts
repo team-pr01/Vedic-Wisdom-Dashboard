@@ -20,10 +20,21 @@ const chatApi = baseApi.injectEndpoints({
             }),
             providesTags: ["message", "chat"],
         }),
+
+        createGroupChat: builder.mutation({
+            query: (data) => ({
+                url: `/conversation/group/create`,
+                method: "POST",
+                body: data,
+                credentials: "include",
+            }),
+            invalidatesTags: ["consultation"],
+        }),
     }),
 });
 
 export const {
     useAccessChatMutation,
     useGetMyInboxQuery,
+    useCreateGroupChatMutation,
 } = chatApi;
