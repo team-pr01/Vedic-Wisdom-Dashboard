@@ -6,11 +6,14 @@ import { useChat } from "../../../providers/ChatProvider";
 import { useGetMessagesByConversationIdQuery } from "../../../redux/Features/Chat/messageApi";
 import NoData from "../../Reusable/NoData/NoData";
 import GroupInfoCard from "./GroupInfoCard";
+import GroupMembersModal from "../GroupMembersModal/GroupMembersModal";
 
 const ChatWindow = () => {
   const currentUser = useSelector((state: any) => state.auth.user);
   const { selectedChat, socket, messages, setMessages, typingUsers } =
     useChat();
+  const [isViewMembersModalOpen, setIsViewMembersModalOpen] =
+    useState<boolean>(false);
 
   const [newMessage, setNewMessage] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -22,6 +25,7 @@ const ChatWindow = () => {
   );
 
   const groupDetails = historyData?.data?.conversationDetails || {};
+  console.log(groupDetails);
 
   useEffect(() => {
     if (historyData?.data?.messages) {
@@ -142,11 +146,8 @@ const ChatWindow = () => {
         {selectedChat.isGroup && (
           <GroupInfoCard
             groupName={groupDetails?.groupName}
-            members={groupDetails?.members}
-            // description="Where the magic happens 🚀"
-            isAdmin={true}
-            onAddMembers={() => console.log("Open add members modal")}
-            onEditAvatar={() => console.log("Open image uploader")}
+            membersCount={groupDetails?.members?.length || 0}
+            setIsViewMembersModalOpen={setIsViewMembersModalOpen}
           />
         )}
 
@@ -268,6 +269,14 @@ const ChatWindow = () => {
           </button>
         </form>
       </div>
+
+      <GroupMembersModal
+        isModalOpen={isViewMembersModalOpen}
+        setIsModalOpen={setIsViewMembersModalOpen}
+        members={groupDetails?.members}
+        admins={groupDetails?.admins}
+        isLoading={isLoading}
+      />
     </div>
   );
 };
