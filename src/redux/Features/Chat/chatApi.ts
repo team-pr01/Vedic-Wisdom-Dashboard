@@ -40,6 +40,24 @@ const chatApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["message", "chat"],
         }),
+
+        deleteChat: builder.mutation({
+            query: (id) => ({
+                url: `/conversation/delete-chat/${id}`,
+                method: "DELETE",
+                credentials: "include",
+            }),
+            invalidatesTags: ["message", "chat"],
+        }),
+
+        leaveGroup: builder.mutation({
+            query: (id) => ({
+                url: `/conversation/leave-group/${id}`,
+                method: "PATCH",
+                credentials: "include",
+            }),
+            invalidatesTags: ["message", "chat"],
+        }),
     }),
 });
 
@@ -47,5 +65,7 @@ export const {
     useAccessChatMutation,
     useGetMyInboxQuery,
     useCreateGroupChatMutation,
-    useChangeMessageRequestStatusMutation
+    useChangeMessageRequestStatusMutation,
+    useDeleteChatMutation,
+    useLeaveGroupMutation
 } = chatApi;

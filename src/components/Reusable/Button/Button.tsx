@@ -3,10 +3,10 @@ import { twMerge } from "tailwind-merge";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   label: string;
-  variant?: "primary" | "secondary";
+  variant?: "primary" | "secondary" | "danger"; // ✅ Added "danger"
   isLoading?: boolean;
-  fullWidth?: boolean
-  isDisabled?: boolean
+  fullWidth?: boolean;
+  isDisabled?: boolean;
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -31,6 +31,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         "text-white bg-gradient-primary hover:opacity-90 focus:ring-primary-10 border border-transparent",
       secondary:
         "text-neutral-20 bg-white border border-primary-10 hover:bg-neutral-50/10 focus:ring-primary-10",
+      danger:
+        "text-white bg-red-600 hover:bg-red-700 focus:ring-red-500 border border-transparent", // ✅ Added danger variant
     };
 
     const widthStyles = fullWidth ? "w-full" : "";

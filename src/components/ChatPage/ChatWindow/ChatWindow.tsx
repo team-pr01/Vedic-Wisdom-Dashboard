@@ -1,26 +1,47 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useSelector } from "react-redux";
-import { User } from "lucide-react";
+import { EllipsisVertical, Flag, LogOut, User } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useChat } from "../../../providers/ChatProvider";
 import { useGetMessagesByConversationIdQuery } from "../../../redux/Features/Chat/messageApi";
 import NoData from "../../Reusable/NoData/NoData";
 import GroupMembersModal from "../GroupMembersModal/GroupMembersModal";
 import AddGroupMemberModal from "../AddGroupMemberModal/AddGroupMemberModal";
-import { useChangeMessageRequestStatusMutation } from "../../../redux/Features/Chat/chatApi";
+import {
+  useChangeMessageRequestStatusMutation,
+  useLeaveGroupMutation,
+} from "../../../redux/Features/Chat/chatApi";
 import toast from "react-hot-toast";
 import TypingIndicator from "./TypingIndicator";
 import MessageTextInput from "./MessageTextInput";
 import Messages from "./Messages";
+import IconButtonWithToolTip from "../../Reusable/IconButtonWithToolTip/IconButtonWithToolTip";
+import DropdownMenu, {
+  type TDropdownItem,
+} from "../../Reusable/DropdownMenu/DropdownMenu";
+import ReportSpamModal from "./ReportSpamModal";
+import ConfirmationModal from "../../Reusable/ConfirmationModal/ConfirmationModal";
 
 const ChatWindow = () => {
+  const [leaveGroup, { isLoading: isLeavingGroup }] = useLeaveGroupMutation();
+  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+  const [isLeaveGroupModalOpen, setIsLeaveGroupModalOpen] =
+    useState<boolean>(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const currentUser = useSelector((state: any) => state.auth.user);
-  const { selectedChat, setSelectedChat, socket, messages, setMessages, typingUsers } =
-    useChat();
-    console.log(selectedChat);
+  const {
+    selectedChat,
+    setSelectedChat,
+    socket,
+    messages,
+    setMessages,
+    typingUsers,
+  } = useChat();
   const [isViewMembersModalOpen, setIsViewMembersModalOpen] =
     useState<boolean>(false);
   const [isAddGroupMemberModalOpen, setIsAddGroupMemberModalOpen] =
+    useState<boolean>(false);
+  const [isReportSpamModalOpen, setIsReportSpamModalOpen] =
     useState<boolean>(false);
 
   const [newMessage, setNewMessage] = useState<string>("");
@@ -30,10 +51,12 @@ const ChatWindow = () => {
   const [changeMessageRequestStatus, { isLoading: isChangingStatus }] =
     useChangeMessageRequestStatusMutation();
 
-  const handleChangeMessageRequestStatus = async (action: "accepted" | "rejected") => {
+  const handleChangeMessageRequestStatus = async (
+    action: "accepted" | "rejected",
+  ) => {
     try {
       const payload = { action };
-      
+
       // 1. Update Database
       await changeMessageRequestStatus({
         id: selectedChat.conversationId,
@@ -54,7 +77,6 @@ const ChatWindow = () => {
           status: action,
         });
       }
-      
     } catch (error: any) {
       toast.error(error?.data?.message || "Something went wrong.");
     }
@@ -68,6 +90,7 @@ const ChatWindow = () => {
   const groupDetails = historyData?.data?.conversationDetails || {};
   const isPending = selectedChat?.messageRequestStatus === "pending";
   const isReceiver = selectedChat?.requestedBy !== currentUser?._id;
+  const hasLeftGroup = selectedChat?.isGroup && selectedChat?.hasLeft;
 
   useEffect(() => {
     if (historyData?.data?.messages) {
@@ -155,13 +178,49 @@ const ChatWindow = () => {
     );
   }
 
-  // console.log(selectedChat);
-  // console.log(historyData);
+  const handleLeaveGroup = async () => {
+    try {
+      await leaveGroup(selectedChat.conversationId).unwrap();
+      setSelectedChat({
+        ...selectedChat,
+        hasLeft: true,
+      });
+      setIsLeaveGroupModalOpen(false);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const menuItems: TDropdownItem[] = [
+    {
+      id: "report-spam",
+      label: "Report Spam",
+      icon: <Flag size={16} />,
+      onClick: () => {
+        setIsReportSpamModalOpen(true);
+      },
+    },
+    {
+      id: "exit-group",
+      label: "Exit Group",
+      icon: <LogOut size={16} />,
+      onClick: () => {
+        setIsLeaveGroupModalOpen(true);
+      },
+      variant: "danger" as const,
+    },
+  ].filter((item) => {
+    // If the user has left the group, hide the "Exit Group" option
+    if (hasLeftGroup && item.id === "exit-group") {
+      return false;
+    }
+    return true;
+  });
 
   return (
     <div className="flex flex-col h-full bg-white">
       {/* Header */}
-      <div className="p-4 border-b border-neutral-50 flex items-center justify-between">
+      <div className="p-5 border-b border-neutral-50 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="relative">
             <div className="w-10 h-10 rounded-full bg-primary-10/10 flex items-center justify-center overflow-hidden">
@@ -186,6 +245,29 @@ const ChatWindow = () => {
               <p className="text-xs text-green-500">Online</p>
             )}
           </div>
+        </div>
+
+        <div className="relative" ref={dropdownRef}>
+          <div
+            className={`rounded-md transition-colors ${
+              isDropdownOpen ? "bg-neutral-50/80" : ""
+            }`}
+          >
+            <IconButtonWithToolTip
+              Icon={EllipsisVertical}
+              tooltip="Menu"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              textColor="text-neutral-5"
+            />
+          </div>
+
+          {/* Reusable Dropdown Menu */}
+          <DropdownMenu
+            isOpen={isDropdownOpen}
+            onClose={() => setIsDropdownOpen(false)}
+            items={menuItems}
+            dropdownRef={dropdownRef}
+          />
         </div>
       </div>
 
@@ -230,19 +312,33 @@ const ChatWindow = () => {
         setIsViewMembersModalOpen={setIsViewMembersModalOpen}
         setIsAddGroupMemberModalOpen={setIsAddGroupMemberModalOpen}
         currentUser={currentUser}
+        hasLeftGroup={hasLeftGroup}
       />
 
       {/* Typing Indicator */}
-      <TypingIndicator typingUsers={typingUsers} selectedChat={selectedChat} />
+      {!hasLeftGroup && (
+        <TypingIndicator
+          typingUsers={typingUsers}
+          selectedChat={selectedChat}
+        />
+      )}
 
       {/* Input Area */}
-      <MessageTextInput
-        handleSendMessage={handleSendMessage}
-        handleTyping={handleTyping}
-        newMessage={newMessage}
-        isLoading={isLoading}
-        isPending={isPending}
-      />
+      {hasLeftGroup ? (
+        <div className="p-4 border-t border-neutral-50 bg-neutral-50 text-center">
+          <p className="text-sm text-neutral-45">
+            You can no longer send messages to this group.
+          </p>
+        </div>
+      ) : (
+        <MessageTextInput
+          handleSendMessage={handleSendMessage}
+          handleTyping={handleTyping}
+          newMessage={newMessage}
+          isLoading={isLoading}
+          isPending={isPending}
+        />
+      )}
 
       <GroupMembersModal
         isModalOpen={isViewMembersModalOpen}
@@ -255,6 +351,28 @@ const ChatWindow = () => {
       <AddGroupMemberModal
         isModalOpen={isAddGroupMemberModalOpen}
         setIsModalOpen={setIsAddGroupMemberModalOpen}
+      />
+
+      <ReportSpamModal
+        isModalOpen={isReportSpamModalOpen}
+        setIsModalOpen={setIsReportSpamModalOpen}
+        targetId={
+          selectedChat.isGroup
+            ? selectedChat.conversationId
+            : selectedChat.otherUserId
+        }
+        reportType={selectedChat.isGroup ? "group" : "user"}
+      />
+
+      <ConfirmationModal
+        isModalOpen={isLeaveGroupModalOpen}
+        setIsModalOpen={setIsLeaveGroupModalOpen}
+        onConfirm={handleLeaveGroup}
+        title="Delete Chat"
+        submitLabel="Delete Chat"
+        submitVariant="danger"
+        description={"Are you sure you want to delete this chat?"}
+        isLoading={isLeavingGroup}
       />
     </div>
   );

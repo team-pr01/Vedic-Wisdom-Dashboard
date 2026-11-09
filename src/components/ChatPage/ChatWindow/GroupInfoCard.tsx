@@ -6,6 +6,7 @@ interface GroupInfoCardProps {
   membersCount: number;
   setIsViewMembersModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setIsAddGroupMemberModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  hasLeftGroup?: boolean;
 }
 
 const GroupInfoCard = ({
@@ -13,7 +14,7 @@ const GroupInfoCard = ({
   groupAvatar,
   membersCount,
   setIsViewMembersModalOpen,
-  setIsAddGroupMemberModalOpen
+  hasLeftGroup,
 }: GroupInfoCardProps) => {
   return (
     <div className="bg-white rounded-xl p-8 shadow-sm border border-neutral-50 flex flex-col items-center max-w-sm w-full mx-auto">
@@ -32,11 +33,13 @@ const GroupInfoCard = ({
         </div>
 
         {/* Camera Badge */}
-        <div className="absolute bottom-1 right-1 bg-white rounded-full p-1 shadow-sm">
-          <div className="bg-primary-10 p-1 rounded-full flex items-center justify-center">
-            <Camera size={14} className="text-white" />
+        {!hasLeftGroup && (
+          <div className="absolute bottom-1 right-1 bg-white rounded-full p-1 shadow-sm">
+            <div className="bg-primary-10 p-1 rounded-full flex items-center justify-center">
+              <Camera size={14} className="text-white" />
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Text Details */}
@@ -59,12 +62,14 @@ const GroupInfoCard = ({
       </button> */}
 
       {/* Action Buttons */}
-      <div className="w-full space-y-3">
-        <button onClick={() => setIsAddGroupMemberModalOpen(true)} className="w-full flex items-center justify-center gap-2 py-3 px-4 border border-neutral-200 rounded-full text-primary-10 font-semibold hover:bg-primary-10 hover:text-white transition-colors">
-          <UserPlus size={18} />
-          Add members
-        </button>
-      </div>
+      {!hasLeftGroup && (
+        <div className="w-full space-y-3">
+          <button className="w-full flex items-center justify-center gap-2 py-3 px-4 border border-neutral-200 rounded-full text-primary-10 font-semibold hover:bg-primary-10 hover:text-white transition-colors">
+            <UserPlus size={18} />
+            Add members
+          </button>
+        </div>
+      )}
     </div>
   );
 };

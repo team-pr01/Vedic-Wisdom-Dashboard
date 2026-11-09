@@ -169,6 +169,20 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   }, [socket, selectedChat, currentUser?._id, refetchInbox]);
 
   useEffect(() => {
+    if (!socket) return;
+
+    // Listen for the leave event from backend
+    socket.on("leaveSocketRoom", (conversationId) => {
+      socket.emit("leaveRoom", conversationId);
+      console.log(`Left socket room: ${conversationId}`);
+    });
+
+    return () => {
+      socket.off("leaveSocketRoom");
+    };
+  }, [socket]);
+
+  useEffect(() => {
     if (selectedChat) {
       refetchInbox();
     }

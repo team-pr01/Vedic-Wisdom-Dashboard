@@ -42,7 +42,7 @@ const IconButtonWithToolTip = ({
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
         onClick={onClick}
-        className="p-1.5 hover:bg-neutral-50 rounded-lg transition-colors cursor-pointer"
+        className="p-1.5 hover:bg-primary-10/20 rounded-lg transition-colors cursor-pointer flex items-center justify-center"
       >
         <Icon size={size} className={`${textColor} transition-colors`} />
       </div>

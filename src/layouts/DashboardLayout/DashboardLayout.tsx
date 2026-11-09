@@ -13,7 +13,7 @@ const DashboardLayout = () => {
         <DashboardHeader />
 
         <div
-          className={`flex-1 overflow-y-auto overflow-x-hidden px-3 lg:px-6 py-6`}
+          className={`flex-1 overflow-y-auto overflow-x-hidden ${pathname !== "/dashboard/chat" && "px-3 lg:px-6 py-6"}`}
         >
           <Outlet />
         </div>

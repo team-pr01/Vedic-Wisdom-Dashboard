@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Search, Send, User, Loader2, X } from "lucide-react";
+import { Search, Send, User, Loader2, MessageCircle } from "lucide-react";
 import Modal from "../../Reusable/Modal/Modal";
 import { useState } from "react";
 import { useDebounce } from "../../../hooks/useDebounce";
@@ -50,7 +50,8 @@ const FindUserModal: React.FC<TFindUserModalProps> = ({
   });
 
   const users = data?.data?.data || [];
-  const isSearching = isFetching || keyword !== debouncedKeyword;
+  console.log(data);
+  const isSearching = isLoading || isFetching || keyword !== debouncedKeyword;
 
   const [accessChat] = useAccessChatMutation();
 
@@ -98,7 +99,6 @@ const FindUserModal: React.FC<TFindUserModalProps> = ({
       width="w-[95%] sm:w-[70%] md:w-[50%] lg:w-[45%] xl:w-[35%]"
     >
       <div className="flex flex-col font-Inter">
-
         {/* Search Input */}
         <div className="relative mb-2">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-40 size-4" />
@@ -116,7 +116,10 @@ const FindUserModal: React.FC<TFindUserModalProps> = ({
           {isSearching ? (
             // Skeleton Loading State
             Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="flex items-center justify-between p-3 animate-pulse">
+              <div
+                key={i}
+                className="flex items-center justify-between p-3 animate-pulse"
+              >
                 <div className="flex items-center gap-3">
                   <div className="size-10 rounded-full bg-neutral-50/50" />
                   <div className="space-y-2">
@@ -147,7 +150,7 @@ const FindUserModal: React.FC<TFindUserModalProps> = ({
               return (
                 <div
                   key={user?._id}
-                  className="flex items-center justify-between p-2.5 group"
+                  className="flex items-center justify-between group transition-colors py-3 border-b border-neutral-50/50"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     {/* Avatar */}
@@ -155,14 +158,16 @@ const FindUserModal: React.FC<TFindUserModalProps> = ({
                       <img
                         src={user?.profilePicture}
                         alt={user?.name}
-                        className="size-10 rounded-full object-cover flex-shrink-0"
+                        className="size-10 rounded-full object-cover shrink-0"
                       />
                     ) : (
-                      <div className={`size-10 rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0 ${colorClass}`}>
+                      <div
+                        className={`size-10 rounded-full flex items-center justify-center text-sm font-semibold shrink-0 ${colorClass}`}
+                      >
                         {getInitials(user?.name)}
                       </div>
                     )}
-                    
+
                     {/* User Info */}
                     <div className="min-w-0">
                       <p className="text-neutral-90 text-sm font-semibold truncate">
@@ -178,16 +183,23 @@ const FindUserModal: React.FC<TFindUserModalProps> = ({
                   <button
                     onClick={() => handleUserClick(user?._id)}
                     disabled={isSending}
-                    className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 flex-shrink-0 ${
+                    className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 shrink-0 ${
                       isSending
                         ? "bg-neutral-100 text-neutral-40 cursor-wait"
-                        : "bg-primary-10/10 text-primary-10 hover:bg-primary-10 hover:text-white"
+                        : user?.isConnected
+                          ? "bg-primary-10 text-white hover:bg-primary-10/80" // ✅ Connected Button Style
+                          : "bg-primary-10/10 text-primary-10 hover:bg-primary-10 hover:text-white" // Request Button Style
                     }`}
                   >
                     {isSending ? (
                       <>
                         <Loader2 size={14} className="animate-spin" />
-                        Sending...
+                        {user?.isConnected ? "Starting..." : "Sending..."}
+                      </>
+                    ) : user?.isConnected ? (
+                      <>
+                        <MessageCircle size={14} /> {/* ✅ Message Icon */}
+                        Message
                       </>
                     ) : (
                       <>
