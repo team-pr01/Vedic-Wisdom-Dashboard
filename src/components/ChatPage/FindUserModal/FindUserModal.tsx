@@ -12,19 +12,13 @@ import {
   type TLoggedInUser,
 } from "../../../redux/Features/Auth/authSlice";
 import toast from "react-hot-toast";
+import { getUserNameInitials } from "../../../utils/getUserNameInitials";
 
 type TFindUserModalProps = {
   isModalOpen: boolean;
   setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-// Helper for generating initials and colors for avatars
-const getInitials = (name: string) => {
-  if (!name) return "?";
-  const parts = name.trim().split(" ");
-  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-  return name.substring(0, 2).toUpperCase();
-};
 
 const avatarColors = [
   "bg-blue-100 text-blue-700",
@@ -50,7 +44,6 @@ const FindUserModal: React.FC<TFindUserModalProps> = ({
   });
 
   const users = data?.data?.data || [];
-  console.log(data);
   const isSearching = isLoading || isFetching || keyword !== debouncedKeyword;
 
   const [accessChat] = useAccessChatMutation();
@@ -164,7 +157,7 @@ const FindUserModal: React.FC<TFindUserModalProps> = ({
                       <div
                         className={`size-10 rounded-full flex items-center justify-center text-sm font-semibold shrink-0 ${colorClass}`}
                       >
-                        {getInitials(user?.name)}
+                        {getUserNameInitials(user?.name)}
                       </div>
                     )}
 

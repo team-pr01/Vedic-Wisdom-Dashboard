@@ -14,6 +14,7 @@ const GroupInfoCard = ({
   groupAvatar,
   membersCount,
   setIsViewMembersModalOpen,
+  setIsAddGroupMemberModalOpen,
   hasLeftGroup,
 }: GroupInfoCardProps) => {
   return (
@@ -64,7 +65,10 @@ const GroupInfoCard = ({
       {/* Action Buttons */}
       {!hasLeftGroup && (
         <div className="w-full space-y-3">
-          <button className="w-full flex items-center justify-center gap-2 py-3 px-4 border border-neutral-200 rounded-full text-primary-10 font-semibold hover:bg-primary-10 hover:text-white transition-colors">
+          <button
+            onClick={() => setIsAddGroupMemberModalOpen(true)}
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 border border-neutral-200 rounded-full text-primary-10 font-semibold hover:bg-primary-10 hover:text-white transition-colors"
+          >
             <UserPlus size={18} />
             Add members
           </button>

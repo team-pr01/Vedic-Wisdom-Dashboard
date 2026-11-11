@@ -31,6 +31,16 @@ const chatApi = baseApi.injectEndpoints({
             invalidatesTags: ["message", "chat"],
         }),
 
+        addMembersToGroup: builder.mutation({
+            query: ({id, data}) => ({
+                url: `/conversation/add-members/${id}`,
+                method: "PATCH",
+                body: data,
+                credentials: "include",
+            }),
+            invalidatesTags: ["message", "chat"],
+        }),
+
         changeMessageRequestStatus: builder.mutation({
             query: ({ id, data }) => ({
                 url: `/conversation/request/${id}`,
@@ -65,6 +75,7 @@ export const {
     useAccessChatMutation,
     useGetMyInboxQuery,
     useCreateGroupChatMutation,
+    useAddMembersToGroupMutation,
     useChangeMessageRequestStatusMutation,
     useDeleteChatMutation,
     useLeaveGroupMutation

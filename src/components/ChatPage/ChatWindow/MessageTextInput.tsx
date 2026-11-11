@@ -18,7 +18,7 @@ const MessageTextInput = ({
   isLoading,
   isPending,
 }: TMessageTextInputProps) => {
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 

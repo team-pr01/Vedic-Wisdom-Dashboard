@@ -1,6 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useSelector } from "react-redux";
-import { EllipsisVertical, Flag, LogOut, User } from "lucide-react";
+import {
+  EllipsisVertical,
+  Flag,
+  LogOut,
+  ShieldBan,
+  Trash2,
+  User,
+} from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useChat } from "../../../providers/ChatProvider";
 import { useGetMessagesByConversationIdQuery } from "../../../redux/Features/Chat/messageApi";
@@ -9,6 +16,7 @@ import GroupMembersModal from "../GroupMembersModal/GroupMembersModal";
 import AddGroupMemberModal from "../AddGroupMemberModal/AddGroupMemberModal";
 import {
   useChangeMessageRequestStatusMutation,
+  useDeleteChatMutation,
   useLeaveGroupMutation,
 } from "../../../redux/Features/Chat/chatApi";
 import toast from "react-hot-toast";
@@ -26,6 +34,8 @@ const ChatWindow = () => {
   const [leaveGroup, { isLoading: isLeavingGroup }] = useLeaveGroupMutation();
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const [isLeaveGroupModalOpen, setIsLeaveGroupModalOpen] =
+    useState<boolean>(false);
+  const [isDeleteChatModalOpen, setIsDeleteChatModalOpen] =
     useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const currentUser = useSelector((state: any) => state.auth.user);
@@ -50,6 +60,7 @@ const ChatWindow = () => {
 
   const [changeMessageRequestStatus, { isLoading: isChangingStatus }] =
     useChangeMessageRequestStatusMutation();
+  const [deleteChat, { isLoading: isDeletingChat }] = useDeleteChatMutation();
 
   const handleChangeMessageRequestStatus = async (
     action: "accepted" | "rejected",
@@ -191,7 +202,18 @@ const ChatWindow = () => {
     }
   };
 
-  const menuItems: TDropdownItem[] = [
+  const handleDeleteChat = async () => {
+    try {
+      await deleteChat(selectedChat?.conversationId).unwrap();
+      setIsDeleteChatModalOpen(false);
+      setSelectedChat(null);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // 1. Build the dynamic menu items based on chat type
+  let menuItems: TDropdownItem[] = [
     {
       id: "report-spam",
       label: "Report Spam",
@@ -200,7 +222,11 @@ const ChatWindow = () => {
         setIsReportSpamModalOpen(true);
       },
     },
-    {
+  ];
+
+  if (selectedChat?.isGroup) {
+    // Group specific actions
+    menuItems.push({
       id: "exit-group",
       label: "Exit Group",
       icon: <LogOut size={16} />,
@@ -208,14 +234,33 @@ const ChatWindow = () => {
         setIsLeaveGroupModalOpen(true);
       },
       variant: "danger" as const,
-    },
-  ].filter((item) => {
-    // If the user has left the group, hide the "Exit Group" option
-    if (hasLeftGroup && item.id === "exit-group") {
-      return false;
-    }
-    return true;
-  });
+    });
+  } else {
+    // 1-on-1 specific actions
+    menuItems.push(
+      {
+        id: "block",
+        label: "Block",
+        icon: <ShieldBan size={16} />,
+        onClick: () => {
+          // setIsBlockModalOpen(true);
+          toast.success("User blocked");
+        },
+        variant: "danger" as const,
+      },
+      {
+        id: "delete",
+        label: "Delete Chat",
+        icon: <Trash2 size={16} />,
+        onClick: () => setIsDeleteChatModalOpen(true),
+        variant: "danger" as const,
+      },
+    );
+  }
+
+  if (hasLeftGroup) {
+    menuItems = menuItems.filter((item) => item.id !== "exit-group");
+  }
 
   return (
     <div className="flex flex-col h-full bg-white">
@@ -351,6 +396,7 @@ const ChatWindow = () => {
       <AddGroupMemberModal
         isModalOpen={isAddGroupMemberModalOpen}
         setIsModalOpen={setIsAddGroupMemberModalOpen}
+        conversationId={selectedChat?.conversationId}
       />
 
       <ReportSpamModal
@@ -368,11 +414,22 @@ const ChatWindow = () => {
         isModalOpen={isLeaveGroupModalOpen}
         setIsModalOpen={setIsLeaveGroupModalOpen}
         onConfirm={handleLeaveGroup}
+        title="Leave Group"
+        submitLabel="Leave Group"
+        submitVariant="danger"
+        description={"Are you sure you want to leave this group?"}
+        isLoading={isLeavingGroup}
+      />
+
+      <ConfirmationModal
+        isModalOpen={isDeleteChatModalOpen}
+        setIsModalOpen={setIsDeleteChatModalOpen}
+        onConfirm={handleDeleteChat}
         title="Delete Chat"
         submitLabel="Delete Chat"
         submitVariant="danger"
         description={"Are you sure you want to delete this chat?"}
-        isLoading={isLeavingGroup}
+        isLoading={isDeletingChat}
       />
     </div>
   );

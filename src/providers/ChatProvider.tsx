@@ -188,6 +188,42 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [selectedChat, refetchInbox]);
 
+  
+  useEffect(() => {
+    if (!socket) return;
+
+    // Listen for reaction updates
+    socket.on("messageReactionUpdated", ({ messageId, reactions }) => {
+      // Update the messages state with the new reactions
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === messageId ? { ...msg, reactions } : msg,
+        ),
+      );
+    });
+
+    return () => {
+      socket.off("messageReactionUpdated");
+    };
+  }, [socket, setMessages]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("groupMembersUpdated", (updatedConversation) => {
+      if (selectedChat?.conversationId === updatedConversation._id) {
+        setSelectedChat((prev: any) => ({
+          ...prev,
+        }));
+        refetchInbox();
+      }
+    });
+
+    return () => {
+      socket.off("groupMembersUpdated");
+    };
+  }, [socket, selectedChat]);
+
   return (
     <ChatContext.Provider
       value={{

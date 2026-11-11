@@ -5,6 +5,7 @@ import {
   Trash2,
   ShieldBan,
   LogOut,
+  Flag,
 } from "lucide-react";
 import { useSelector } from "react-redux";
 import { format, isToday, isYesterday } from "date-fns";
@@ -20,6 +21,8 @@ import DropdownMenu, {
 import toast from "react-hot-toast";
 import ConfirmationModal from "../../../Reusable/ConfirmationModal/ConfirmationModal";
 import { useDeleteChatMutation } from "../../../../redux/Features/Chat/chatApi";
+import ReportSpamModal from "../../ChatWindow/ReportSpamModal";
+import { useChat } from "../../../../providers/ChatProvider";
 
 type TMessage = {
   _id: string;
@@ -34,12 +37,15 @@ type TMessage = {
 };
 
 const MessageCard = ({ message }: { message: TMessage }) => {
+  const {setSelectedChat} = useChat();
   const [deleteChat, { isLoading: isDeletingChat }] = useDeleteChatMutation();
   const currentUser = useSelector(useCurrentUser) as TLoggedInUser;
   const isOwnMessage = message?.senderId === currentUser?._id;
 
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const [isDeleteChatModalOpen, setIsDeleteChatModalOpen] =
+    useState<boolean>(false);
+  const [isReportSpamModalOpen, setIsReportSpamModalOpen] =
     useState<boolean>(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -60,6 +66,14 @@ const MessageCard = ({ message }: { message: TMessage }) => {
   };
 
   const menuItems: TDropdownItem[] = [
+    {
+      id: "report-spam",
+      label: "Report Spam",
+      icon: <Flag size={16} />,
+      onClick: () => {
+        setIsReportSpamModalOpen(true);
+      },
+    },
     {
       id: "delete",
       label: "Delete Chat",
@@ -94,6 +108,7 @@ const MessageCard = ({ message }: { message: TMessage }) => {
     try {
       await deleteChat(message?._id).unwrap();
       setIsDeleteChatModalOpen(false);
+      setSelectedChat(null)
     } catch (error) {
       console.error(error);
     }
@@ -206,6 +221,13 @@ const MessageCard = ({ message }: { message: TMessage }) => {
         submitVariant="danger"
         description={"Are you sure you want to delete this chat?"}
         isLoading={isDeletingChat}
+      />
+
+      <ReportSpamModal
+        isModalOpen={isReportSpamModalOpen}
+        setIsModalOpen={setIsReportSpamModalOpen}
+        targetId={message._id}
+        reportType={message?.isGroup ? "group" : "user"}
       />
     </div>
   );
