@@ -12,6 +12,15 @@ const chatApi = baseApi.injectEndpoints({
         }),
 
 
+        getGroupMembers: builder.query({
+            query: (id) => ({
+                url: `/conversation/group-members/${id}`,
+                method: "GET",
+                credentials: "include",
+            }),
+            providesTags: ["message", "chat"],
+        }),
+
         getMyInbox: builder.query({
             query: () => ({
                 url: `/conversation/inbox`,
@@ -31,8 +40,18 @@ const chatApi = baseApi.injectEndpoints({
             invalidatesTags: ["message", "chat"],
         }),
 
+        updateGroupInfo: builder.mutation({
+            query: ({ conversationId, data }) => ({
+                url: `/conversation/group/update-info/${conversationId}`,
+                method: "PATCH",
+                body: data,
+                credentials: "include",
+            }),
+            invalidatesTags: ["message", "chat"],
+        }),
+
         addMembersToGroup: builder.mutation({
-            query: ({id, data}) => ({
+            query: ({ id, data }) => ({
                 url: `/conversation/add-members/${id}`,
                 method: "PATCH",
                 body: data,
@@ -68,15 +87,47 @@ const chatApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["message", "chat"],
         }),
+
+        makeGroupAdmin: builder.mutation({
+            query: ({ conversationId, data }) => ({
+                url: `/conversation/make-admin/${conversationId}`,
+                method: "PATCH",
+                body: data,
+            }),
+            invalidatesTags: ["message", "chat"],
+        }),
+
+        removeFromAdmin: builder.mutation({
+            query: ({ conversationId, data }) => ({
+                url: `/conversation/remove-admin/${conversationId}`,
+                method: "PATCH",
+                body: data,
+            }),
+            invalidatesTags: ["message", "chat"],
+        }),
+
+        removeFromGroup: builder.mutation({
+            query: ({ conversationId, data }) => ({
+                url: `/conversation/remove-member/${conversationId}`,
+                method: "PATCH",
+                body: data,
+            }),
+            invalidatesTags: ["message", "chat"],
+        }),
     }),
 });
 
 export const {
     useAccessChatMutation,
+    useGetGroupMembersQuery,
     useGetMyInboxQuery,
     useCreateGroupChatMutation,
+    useUpdateGroupInfoMutation,
     useAddMembersToGroupMutation,
     useChangeMessageRequestStatusMutation,
     useDeleteChatMutation,
-    useLeaveGroupMutation
+    useLeaveGroupMutation,
+    useMakeGroupAdminMutation,
+    useRemoveFromAdminMutation,
+    useRemoveFromGroupMutation
 } = chatApi;

@@ -29,6 +29,7 @@ import DropdownMenu, {
 } from "../../Reusable/DropdownMenu/DropdownMenu";
 import ReportSpamModal from "./ReportSpamModal";
 import ConfirmationModal from "../../Reusable/ConfirmationModal/ConfirmationModal";
+import GroupDetailsDrawer from "./GroupDetailsDrawer/GroupDetailsDrawer";
 
 const ChatWindow = () => {
   const [leaveGroup, { isLoading: isLeavingGroup }] = useLeaveGroupMutation();
@@ -53,6 +54,7 @@ const ChatWindow = () => {
     useState<boolean>(false);
   const [isReportSpamModalOpen, setIsReportSpamModalOpen] =
     useState<boolean>(false);
+  const [isGroupDrawerOpen, setIsGroupDrawerOpen] = useState<boolean>(false);
 
   const [newMessage, setNewMessage] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -285,7 +287,20 @@ const ChatWindow = () => {
             )}
           </div>
           <div>
-            <p className="font-medium text-neutral-10">{selectedChat.name}</p>
+            {selectedChat.isGroup ? (
+              <button
+                onClick={() => setIsGroupDrawerOpen(true)}
+                className="text-left"
+              >
+                <p className="font-medium text-neutral-10">{selectedChat.name}</p>{" "}
+                <p className="text-xs text-neutral-30">
+                  Click here for group info
+                </p>
+              </button>
+            ) : (
+              <p className="font-medium text-neutral-10">{selectedChat.name}</p>
+            )}
+
             {!selectedChat.isGroup && (
               <p className="text-xs text-green-500">Online</p>
             )}
@@ -430,6 +445,11 @@ const ChatWindow = () => {
         submitVariant="danger"
         description={"Are you sure you want to delete this chat?"}
         isLoading={isDeletingChat}
+      />
+
+      <GroupDetailsDrawer
+        isOpen={isGroupDrawerOpen}
+        setIsOpen={setIsGroupDrawerOpen}
       />
     </div>
   );

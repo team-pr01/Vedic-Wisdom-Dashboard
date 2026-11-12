@@ -77,115 +77,122 @@ const MessageReactions = ({
 
   if (!reactions || reactions.length === 0) return null;
 
+  // ✅ Get unique emojis for the single pill display
+  const uniqueEmojis = Object.values(groupedReactions).map((g: any) => g.emoji);
+
+  // ✅ Calculate the TOTAL number of reactions
+  const totalReactionsCount = reactions.length;
+
+  // ✅ Check if the current user has reacted with ANY emoji to highlight the box
+  const hasCurrentUserReacted = reactions.some(
+    (r: any) =>
+      String(typeof r.userId === "object" ? r.userId._id : r.userId) ===
+      String(currentUser?._id),
+  );
+
   return (
-    <div className={`flex gap-1 z-10`} ref={containerRef}>
-      {Object.values(groupedReactions).map((group: any) => {
-        const hasCurrentUserReacted = group.users.some(
-          (u: any) =>
-            (typeof u.userId === "object" ? u.userId._id : u.userId) ===
-            currentUser?._id,
-        );
+    <div className={`relative group/reaction`} ref={containerRef}>
+      {/* ✅ SINGLE EMOJI PILL */}
+      <div
+        onClick={(e) => {
+          e.stopPropagation();
+          setActiveReactionTooltip(
+            activeReactionTooltip === "main" ? null : "main",
+          );
+        }}
+        className={`flex items-center justify-center gap-1 border shadow-sm rounded-full px-2 py-0.5 transition-colors cursor-pointer min-w-8.5 ${
+          hasCurrentUserReacted
+            ? "bg-primary-10/10 border-primary-10/30 hover:bg-primary-10/20"
+            : "bg-white border-neutral-50 hover:bg-neutral-50"
+        }`}
+      >
+        {/* Render the unique emojis inline with slight overlap if multiple */}
+        <div className="flex items-center -space-x-1">
+          {uniqueEmojis.slice(0, 5).map((emoji: any, idx: number) => (
+            <span key={idx} className="text-xs">
+              {emoji}
+            </span>
+          ))}
+        </div>
+        <span className={`text-[10px] font-medium ml-0.5 text-neutral-45`}>
+          {totalReactionsCount}
+        </span>
+      </div>
 
-        const isTooltipActive = activeReactionTooltip === group.emoji;
+      {/* ✅ Invisible bridge for hovering */}
+      <div className="absolute bottom-full left-0 w-full h-3 bg-transparent group-hover/reaction:block hidden" />
 
-        return (
-          <div
-            key={group.emoji}
-            className="relative group/reaction"
-            // ✅ Keep open on hover OR if actively clicked
-            onMouseLeave={() => {
-              // Optional: If you want hover to override click, you can clear here
-              // but usually it's fine to let it stay
-            }}
-          >
-            {/* The Emoji Pill */}
-            <div
-              onClick={(e) => {
-                e.stopPropagation(); // Prevent bubbling
-                // ✅ Toggle tooltip on click
-                setActiveReactionTooltip(isTooltipActive ? null : group.emoji);
-              }}
-              className={`flex items-center gap-1 border shadow-sm rounded-full px-2 py-0.5 transition-colors cursor-pointer ${
-                hasCurrentUserReacted
-                  ? "bg-primary-10/10 border-primary-10/30 hover:bg-primary-10/20"
-                  : "bg-white border-neutral-50 hover:bg-neutral-50"
-              }`}
-            >
-              <span className="text-xs">{group.emoji}</span>
-              <span
-                className={`text-[10px] font-medium ${hasCurrentUserReacted ? "text-primary-10" : "text-neutral-45"}`}
+      {/* ✅ Tooltip: Show if HOVERED or CLICKED */}
+      <div
+        className={`absolute bottom-full mb-2 left-20 -translate-x-1/2 flex-col bg-white border border-neutral-50 shadow-xl rounded-xl p-2 z-50 w-auto min-w-max ${
+          activeReactionTooltip === "main"
+            ? "flex"
+            : "hidden group-hover/reaction:flex"
+        }`}
+      >
+        {/* Flatten all users from all groups into a single list */}
+        {Object.values(groupedReactions).flatMap((group: any) =>
+          group.users.map((user: any, index: number) => {
+            const isOwn =
+              String(
+                typeof user?.userId === "object"
+                  ? user.userId._id
+                  : user?.userId,
+              ) === String(currentUser?._id);
+
+            return (
+              <div
+                key={`${group.emoji}-${index}`}
+                onClick={(e) => {
+                  if (isOwn) {
+                    e.stopPropagation();
+                    handleRemoveReaction(group.emoji);
+                  }
+                }}
+                className={`flex items-center gap-2 py-1 px-2 rounded-md transition-colors ${
+                  isOwn
+                    ? "hover:bg-red-50 cursor-pointer group/remove"
+                    : "cursor-default"
+                }`}
+                title={isOwn ? "Click to remove your reaction" : ""}
               >
-                {group.count}
-              </span>
-            </div>
-
-            {/* ✅ Invisible bridge */}
-            <div className="absolute bottom-full left-0 w-full h-3 bg-transparent group-hover/reaction:block hidden" />
-
-            {/* ✅ Tooltip: Show if HOVERED or CLICKED */}
-            <div
-              className={`absolute bottom-full mb-2 left-1/2 -translate-x-1/2 flex-col bg-white border border-neutral-50 shadow-xl rounded-xl p-2 z-50 w-auto min-w-max ${
-                isTooltipActive ? "flex" : "hidden group-hover/reaction:flex"
-              }`}
-            >
-              {group?.users.map((user: any, index: number) => {
-                const isOwn =
-                  (typeof user?.userId === "object"
-                    ? user.userId
-                    : user?.userId
-                  )?.toString() === currentUser?._id?.toString();
-                return (
-                  <div
-                    key={index}
-                    onClick={(e) => {
-                      // ✅ Only allow removal if it's YOUR reaction
-                      if (isOwn) {
-                        e.stopPropagation();
-                        handleRemoveReaction(group.emoji);
-                      }
-                    }}
-                    className={`flex items-center gap-2 py-1 px-2 rounded-md transition-colors ${
-                      isOwn
-                        ? "hover:bg-red-50 cursor-pointer group/remove"
-                        : "cursor-default"
-                    }`}
-                    title={isOwn ? "Click to remove your reaction" : ""}
-                  >
-                    {typeof user.userId === "object" &&
-                    user.userId?.profilePicture ? (
-                      <img
-                        src={user.userId.profilePicture}
-                        alt={user.userName}
-                        className="w-6 h-6 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-6 h-6 rounded-full bg-primary-10/10 flex items-center justify-center">
-                        <User size={12} className="text-primary-10" />
-                      </div>
-                    )}
-
-                    <div className="flex flex-col">
-                      <span
-                        className={`text-xs font-medium whitespace-nowrap ${isOwn ? "text-neutral-90 group-hover/remove:text-red-600" : "text-neutral-90"}`}
-                      >
-                        {user.userName}
-                      </span>
-                      {/* Show instruction only for the current user */}
-                      {isOwn && (
-                        <span className="text-[10px] text-neutral-40 group-hover/remove:text-red-500">
-                          Tap to remove
-                        </span>
-                      )}
-                    </div>
-
-                    <span className="text-xs ml-3">{user.emoji}</span>
+                {typeof user.userId === "object" &&
+                user.userId?.profilePicture ? (
+                  <img
+                    src={user.userId.profilePicture}
+                    alt={user.userName}
+                    className="w-6 h-6 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-6 h-6 rounded-full bg-primary-10/10 flex items-center justify-center">
+                    <User size={12} className="text-primary-10" />
                   </div>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
+                )}
+
+                <div className="flex flex-col">
+                  <span
+                    className={`text-xs font-medium whitespace-nowrap ${
+                      isOwn
+                        ? "text-neutral-90 group-hover/remove:text-red-600"
+                        : "text-neutral-90"
+                    }`}
+                  >
+                    {user.userName}
+                  </span>
+                  {/* Show instruction only for the current user */}
+                  {isOwn && (
+                    <span className="text-[10px] text-neutral-40 group-hover/remove:text-red-500">
+                      Tap to remove
+                    </span>
+                  )}
+                </div>
+
+                <span className="text-xs ml-3">{user.emoji}</span>
+              </div>
+            );
+          }),
+        )}
+      </div>
     </div>
   );
 };

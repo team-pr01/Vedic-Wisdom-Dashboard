@@ -153,6 +153,7 @@ const Messages = ({
       {selectedChat.isGroup && (
         <GroupInfoCard
           groupName={groupDetails?.groupName || ""}
+          groupAvatar={groupDetails?.groupAvatar || ""}
           membersCount={groupDetails?.members?.length || 0}
           setIsViewMembersModalOpen={setIsViewMembersModalOpen}
           setIsAddGroupMemberModalOpen={setIsAddGroupMemberModalOpen}
@@ -349,7 +350,7 @@ const Messages = ({
 
                     {/* Smile button & Picker on the RIGHT for other users' messages */}
                     {!isOwn && (
-                      <div className="relative self-center flex items-center">
+                      <div className="relative self-center flex items-center z-50">
                         <button
                           type="button"
                           onClick={() =>
@@ -368,7 +369,7 @@ const Messages = ({
                         </button>
 
                         {activeEmojiPickerId === msg._id && (
-                          <div className="absolute bottom-full mb-3 left-0 z-50 shadow-xl rounded-xl overflow-hidden border border-neutral-20">
+                          <div className="absolute bottom-full mb-3 left-0 shadow-xl rounded-xl overflow-hidden border border-neutral-20">
                             <EmojiPicker
                               onEmojiClick={(emojiData) =>
                                 handleReact(msg._id, emojiData)
