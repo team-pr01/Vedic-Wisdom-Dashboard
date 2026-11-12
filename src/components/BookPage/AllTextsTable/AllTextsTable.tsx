@@ -8,7 +8,7 @@ import {
 import DeleteConfirmationModal from "../../Reusable/DeleteConfirmationModal/DeleteConfirmationModal";
 import Button from "../../Reusable/Button/Button";
 import Table from "../../Reusable/Table/Table";
-import AddOrEditBookTextForm from "../AddOrEditBookTextForm/AddOrEditBookTextForm";
+import AddOrEditBookTextForm from "../AddOrEditBookTextForm";
 
 const AllTextsTable = () => {
   const [page, setPage] = useState<number>(1);

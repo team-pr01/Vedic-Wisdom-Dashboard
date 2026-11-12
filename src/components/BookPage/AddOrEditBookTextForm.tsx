@@ -4,17 +4,17 @@ import { X } from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import toast from "react-hot-toast";
-import TextInput from "../../Reusable/TextInput/TextInput";
-import Textarea from "../../Reusable/TextArea/TextArea";
+import TextInput from "../Reusable/TextInput/TextInput";
+import Textarea from "../Reusable/TextArea/TextArea";
 import {
   useAddTextMutation,
   useGetSingleTextQuery,
   useUpdateTextMutation,
-} from "../../../redux/Features/Book/textsApi";
-import Loader from "../../Reusable/Loader/Loader";
-import Button from "../../Reusable/Button/Button";
-import { useGetAllBooksQuery } from "../../../redux/Features/Book/bookApi";
-import Modal from "../../Reusable/Modal/Modal";
+} from "../../redux/Features/Book/textsApi";
+import Loader from "../Reusable/Loader/Loader";
+import Button from "../Reusable/Button/Button";
+import { useGetAllBooksQuery } from "../../redux/Features/Book/bookApi";
+import Modal from "../Reusable/Modal/Modal";
 
 export type TAddOrEditBookTextFormProps = {
   isAddOrEditBookTextModalOpen: boolean;
