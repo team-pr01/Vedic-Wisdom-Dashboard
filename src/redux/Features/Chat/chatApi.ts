@@ -114,6 +114,20 @@ const chatApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["message", "chat"],
         }),
+
+        toggleBlockUser: builder.mutation({
+            query: ({ conversationId, data }) => ({
+                url: `/conversation/toggle-block/${conversationId}`,
+                method: "PATCH",
+                body: data,
+            }),
+            invalidatesTags: ["message", "chat"],
+        }),
+
+        getMyBlockedUsers: builder.query({
+            query: () => `/conversation/blocked-list`,
+            providesTags: ["message", "chat"],
+        }),
     }),
 });
 
@@ -129,5 +143,7 @@ export const {
     useLeaveGroupMutation,
     useMakeGroupAdminMutation,
     useRemoveFromAdminMutation,
-    useRemoveFromGroupMutation
+    useRemoveFromGroupMutation,
+    useToggleBlockUserMutation,
+    useGetMyBlockedUsersQuery,
 } = chatApi;

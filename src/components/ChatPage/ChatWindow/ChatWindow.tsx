@@ -12,12 +12,13 @@ import { useState, useRef, useEffect } from "react";
 import { useChat } from "../../../providers/ChatProvider";
 import { useGetMessagesByConversationIdQuery } from "../../../redux/Features/Chat/messageApi";
 import NoData from "../../Reusable/NoData/NoData";
-import GroupMembersModal from "../GroupMembersModal/GroupMembersModal";
+// import GroupMembersModal from "../GroupMembersModal/GroupMembersModal";
 import AddGroupMemberModal from "../AddGroupMemberModal/AddGroupMemberModal";
 import {
   useChangeMessageRequestStatusMutation,
   useDeleteChatMutation,
   useLeaveGroupMutation,
+  useToggleBlockUserMutation,
 } from "../../../redux/Features/Chat/chatApi";
 import toast from "react-hot-toast";
 import TypingIndicator from "./TypingIndicator";
@@ -30,9 +31,11 @@ import DropdownMenu, {
 import ReportSpamModal from "./ReportSpamModal";
 import ConfirmationModal from "../../Reusable/ConfirmationModal/ConfirmationModal";
 import GroupDetailsDrawer from "./GroupDetailsDrawer/GroupDetailsDrawer";
+import { getStatusText } from "../../../utils/formatLastActive";
 
 const ChatWindow = () => {
   const [leaveGroup, { isLoading: isLeavingGroup }] = useLeaveGroupMutation();
+  const [toggleBlockUser] = useToggleBlockUserMutation();
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const [isLeaveGroupModalOpen, setIsLeaveGroupModalOpen] =
     useState<boolean>(false);
@@ -48,8 +51,8 @@ const ChatWindow = () => {
     setMessages,
     typingUsers,
   } = useChat();
-  const [isViewMembersModalOpen, setIsViewMembersModalOpen] =
-    useState<boolean>(false);
+  // const [isViewMembersModalOpen, setIsViewMembersModalOpen] =
+  //   useState<boolean>(false);
   const [isAddGroupMemberModalOpen, setIsAddGroupMemberModalOpen] =
     useState<boolean>(false);
   const [isReportSpamModalOpen, setIsReportSpamModalOpen] =
@@ -105,6 +108,18 @@ const ChatWindow = () => {
   const isReceiver = selectedChat?.requestedBy !== currentUser?._id;
   const hasLeftGroup = selectedChat?.isGroup && selectedChat?.hasLeft;
 
+  // Check if I blocked them
+  const isBlockedByMe = selectedChat?.blockedBy?.some(
+    (id: any) => String(id._id || id) === String(currentUser?._id),
+  );
+
+  // Check if they blocked me (to hide input)
+  const isBlockedByThem = selectedChat?.blockedBy?.some(
+    (id: any) => String(id._id || id) === String(selectedChat.otherUserId),
+  );
+
+  const isBlocked = isBlockedByMe || isBlockedByThem;
+
   useEffect(() => {
     if (historyData?.data?.messages) {
       setMessages(historyData?.data?.messages);
@@ -159,7 +174,7 @@ const ChatWindow = () => {
     }, 2000);
   };
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = (e: React.FormEvent, taggedUsers: string[]) => {
     e.preventDefault();
     if (!newMessage.trim() || !socket || !selectedChat) return;
 
@@ -167,6 +182,7 @@ const ChatWindow = () => {
       conversationId: selectedChat.conversationId,
       senderId: currentUser._id,
       text: newMessage.trim(),
+      mentions: taggedUsers,
     });
 
     setNewMessage("");
@@ -214,6 +230,37 @@ const ChatWindow = () => {
     }
   };
 
+  const handleToggleBlock = async (action: "unblock" | "block") => {
+    if (!selectedChat) return;
+
+    try {
+      const payload = { action };
+      await toggleBlockUser({
+        conversationId: selectedChat.conversationId,
+        data: payload,
+      }).unwrap();
+
+      // Optional: If your socket listener is fast enough, you don't need this.
+      // But to ensure the UI updates instantly on the person who clicked the button,
+      // we can update the local state manually.
+      setSelectedChat((prev: any) => {
+        const currentBlockedBy = prev.blockedBy || [];
+        const newBlockedBy =
+          action === "block"
+            ? [...currentBlockedBy, currentUser._id]
+            : currentBlockedBy.filter((id: any) => {
+                const uid = typeof id === "object" ? id._id : id;
+                return String(uid) !== String(currentUser._id);
+              });
+
+        return { ...prev, blockedBy: newBlockedBy };
+      });
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Something went wrong");
+      console.error(error);
+    }
+  };
+
   // 1. Build the dynamic menu items based on chat type
   let menuItems: TDropdownItem[] = [
     {
@@ -245,8 +292,7 @@ const ChatWindow = () => {
         label: "Block",
         icon: <ShieldBan size={16} />,
         onClick: () => {
-          // setIsBlockModalOpen(true);
-          toast.success("User blocked");
+          handleToggleBlock("block");
         },
         variant: "danger" as const,
       },
@@ -281,10 +327,6 @@ const ChatWindow = () => {
                 <User size={18} className="text-primary-10" />
               )}
             </div>
-            {/* Only show online dot for 1-on-1 */}
-            {!selectedChat.isGroup && (
-              <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
-            )}
           </div>
           <div>
             {selectedChat.isGroup ? (
@@ -292,7 +334,9 @@ const ChatWindow = () => {
                 onClick={() => setIsGroupDrawerOpen(true)}
                 className="text-left"
               >
-                <p className="font-medium text-neutral-10">{selectedChat.name}</p>{" "}
+                <p className="font-medium text-neutral-10">
+                  {selectedChat.name}
+                </p>{" "}
                 <p className="text-xs text-neutral-30">
                   Click here for group info
                 </p>
@@ -301,8 +345,17 @@ const ChatWindow = () => {
               <p className="font-medium text-neutral-10">{selectedChat.name}</p>
             )}
 
+            {/* Only show online dot for 1-on-1 */}
             {!selectedChat.isGroup && (
-              <p className="text-xs text-green-500">Online</p>
+              <p
+                className={`text-xs ${selectedChat.isOnline ? "text-green-500" : "text-neutral-45"}`}
+              >
+                {getStatusText(
+                  selectedChat.isGroup,
+                  selectedChat.isOnline,
+                  selectedChat.lastActiveAt,
+                )}
+              </p>
             )}
           </div>
         </div>
@@ -369,19 +422,20 @@ const ChatWindow = () => {
         isLoading={isLoading}
         groupDetails={groupDetails}
         messagesEndRef={messagesEndRef}
-        setIsViewMembersModalOpen={setIsViewMembersModalOpen}
+        // setIsViewMembersModalOpen={setIsViewMembersModalOpen}
         setIsAddGroupMemberModalOpen={setIsAddGroupMemberModalOpen}
         currentUser={currentUser}
         hasLeftGroup={hasLeftGroup}
       />
 
       {/* Typing Indicator */}
-      {!hasLeftGroup && (
-        <TypingIndicator
-          typingUsers={typingUsers}
-          selectedChat={selectedChat}
-        />
-      )}
+      {!hasLeftGroup ||
+        (!isBlocked && (
+          <TypingIndicator
+            typingUsers={typingUsers}
+            selectedChat={selectedChat}
+          />
+        ))}
 
       {/* Input Area */}
       {hasLeftGroup ? (
@@ -389,6 +443,21 @@ const ChatWindow = () => {
           <p className="text-sm text-neutral-45">
             You can no longer send messages to this group.
           </p>
+        </div>
+      ) : isBlockedByMe ? (
+        <div className="p-4 text-center text-sm text-red-500 bg-red-50 border-t border-red-100">
+          You blocked this user.{" "}
+          <button
+            onClick={() => handleToggleBlock("unblock")}
+            className="text-neutral-5 font-semibold underline"
+          >
+            Unblock
+          </button>{" "}
+          to send messages.
+        </div>
+      ) : isBlockedByThem ? (
+        <div className="p-4 text-center text-sm text-neutral-45 bg-neutral-50 border-t border-neutral-100">
+          You cannot send messages to this user.
         </div>
       ) : (
         <MessageTextInput
@@ -400,13 +469,13 @@ const ChatWindow = () => {
         />
       )}
 
-      <GroupMembersModal
+      {/* <GroupMembersModal
         isModalOpen={isViewMembersModalOpen}
         setIsModalOpen={setIsViewMembersModalOpen}
         members={groupDetails?.members}
         admins={groupDetails?.admins}
         isLoading={isLoading}
-      />
+      /> */}
 
       <AddGroupMemberModal
         isModalOpen={isAddGroupMemberModalOpen}

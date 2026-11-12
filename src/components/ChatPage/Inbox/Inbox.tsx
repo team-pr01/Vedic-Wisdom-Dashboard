@@ -12,11 +12,13 @@ import FindUserModal from "../FindUserModal/FindUserModal";
 import CreateGroupModal from "../CreateGroupModal/CreateGroupModal";
 import type { TDropdownItem } from "../../Reusable/DropdownMenu/DropdownMenu";
 import DropdownMenu from "../../Reusable/DropdownMenu/DropdownMenu";
+import BlockedList from "../ChatWindow/BlockedList";
 
 const Inbox = () => {
   const [isFindUserModalOpen, setIsFindUserModalOpen] =
     useState<boolean>(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
+  const [isBlockedListOpen, setIsBlockedListOpen] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<"general" | "groups">("general");
 
   // Dropdown State
@@ -57,8 +59,7 @@ const Inbox = () => {
       label: "Blocked List",
       icon: <ShieldAlert size={16} />,
       onClick: () => {
-        // handleBlockedList();
-        console.log("Blocked List clicked");
+        setIsBlockedListOpen(true)
       },
       variant: "danger", // Optional: makes it red
     },
@@ -137,6 +138,11 @@ const Inbox = () => {
       <CreateGroupModal
         isModalOpen={isCreateModalOpen}
         setIsModalOpen={setIsCreateModalOpen}
+      />
+
+      <BlockedList
+        isOpen={isBlockedListOpen}
+        setIsOpen={setIsBlockedListOpen}
       />
     </div>
   );

@@ -1,10 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Send, Smile } from "lucide-react";
+import { Send, Smile, Users } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import EmojiPicker, { Theme } from "emoji-picker-react";
+import { useChat } from "../../../providers/ChatProvider";
+import { useGetGroupMembersQuery } from "../../../redux/Features/Chat/chatApi";
+import { getUserNameInitials } from "../../../utils/getUserNameInitials";
 
 type TMessageTextInputProps = {
-  handleSendMessage: (e: React.FormEvent) => void;
+  handleSendMessage: (e: React.FormEvent, taggedUsers: string[]) => void;
   handleTyping: (e: React.ChangeEvent<HTMLInputElement>) => void;
   newMessage: string;
   isLoading: boolean;
@@ -19,10 +22,27 @@ const MessageTextInput = ({
   isPending,
 }: TMessageTextInputProps) => {
   const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
+  const [mentionSearch, setMentionSearch] = useState<string | null>(null);
+  const [taggedUsers, setTaggedUsers] = useState<string[]>([]);
+
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const mentionRef = useRef<HTMLDivElement>(null);
 
-  // Handle clicking outside to close the emoji picker
+  const { selectedChat } = useChat();
+
+  const { data: membersData } = useGetGroupMembersQuery(
+    selectedChat?.conversationId,
+    {
+      skip: !selectedChat?.isGroup,
+    },
+  );
+
+  const allMembers = [
+    ...(membersData?.data?.admins || []),
+    ...(membersData?.data?.members || []),
+  ];
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -31,6 +51,13 @@ const MessageTextInput = ({
       ) {
         setShowEmojiPicker(false);
       }
+      if (
+        mentionRef.current &&
+        !mentionRef.current.contains(event.target as Node) &&
+        inputRef.current !== event.target
+      ) {
+        setMentionSearch(null);
+      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
@@ -38,7 +65,6 @@ const MessageTextInput = ({
     };
   }, []);
 
-  // Handle emoji selection
   const handleEmojiClick = (emojiData: any) => {
     const syntheticEvent = {
       target: { value: newMessage + emojiData.emoji },
@@ -48,14 +74,80 @@ const MessageTextInput = ({
     inputRef.current?.focus();
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleTyping(e);
+    const value = e.target.value;
+    const lastAtPos = value.lastIndexOf("@");
+
+    if (lastAtPos !== -1) {
+      const textAfterAt = value.slice(lastAtPos + 1);
+
+      if (textAfterAt.includes(" ")) {
+        setMentionSearch(null);
+      } else {
+        setMentionSearch(textAfterAt.toLowerCase());
+      }
+    } else {
+      setMentionSearch(null);
+    }
+  };
+
+  const handleSelectMention = (user: any) => {
+    const lastAtPos = newMessage.lastIndexOf("@");
+    const textBeforeAt = newMessage.slice(0, lastAtPos);
+    const newText = `${textBeforeAt}@${user.name} `;
+
+    const syntheticEvent = {
+      target: { value: newText },
+    } as React.ChangeEvent<HTMLInputElement>;
+    handleTyping(syntheticEvent);
+
+    setTaggedUsers((prev) => [...new Set([...prev, user._id])]);
+    setMentionSearch(null);
+    inputRef.current?.focus();
+  };
+
+  const handleSelectAll = () => {
+    const lastAtPos = newMessage.lastIndexOf("@");
+    const textBeforeAt = newMessage.slice(0, lastAtPos);
+    const newText = `${textBeforeAt}@all `;
+
+    const syntheticEvent = {
+      target: { value: newText },
+    } as React.ChangeEvent<HTMLInputElement>;
+    handleTyping(syntheticEvent);
+
+    // Add all member IDs to taggedUsers
+    const allMemberIds = allMembers.map((m: any) => m._id);
+    setTaggedUsers((prev) => [...new Set([...prev, ...allMemberIds])]);
+
+    setMentionSearch(null);
+    inputRef.current?.focus();
+  };
+
+  const onSubmit = (e: React.FormEvent) => {
+    handleSendMessage(e, taggedUsers);
+    setTaggedUsers([]);
+    setMentionSearch(null);
+  };
+
+  // Filter members based on search
+  const filteredMembers =
+    mentionSearch !== null
+      ? allMembers.filter(
+          (m: any) =>
+            m.name.toLowerCase().includes(mentionSearch) &&
+            m._id !== selectedChat?.otherUserId,
+        )
+      : [];
+
+  // Check if "@all" matches the current search
+  const showAllOption = mentionSearch !== null && "all".includes(mentionSearch);
+
   return (
     <div className="p-4 border-t border-neutral-50 bg-white">
-      <form onSubmit={handleSendMessage} className="flex gap-2 items-center">
-        
-        {/* Input Wrapper (Acts as the input border) */}
+      <form onSubmit={onSubmit} className="flex gap-2 items-center">
         <div className="relative flex-1 flex items-center bg-white border border-neutral-50 rounded-lg focus-within:ring-1 focus-within:ring-primary-10 focus-within:border-transparent transition-all duration-200">
-          
-          {/* Emoji Picker Container (Inside Input, Left Side) */}
           <div className="relative flex items-center pl-2" ref={emojiPickerRef}>
             <button
               type="button"
@@ -70,7 +162,6 @@ const MessageTextInput = ({
               <Smile size={20} />
             </button>
 
-            {/* Emoji Picker Popup */}
             {showEmojiPicker && (
               <div className="absolute bottom-full mb-3 left-0 z-50 shadow-xl rounded-xl overflow-hidden border border-neutral-20">
                 <EmojiPicker
@@ -81,27 +172,70 @@ const MessageTextInput = ({
                   width={300}
                   searchDisabled={false}
                   skinTonesDisabled={true}
-                  previewConfig={{
-                    showPreview: false,
-                  }}
+                  previewConfig={{ showPreview: false }}
                 />
               </div>
             )}
           </div>
 
-          {/* Actual Text Input */}
           <input
             ref={inputRef}
             type="text"
             disabled={isLoading || isPending}
             value={newMessage}
-            onChange={handleTyping}
+            onChange={handleInputChange}
             placeholder="Type a message"
             className="w-full py-3 pr-4 bg-transparent text-neutral-10 focus:outline-none font-Roboto disabled:cursor-not-allowed disabled:opacity-50"
           />
+
+          {/* Mention Dropdown */}
+          {mentionSearch !== null &&
+            selectedChat?.isGroup &&
+            (filteredMembers.length > 0 || showAllOption) && (
+              <div
+                ref={mentionRef}
+                className="absolute bottom-full left-10 mb-2 w-64 bg-white border border-neutral-50 shadow-xl rounded-xl max-h-48 overflow-y-auto z-50"
+              >
+                {/* @all Option */}
+                {showAllOption && (
+                  <div
+                    onClick={handleSelectAll}
+                    className="flex items-center gap-2 p-2 hover:bg-neutral-50 cursor-pointer border-b border-neutral-50"
+                  >
+                    <div className="w-6 h-6 rounded-full bg-primary-10 text-white flex items-center justify-center">
+                      <Users size={12} />
+                    </div>
+                    <span className="text-sm font-medium text-neutral-90">
+                      all
+                    </span>
+                  </div>
+                )}
+
+                {/* Member Options */}
+                {filteredMembers.map((user: any) => (
+                  <div
+                    key={user._id}
+                    onClick={() => handleSelectMention(user)}
+                    className="flex items-center gap-2 p-2 hover:bg-neutral-50 cursor-pointer"
+                  >
+                    {user.profilePicture ? (
+                      <img
+                        src={user.profilePicture}
+                        alt={user.name}
+                        className="w-6 h-6 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-6 h-6 rounded-full bg-primary-10/10 flex items-center justify-center text-[10px] font-bold text-primary-10">
+                        {getUserNameInitials(user.name)}
+                      </div>
+                    )}
+                    <span className="text-sm">{user.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
         </div>
 
-        {/* Send Button */}
         <button
           type="submit"
           disabled={!newMessage.trim() || isLoading || isPending}

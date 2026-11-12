@@ -4,7 +4,7 @@ interface GroupInfoCardProps {
   groupName: string;
   groupAvatar?: string;
   membersCount: number;
-  setIsViewMembersModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  // setIsViewMembersModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setIsAddGroupMemberModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   hasLeftGroup?: boolean;
 }
@@ -13,7 +13,7 @@ const GroupInfoCard = ({
   groupName,
   groupAvatar,
   membersCount,
-  setIsViewMembersModalOpen,
+  // setIsViewMembersModalOpen,
   setIsAddGroupMemberModalOpen,
   hasLeftGroup,
 }: GroupInfoCardProps) => {
@@ -49,13 +49,7 @@ const GroupInfoCard = ({
       </h2>
 
       <p className="text-sm text-neutral-45 mb-3">
-        Group ·{" "}
-        <button
-          onClick={() => setIsViewMembersModalOpen(true)}
-          className="text-primary-10 font-bold hover:underline"
-        >
-          {membersCount || 0} members
-        </button>
+        Group · {membersCount || 0} members
       </p>
 
       {/* <button className="text-sm font-semibold text-primary-10 hover:underline mb-8">

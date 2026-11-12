@@ -188,7 +188,6 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [selectedChat, refetchInbox]);
 
-  
   useEffect(() => {
     if (!socket) return;
 
@@ -223,6 +222,55 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
       socket.off("groupMembersUpdated");
     };
   }, [socket, selectedChat]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("blockStatusChanged", ({ conversationId, blockedBy, action }) => {
+      // Update selectedChat if it's the active chat
+      if (selectedChat?.conversationId === conversationId) {
+        setSelectedChat((prev: any) => {
+          const newBlockedBy =
+            action === "block"
+              ? [...(prev.blockedBy || []), blockedBy]
+              : (prev.blockedBy || []).filter(
+                  (id: any) => id.toString() !== blockedBy.toString(),
+                );
+
+          return { ...prev, blockedBy: newBlockedBy };
+        });
+      }
+      refetchInbox();
+    });
+
+    return () => {
+      socket.off("blockStatusChanged");
+    };
+  }, [socket, selectedChat, refetchInbox]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    // Listen for individual status changes
+    socket.on("userStatusChanged", ({ userId, isOnline, lastActiveAt }) => {
+      // 1. Update selected chat if it's the person we are talking to
+      if (selectedChat?.otherUserId === userId) {
+        setSelectedChat((prev: any) => ({
+          ...prev,
+          isOnline,
+          lastActiveAt: lastActiveAt || prev.lastActiveAt,
+        }));
+      }
+
+      // ✅ 2. Update the inbox sidebar by refetching the data from the backend
+      refetchInbox();
+    });
+
+    return () => {
+      socket.off("getOnlineUsers");
+      socket.off("userStatusChanged");
+    };
+  }, [socket, selectedChat, refetchInbox]);
 
   return (
     <ChatContext.Provider

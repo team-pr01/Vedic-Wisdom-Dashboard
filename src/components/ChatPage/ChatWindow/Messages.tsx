@@ -52,6 +52,7 @@ type TSelectedChat = {
 
 type TGroupDetails = {
   groupName: string;
+  groupAvatar?:string;
   members: any[];
 };
 
@@ -61,7 +62,7 @@ type TMessagesProps = {
   isLoading: boolean;
   currentUser: TUser | null;
   groupDetails: TGroupDetails | null;
-  setIsViewMembersModalOpen: Dispatch<SetStateAction<boolean>>;
+  // setIsViewMembersModalOpen: Dispatch<SetStateAction<boolean>>;
   setIsAddGroupMemberModalOpen: Dispatch<SetStateAction<boolean>>;
   messagesEndRef: RefObject<HTMLDivElement | null>;
   hasLeftGroup?: boolean;
@@ -106,7 +107,7 @@ const Messages = ({
   isLoading,
   currentUser,
   groupDetails,
-  setIsViewMembersModalOpen,
+  // setIsViewMembersModalOpen,
   setIsAddGroupMemberModalOpen,
   messagesEndRef,
   hasLeftGroup,
@@ -148,6 +149,22 @@ const Messages = ({
     },
   ];
 
+  const renderMessageText = (text: string, isOwn: boolean) => {
+  // Split text by the @ symbol
+  const parts = text.split(/(@\w+(?:\s\w+)?)/g); 
+  
+  return parts.map((part, i) => {
+    if (part.startsWith("@")) {
+      return (
+        <span key={i} className={`font-bold ${isOwn ? "text-neutral-5" : "text-primary-10 bg-primary-10/10 px-1 rounded"}`}>
+          {part}
+        </span>
+      );
+    }
+    return <span key={i}>{part}</span>;
+  });
+};
+
   return (
     <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6 bg-neutral-50/30">
       {selectedChat.isGroup && (
@@ -155,7 +172,7 @@ const Messages = ({
           groupName={groupDetails?.groupName || ""}
           groupAvatar={groupDetails?.groupAvatar || ""}
           membersCount={groupDetails?.members?.length || 0}
-          setIsViewMembersModalOpen={setIsViewMembersModalOpen}
+          // setIsViewMembersModalOpen={setIsViewMembersModalOpen}
           setIsAddGroupMemberModalOpen={setIsAddGroupMemberModalOpen}
           hasLeftGroup={hasLeftGroup}
         />
@@ -312,7 +329,7 @@ const Messages = ({
                         </p>
                       )}
 
-                      <p className="text-sm pr-4">{msg.text}</p>
+                      <p className="text-sm pr-4">{renderMessageText(msg.text, isOwn)}</p>
 
                       <div className="flex items-center justify-end gap-1 mt-1">
                         <span
