@@ -20,10 +20,28 @@ const messageApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["message", "chat"],
         }),
+
+        deleteForMe: builder.mutation({
+            query: (messageId) => ({
+                url: `/message/delete-for-me/${messageId}`,
+                method: "DELETE",
+                credentials: "include",
+            }),
+        }),
+
+        deleteForEveryone: builder.mutation({
+            query: (messageId) => ({
+                url: `/message/delete-for-everyone/${messageId}`,
+                method: "DELETE",
+                credentials: "include",
+            }),
+        }),
     }),
 });
 
 export const {
     useGetMessagesByConversationIdQuery,
     useReactToMessageMutation,
+    useDeleteForMeMutation,
+    useDeleteForEveryoneMutation,
 } = messageApi;

@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
+  Ban,
   CheckCheck,
+  Copy,
   EllipsisVertical,
   Smile,
   Trash2,
@@ -19,8 +21,13 @@ import DropdownMenu, {
   type TDropdownItem,
 } from "../../Reusable/DropdownMenu/DropdownMenu";
 import EmojiPicker, { Theme } from "emoji-picker-react";
-import { useReactToMessageMutation } from "../../../redux/Features/Chat/messageApi";
+import {
+  useDeleteForEveryoneMutation,
+  useDeleteForMeMutation,
+  useReactToMessageMutation,
+} from "../../../redux/Features/Chat/messageApi";
 import MessageReactions from "./MessageReactions";
+import toast from "react-hot-toast";
 
 // --- TYPES ---
 type TUser = {
@@ -42,6 +49,7 @@ type TMessage = {
   readBy?: (string | { _id: string })[];
   isSystemMessage?: boolean;
   reactions?: TReaction[];
+  isDeletedForEveryone?: boolean;
 };
 
 type TSelectedChat = {
@@ -52,7 +60,7 @@ type TSelectedChat = {
 
 type TGroupDetails = {
   groupName: string;
-  groupAvatar?:string;
+  groupAvatar?: string;
   members: any[];
 };
 
@@ -62,7 +70,6 @@ type TMessagesProps = {
   isLoading: boolean;
   currentUser: TUser | null;
   groupDetails: TGroupDetails | null;
-  // setIsViewMembersModalOpen: Dispatch<SetStateAction<boolean>>;
   setIsAddGroupMemberModalOpen: Dispatch<SetStateAction<boolean>>;
   messagesEndRef: RefObject<HTMLDivElement | null>;
   hasLeftGroup?: boolean;
@@ -107,63 +114,79 @@ const Messages = ({
   isLoading,
   currentUser,
   groupDetails,
-  // setIsViewMembersModalOpen,
   setIsAddGroupMemberModalOpen,
   messagesEndRef,
   hasLeftGroup,
 }: TMessagesProps) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+  const [activeDropdownId, setActiveDropdownId] = useState<string | null>(null); // ✅ Track which message's dropdown is open
   const [activeEmojiPickerId, setActiveEmojiPickerId] = useState<string | null>(
     null,
   );
 
   const [reactToMessage] = useReactToMessageMutation();
+  const [deleteForMe] = useDeleteForMeMutation();
+  const [deleteForEveryone] = useDeleteForEveryoneMutation();
 
   const groupedMessages = useMemo(
     () => groupMessagesByDate(messages),
     [messages],
   );
 
-  //Extract the actual emoji string from the emojiData object
   const handleReact = async (messageId: string, emojiData: any) => {
     try {
-      const payload = {
-        emoji: emojiData.emoji,
-        method: "add",
-      };
+      const payload = { emoji: emojiData.emoji, method: "add" };
       await reactToMessage({ id: messageId, data: payload }).unwrap();
-      setActiveEmojiPickerId(null); // Close picker
+      setActiveEmojiPickerId(null);
     } catch (error) {
       console.error("Failed to react", error);
     }
   };
 
-  const menuItems: TDropdownItem[] = [
-    {
-      id: "delete",
-      label: "Delete Chat",
-      icon: <Trash2 size={16} />,
-      onClick: () => {},
-      variant: "danger",
-    },
-  ];
+  const handleDeleteForMe = async (messageId: string) => {
+    try {
+      await deleteForMe(messageId).unwrap();
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to delete message");
+    }
+  };
+
+  const handleDeleteForEveryone = async (messageId: string) => {
+    try {
+      await deleteForEveryone(messageId).unwrap();
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to unsend message");
+    }
+  };
 
   const renderMessageText = (text: string, isOwn: boolean) => {
-  // Split text by the @ symbol
-  const parts = text.split(/(@\w+(?:\s\w+)?)/g); 
-  
-  return parts.map((part, i) => {
-    if (part.startsWith("@")) {
-      return (
-        <span key={i} className={`font-bold ${isOwn ? "text-neutral-5" : "text-primary-10 bg-primary-10/10 px-1 rounded"}`}>
-          {part}
-        </span>
-      );
+    // Split text by the @ symbol
+    const parts = text.split(/(@\w+(?:\s\w+)?)/g);
+
+    return parts.map((part, i) => {
+      if (part.startsWith("@")) {
+        return (
+          <span
+            key={i}
+            className={`font-bold ${isOwn ? "text-neutral-5" : "text-primary-10 bg-primary-10/10 px-1 rounded"}`}
+          >
+            {part}
+          </span>
+        );
+      }
+      return <span key={i}>{part}</span>;
+    });
+  };
+
+  const handleCopyMessage = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success("Message copied to clipboard");
+    } catch (err) {
+      console.log(err);
+      toast.error("Failed to copy message");
     }
-    return <span key={i}>{part}</span>;
-  });
-};
+  };
 
   return (
     <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6 bg-neutral-50/30">
@@ -172,7 +195,6 @@ const Messages = ({
           groupName={groupDetails?.groupName || ""}
           groupAvatar={groupDetails?.groupAvatar || ""}
           membersCount={groupDetails?.members?.length || 0}
-          // setIsViewMembersModalOpen={setIsViewMembersModalOpen}
           setIsAddGroupMemberModalOpen={setIsAddGroupMemberModalOpen}
           hasLeftGroup={hasLeftGroup}
         />
@@ -239,6 +261,37 @@ const Messages = ({
 
                 const showSenderInfo = selectedChat.isGroup && !isOwn;
 
+                const menuItems: TDropdownItem[] = [
+                  {
+                    id: `copy-${msg._id}`,
+                    label: "Copy",
+                    icon: <Copy size={16} />,
+                    onClick: () => handleCopyMessage(msg.text),
+                  },
+
+                  // Delete for me
+                  {
+                    id: `delete-me-${msg._id}`,
+                    label: "Delete for Me",
+                    icon: <Trash2 size={16} />,
+                    onClick: () => handleDeleteForMe(msg._id),
+                    variant: "danger",
+                  },
+
+                  // Only show Delete for Everyone if it's my message
+                  ...(isOwn && !msg.isDeletedForEveryone
+                    ? [
+                        {
+                          id: `delete-everyone-${msg._id}`,
+                          label: "Unsend for Everyone",
+                          icon: <Ban size={16} />,
+                          onClick: () => handleDeleteForEveryone(msg._id),
+                          variant: "danger",
+                        } as TDropdownItem,
+                      ]
+                    : []),
+                ];
+
                 return (
                   <div
                     key={msg._id || idx}
@@ -262,7 +315,7 @@ const Messages = ({
                       </div>
                     )}
 
-                    {/* ✅ Smile button & Picker on the LEFT for own messages */}
+                    {/* Smile button & Picker on the LEFT for own messages */}
                     {isOwn && (
                       <div className="relative self-center flex items-center">
                         <button
@@ -310,15 +363,19 @@ const Messages = ({
                       }`}
                     >
                       <button
-                        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                        onClick={() =>
+                          setActiveDropdownId(
+                            activeDropdownId === msg._id ? null : msg._id,
+                          )
+                        }
                         className="absolute top-2.5 right-2 invisible group-hover:visible text-neutral-5"
                       >
                         <EllipsisVertical size={16} />
                       </button>
 
                       <DropdownMenu
-                        isOpen={isDropdownOpen}
-                        onClose={() => setIsDropdownOpen(false)}
+                        isOpen={activeDropdownId === msg._id}
+                        onClose={() => setActiveDropdownId(null)}
                         items={menuItems}
                         dropdownRef={dropdownRef}
                       />
@@ -329,7 +386,16 @@ const Messages = ({
                         </p>
                       )}
 
-                      <p className="text-sm pr-4">{renderMessageText(msg.text, isOwn)}</p>
+                      {/* ✅ Render Deleted Message State */}
+                      {msg.isDeletedForEveryone ? (
+                        <div className="flex items-center gap-2 text-neutral-45 italic text-sm py-1">
+                          <Ban size={14} /> This message was deleted
+                        </div>
+                      ) : (
+                        <p className="text-sm pr-4">
+                          {renderMessageText(msg.text, isOwn)}
+                        </p>
+                      )}
 
                       <div className="flex items-center justify-end gap-1 mt-1">
                         <span
@@ -351,7 +417,6 @@ const Messages = ({
                       </div>
 
                       {/* Render the Reactions Component */}
-                      {/* ✅ FIXED REACTION POSITIONING */}
                       <div
                         className={`absolute -bottom-3 z-10 ${
                           isOwn ? "-left-2" : "-right-2"

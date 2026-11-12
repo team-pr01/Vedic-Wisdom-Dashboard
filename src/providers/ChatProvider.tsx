@@ -272,6 +272,41 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [socket, selectedChat, refetchInbox]);
 
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("messageDeletedForMe", ({ messageId }) => {
+      // Remove the message from the current chat window instantly
+      setMessages((prev) => prev.filter((msg) => msg._id !== messageId));
+
+      // Refetch inbox to update the last message preview (if this was the last message)
+      refetchInbox();
+    });
+
+    return () => {
+      socket.off("messageDeletedForMe");
+    };
+  }, [socket, refetchInbox]);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("messageDeletedForEveryone", (updatedMessage) => {
+      // Replace the old message with the updated "This message was deleted" message
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg._id === updatedMessage._id ? updatedMessage : msg,
+        ),
+      );
+      refetchInbox();
+    });
+
+    return () => {
+      socket.off("messageDeletedForEveryone");
+    };
+  }, [socket, refetchInbox]);
+
   return (
     <ChatContext.Provider
       value={{
