@@ -1,4 +1,5 @@
-const TypingIndicator = ({ typingUsers, selectedChat }) => {
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const TypingIndicator = ({ typingUsers, selectedChat } : any) => {
   return (
     <div className="px-4 h-6 flex items-center">
       {typingUsers.length > 0 && (
@@ -13,7 +14,7 @@ const TypingIndicator = ({ typingUsers, selectedChat }) => {
           ) : (
             // Group: Show Text with Names
             <p className="text-xs text-primary-10 font-medium animate-pulse">
-              {typingUsers.map((u) => u.userName).join(", ")}{" "}
+              {typingUsers.map((u:any) => u.userName).join(", ")}{" "}
               {typingUsers.length === 1 ? "is" : "are"} typing...
             </p>
           )}

@@ -6,6 +6,8 @@ import {
   ShieldBan,
   LogOut,
   Flag,
+  Clock,
+  Check,
 } from "lucide-react";
 import { useSelector } from "react-redux";
 import { format, isToday, isYesterday } from "date-fns";
@@ -34,10 +36,11 @@ type TMessage = {
   isGroup?: boolean;
   unreadCount: number;
   senderId?: string;
+  isOptimistic?: boolean;
 };
 
 const MessageCard = ({ message }: { message: TMessage }) => {
-  const {setSelectedChat} = useChat();
+  const { selectedChat, setSelectedChat, socket } = useChat();
   const [deleteChat, { isLoading: isDeletingChat }] = useDeleteChatMutation();
   const currentUser = useSelector(useCurrentUser) as TLoggedInUser;
   const isOwnMessage = message?.senderId === currentUser?._id;
@@ -108,7 +111,14 @@ const MessageCard = ({ message }: { message: TMessage }) => {
     try {
       await deleteChat(message?._id).unwrap();
       setIsDeleteChatModalOpen(false);
-      setSelectedChat(null)
+      setSelectedChat(null);
+
+      if (socket) {
+        socket.emit("chatDeletedByUser", {
+          conversationId: selectedChat.conversationId,
+          userId: currentUser._id,
+        });
+      }
     } catch (error) {
       console.error(error);
     }
@@ -153,17 +163,35 @@ const MessageCard = ({ message }: { message: TMessage }) => {
               </span>
             )}
           </div>
+
           <div className="flex items-center gap-1.5 mt-0.5">
+            {/* ✅ WhatsApp-style Ticks */}
             {isOwnMessage && (
-              <CheckCheck
-                size={14}
-                className={`transition-colors duration-300 ${
-                  message?.isRead ? "text-orange-500" : "text-neutral-20"
-                }`}
-              />
+              <>
+                {message.isOptimistic ? (
+                  // 1. Pending (Not saved in DB yet)
+                  <Clock size={12} className="text-neutral-400 shrink-0" />
+                ) : message?.isRead ? (
+                  // 2. Read (Double blue/orange tick)
+                  <CheckCheck
+                    size={14}
+                    className="text-orange-500 shrink-0 transition-colors duration-300"
+                  />
+                ) : (
+                  // 3. Sent (Single gray tick)
+                  <Check
+                    size={14}
+                    className="text-neutral-400 shrink-0 transition-colors duration-300"
+                  />
+                )}
+              </>
             )}
             <p
-              className={`text-sm truncate ${message?.unreadCount > 0 ? "text-neutral-90 font-medium" : "text-neutral-45"}`}
+              className={`text-sm truncate ${
+                message?.unreadCount > 0
+                  ? "text-neutral-90 font-medium"
+                  : "text-neutral-45"
+              }`}
             >
               {message?.lastMessage}
             </p>

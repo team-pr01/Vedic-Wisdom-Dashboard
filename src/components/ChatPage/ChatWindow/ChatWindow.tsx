@@ -178,11 +178,30 @@ const ChatWindow = () => {
     e.preventDefault();
     if (!newMessage.trim() || !socket || !selectedChat) return;
 
+    const textToSend = newMessage.trim();
+    const tempId = `temp-${Date.now()}`; // ✅ Create a temporary ID
+
+    // ✅ 1. Optimistically add the message to the UI
+    const optimisticMessage = {
+      _id: tempId,
+      tempId: tempId,
+      conversationId: selectedChat.conversationId,
+      sender: currentUser, // We pass the whole user object so the UI has name/picture
+      text: textToSend,
+      createdAt: new Date().toISOString(),
+      readBy: [],
+      isOptimistic: true, // ✅ Flag to style it differently (e.g., reduced opacity)
+    };
+
+    setMessages((prev) => [...prev, optimisticMessage]);
+    setNewMessage("");
+
     socket.emit("sendMessage", {
       conversationId: selectedChat.conversationId,
       senderId: currentUser._id,
       text: newMessage.trim(),
       mentions: taggedUsers,
+      tempId: tempId,
     });
 
     setNewMessage("");
@@ -429,13 +448,12 @@ const ChatWindow = () => {
       />
 
       {/* Typing Indicator */}
-      {!hasLeftGroup ||
-        (!isBlocked && (
-          <TypingIndicator
-            typingUsers={typingUsers}
-            selectedChat={selectedChat}
-          />
-        ))}
+      {!hasLeftGroup && !isBlocked && (
+        <TypingIndicator
+          typingUsers={typingUsers}
+          selectedChat={selectedChat}
+        />
+      )}
 
       {/* Input Area */}
       {hasLeftGroup ? (

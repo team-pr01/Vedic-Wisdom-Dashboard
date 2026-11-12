@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   Ban,
+  Check,
   CheckCheck,
+  Clock,
   Copy,
   EllipsisVertical,
   Smile,
@@ -50,6 +52,7 @@ type TMessage = {
   isSystemMessage?: boolean;
   reactions?: TReaction[];
   isDeletedForEveryone?: boolean;
+  isOptimistic?: boolean;
 };
 
 type TSelectedChat = {
@@ -253,11 +256,35 @@ const Messages = ({
                 const senderInfo =
                   typeof msg.sender === "string" ? null : msg.sender;
 
-                const isRead = msg.readBy?.some(
-                  (id: any) =>
-                    id === selectedChat.otherUserId ||
-                    id?._id === selectedChat.otherUserId,
-                );
+                // Calculate read status safely
+                let isRead = false;
+
+                if (msg.readBy) {
+                  // Get an array of string IDs for everyone who read the message
+                  const readByIds = msg.readBy.map((id: any) =>
+                    (typeof id === "object" ? id._id : id).toString(),
+                  );
+
+                  if (selectedChat.isGroup && groupDetails?.members) {
+                    // GROUP LOGIC
+                    const otherMembers = groupDetails.members.filter(
+                      (m: any) => m._id.toString() !== currentUser?._id,
+                    );
+
+                    // Check if every other member's ID is inside the readByIds array
+                    isRead = otherMembers.every((member: any) =>
+                      readByIds.includes(member._id.toString()),
+                    );
+                  } else if (
+                    !selectedChat.isGroup &&
+                    selectedChat.otherUserId
+                  ) {
+                    // ✅ 1-ON-1 LOGIC: Blue ticks if the other person has read it
+                    isRead = readByIds.includes(
+                      selectedChat.otherUserId.toString(),
+                    );
+                  }
+                }
 
                 const showSenderInfo = selectedChat.isGroup && !isOwn;
 
@@ -406,13 +433,21 @@ const Messages = ({
                             minute: "2-digit",
                           })}
                         </span>
+
+                        {/* ✅ WhatsApp-style Ticks */}
                         {isOwn && (
-                          <CheckCheck
-                            size={12}
-                            className={`transition-colors duration-300 ${
-                              isRead ? "text-orange-500" : "text-neutral-20"
-                            }`}
-                          />
+                          <>
+                            {msg.isOptimistic ? (
+                              // 1. Pending (Not saved in DB yet)
+                              <Clock size={12} className="text-neutral-400" />
+                            ) : isRead ? (
+                              // 2. Read (Blue ticks)
+                              <CheckCheck size={14} className="text-orange-500" />
+                            ) : (
+                              // 3. Sent/Delivered (Single Gray tick)
+                              <Check size={14} className="text-neutral-400" />
+                            )}
+                          </>
                         )}
                       </div>
 

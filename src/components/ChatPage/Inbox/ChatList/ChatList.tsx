@@ -11,7 +11,6 @@ const ChatList = () => {
   const debouncedKeyword = useDebounce(keyword, 500);
 
   const { inbox, isLoadingInbox, setSelectedChat, selectedChat } = useChat();
-  console.log(inbox);
 
   // Filter inbox based on search
   const searchedInbox = inbox?.filter((chat: any) => 

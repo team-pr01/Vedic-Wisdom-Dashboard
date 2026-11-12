@@ -104,12 +104,28 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   }, [socket, selectedChat, refetchInbox]);
 
   // Listen for incoming messages (Both ChatWindow and Inbox)
-  useEffect(() => {
+    useEffect(() => {
     if (!socket) return;
 
     socket.on("receiveMessage", (message) => {
-      // 1. Update the ChatWindow
-      setMessages((prev) => [...prev, message]);
+      // 1. Update the ChatWindow with Optimistic UI Logic
+      setMessages((prev) => {
+        // ✅ Check if this message replaces an optimistic one
+        const tempIndex = prev.findIndex((m) => m.tempId === message.tempId);
+
+        if (tempIndex !== -1) {
+          // Replace the temporary message with the real one
+          const newMessages = [...prev];
+          newMessages[tempIndex] = message;
+          return newMessages;
+        }
+
+        // Prevent duplicates if it's a normal message
+        if (prev.some((m) => m._id === message._id)) return prev; 
+        
+        // Append new message from other users
+        return [...prev, message];
+      });
 
       // 2. Update the Inbox Sidebar
       refetchInbox();
@@ -306,6 +322,25 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
       socket.off("messageDeletedForEveryone");
     };
   }, [socket, refetchInbox]);
+
+    useEffect(() => {
+    if (!socket) return;
+
+    socket.on("chatDeleted", ({ conversationId }) => {
+      if (selectedChat?.conversationId === conversationId) {
+        setSelectedChat(null);
+      }
+      
+      // ✅ Force refetch with a tiny delay to ensure DB is updated
+      setTimeout(() => {
+        refetchInbox();
+      }, 100);
+    });
+
+    return () => {
+      socket.off("chatDeleted");
+    };
+  }, [socket, selectedChat, refetchInbox]);
 
   return (
     <ChatContext.Provider

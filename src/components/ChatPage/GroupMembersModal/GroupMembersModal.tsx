@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { User } from "lucide-react";
 import Loader from "../../Reusable/Loader/Loader";
 import Modal from "../../Reusable/Modal/Modal";
@@ -8,7 +9,7 @@ const GroupMembersModal = ({
   isLoading,
   members,
   admins,
-}) => {
+}:any) => {
   return (
     <Modal
       isModalOpen={isModalOpen}
@@ -25,7 +26,7 @@ const GroupMembersModal = ({
         {/* Admins */}
         <div className="flex flex-col">
           <p className="text-neutral-5 text-sm font-semibold">Group Admin(s)</p>
-          {admins?.map((admin) => (
+          {admins?.map((admin:any) => (
             <div
               key={admin?._id}
               className={`flex items-center justify-between border-b border-primary-10/20 py-3`}
@@ -55,7 +56,7 @@ const GroupMembersModal = ({
         {/* Other members */}
         <div className="flex flex-col mt-8">
           <p className="text-neutral-5 text-sm font-semibold">Other Members</p>
-          {members?.map((member) => (
+          {members?.map((member:any) => (
             <div
               key={member?._id}
               className={`flex items-center justify-between border-b border-primary-10/20 py-3`}
