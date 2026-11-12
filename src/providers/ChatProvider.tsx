@@ -38,7 +38,8 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     if (!currentUser?._id) return;
 
     const newSocket = io(
-      import.meta.env.VITE_BACKEND_URL || "http://localhost:5000",
+      // import.meta.env.VITE_BACKEND_URL || "http://localhost:5000",
+      import.meta.env.VITE_BACKEND_URL || "https://vedic-wisdom-server.onrender.com",
       {
         query: { userId: currentUser._id },
       },
