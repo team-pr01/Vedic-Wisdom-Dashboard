@@ -5,7 +5,9 @@ import {
   CheckCheck,
   Clock,
   Copy,
+  Edit,
   EllipsisVertical,
+  Reply,
   Smile,
   Trash2,
   User,
@@ -53,6 +55,8 @@ type TMessage = {
   reactions?: TReaction[];
   isDeletedForEveryone?: boolean;
   isOptimistic?: boolean;
+  replyTo: any;
+  isEdited: boolean;
 };
 
 type TSelectedChat = {
@@ -76,6 +80,8 @@ type TMessagesProps = {
   setIsAddGroupMemberModalOpen: Dispatch<SetStateAction<boolean>>;
   messagesEndRef: RefObject<HTMLDivElement | null>;
   hasLeftGroup?: boolean;
+  setReplyTo: Dispatch<SetStateAction<TMessage | null>>;
+  setEditingMessage: Dispatch<SetStateAction<TMessage | null>>;
 };
 
 // --- DATE HELPERS ---
@@ -120,6 +126,8 @@ const Messages = ({
   setIsAddGroupMemberModalOpen,
   messagesEndRef,
   hasLeftGroup,
+  setReplyTo,
+  setEditingMessage,
 }: TMessagesProps) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [activeDropdownId, setActiveDropdownId] = useState<string | null>(null); // ✅ Track which message's dropdown is open
@@ -290,6 +298,18 @@ const Messages = ({
 
                 const menuItems: TDropdownItem[] = [
                   {
+                    id: `reply-${msg._id}`,
+                    label: "Reply",
+                    icon: <Reply size={16} />,
+                    onClick: () => setReplyTo(msg),
+                  },
+                  {
+                    id: `edit-${msg._id}`,
+                    label: "Edit Message",
+                    icon: <Edit size={16} />,
+                    onClick: () => setEditingMessage(msg),
+                  },
+                  {
                     id: `copy-${msg._id}`,
                     label: "Copy",
                     icon: <Copy size={16} />,
@@ -408,9 +428,24 @@ const Messages = ({
                       />
 
                       {showSenderInfo && (
-                        <p className="text-xs font-semibold text-primary-10 mb-1">
+                        <p className="text-xs font-semibold text-primary-10 mb-1 pr-4">
                           {senderInfo?.name || "Unknown User"}
                         </p>
+                      )}
+
+                      {msg.replyTo && (
+                        <div className="bg-black/5 rounded-md p-2 mb-2 border-l-2 border-primary-10 flex flex-col cursor-pointer">
+                          <span className="text-xs font-bold text-primary-10">
+                            {typeof msg.replyTo.sender === "object"
+                              ? msg.replyTo.sender.name
+                              : "User"}
+                          </span>
+                          <span className="text-xs text-neutral-45 line-clamp-2">
+                            {msg.replyTo.isDeletedForEveryone
+                              ? "🚫 This message was deleted"
+                              : msg.replyTo.text}
+                          </span>
+                        </div>
                       )}
 
                       {/* ✅ Render Deleted Message State */}
@@ -425,6 +460,13 @@ const Messages = ({
                       )}
 
                       <div className="flex items-center justify-end gap-1 mt-1">
+                        {msg.isEdited && !msg.isDeletedForEveryone && (
+                          <span
+                            className={`text-[10px] ${isOwn ? "text-neutral-5/70" : "text-neutral-45"} italic`}
+                          >
+                            (edited)
+                          </span>
+                        )}
                         <span
                           className={`text-[10px] ${isOwn ? "text-neutral-5/70" : "text-neutral-45"}`}
                         >
@@ -435,14 +477,17 @@ const Messages = ({
                         </span>
 
                         {/* ✅ WhatsApp-style Ticks */}
-                        {isOwn && (
+                        {!msg.isDeletedForEveryone && isOwn && (
                           <>
                             {msg.isOptimistic ? (
                               // 1. Pending (Not saved in DB yet)
                               <Clock size={12} className="text-neutral-400" />
                             ) : isRead ? (
                               // 2. Read (Blue ticks)
-                              <CheckCheck size={14} className="text-orange-500" />
+                              <CheckCheck
+                                size={14}
+                                className="text-orange-500"
+                              />
                             ) : (
                               // 3. Sent/Delivered (Single Gray tick)
                               <Check size={14} className="text-neutral-400" />

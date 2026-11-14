@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   User,
   CheckCheck,
@@ -30,13 +31,14 @@ type TMessage = {
   _id: string;
   name: string;
   profilePicture: string;
-  lastMessage: string;
+  lastMessage: any;
   lastMessageTime: string;
   isRead: boolean;
   isGroup?: boolean;
   unreadCount: number;
   senderId?: string;
   isOptimistic?: boolean;
+  isDeletedForEveryone?: boolean;
 };
 
 const MessageCard = ({ message }: { message: TMessage }) => {
@@ -166,26 +168,24 @@ const MessageCard = ({ message }: { message: TMessage }) => {
 
           <div className="flex items-center gap-1.5 mt-0.5">
             {/* ✅ WhatsApp-style Ticks */}
-            {isOwnMessage && (
-              <>
-                {message.isOptimistic ? (
-                  // 1. Pending (Not saved in DB yet)
-                  <Clock size={12} className="text-neutral-400 shrink-0" />
-                ) : message?.isRead ? (
-                  // 2. Read (Double blue/orange tick)
-                  <CheckCheck
-                    size={14}
-                    className="text-orange-500 shrink-0 transition-colors duration-300"
-                  />
-                ) : (
-                  // 3. Sent (Single gray tick)
-                  <Check
-                    size={14}
-                    className="text-neutral-400 shrink-0 transition-colors duration-300"
-                  />
-                )}
-              </>
-            )}
+            {!message?.isDeletedForEveryone &&
+              isOwnMessage && (
+                <>
+                  {message.isOptimistic ? (
+                    <Clock size={12} className="text-neutral-400 shrink-0" />
+                  ) : message?.isRead ? (
+                    <CheckCheck
+                      size={14}
+                      className="text-orange-500 shrink-0 transition-colors duration-300"
+                    />
+                  ) : (
+                    <Check
+                      size={14}
+                      className="text-neutral-400 shrink-0 transition-colors duration-300"
+                    />
+                  )}
+                </>
+              )}
             <p
               className={`text-sm truncate ${
                 message?.unreadCount > 0

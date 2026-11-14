@@ -1,17 +1,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Send, Smile, Users } from "lucide-react";
+import { Send, Smile, Users, X } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import EmojiPicker, { Theme } from "emoji-picker-react";
 import { useChat } from "../../../providers/ChatProvider";
 import { useGetGroupMembersQuery } from "../../../redux/Features/Chat/chatApi";
 import { getUserNameInitials } from "../../../utils/getUserNameInitials";
+import { useSelector } from "react-redux";
+import {
+  useCurrentUser,
+  type TLoggedInUser,
+} from "../../../redux/Features/Auth/authSlice";
 
 type TMessageTextInputProps = {
-  handleSendMessage: (e: React.FormEvent, taggedUsers: string[]) => void;
+  handleSendMessage: (e: React.FormEvent, taggedUsers: string[], replyToId?: string) => void;
   handleTyping: (e: React.ChangeEvent<HTMLInputElement>) => void;
   newMessage: string;
   isLoading: boolean;
   isPending: boolean;
+  replyTo: any;
+  setReplyTo: (msg: any) => void;
 };
 
 const MessageTextInput = ({
@@ -20,7 +27,10 @@ const MessageTextInput = ({
   newMessage,
   isLoading,
   isPending,
+  replyTo,
+  setReplyTo,
 }: TMessageTextInputProps) => {
+  const currentUser = useSelector(useCurrentUser) as TLoggedInUser;
   const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
   const [mentionSearch, setMentionSearch] = useState<string | null>(null);
   const [taggedUsers, setTaggedUsers] = useState<string[]>([]);
@@ -126,9 +136,10 @@ const MessageTextInput = ({
   };
 
   const onSubmit = (e: React.FormEvent) => {
-    handleSendMessage(e, taggedUsers);
+    handleSendMessage(e, taggedUsers, replyTo?._id);
     setTaggedUsers([]);
     setMentionSearch(null);
+    setReplyTo(null);
   };
 
   // Filter members based on search
@@ -137,7 +148,8 @@ const MessageTextInput = ({
       ? allMembers.filter(
           (m: any) =>
             m.name.toLowerCase().includes(mentionSearch) &&
-            m._id !== selectedChat?.otherUserId,
+            String(m._id) !== String(selectedChat?.otherUserId) &&
+            String(m._id) !== String(currentUser?._id), // Exclude current user
         )
       : [];
 
@@ -146,6 +158,27 @@ const MessageTextInput = ({
 
   return (
     <div className="p-4 border-t border-neutral-50 bg-white">
+      {replyTo && (
+        <div className="flex items-center justify-between bg-neutral-50 mx-4 mt-3 p-2 rounded-lg border-l-4 border-primary-10">
+          <div className="flex flex-col">
+            <span className="text-xs font-bold text-primary-10">
+              Replying to{" "}
+              {typeof replyTo.sender === "object"
+                ? replyTo.sender.name
+                : "User"}
+            </span>
+            <span className="text-sm text-neutral-45 truncate max-w-sm">
+              {replyTo.text}
+            </span>
+          </div>
+          <button
+            onClick={() => setReplyTo(null)}
+            className="p-1 hover:bg-neutral-200 rounded-full text-neutral-45"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
       <form onSubmit={onSubmit} className="flex gap-2 items-center">
         <div className="relative flex-1 flex items-center bg-white border border-neutral-50 rounded-lg focus-within:ring-1 focus-within:ring-primary-10 focus-within:border-transparent transition-all duration-200">
           <div className="relative flex items-center pl-2" ref={emojiPickerRef}>

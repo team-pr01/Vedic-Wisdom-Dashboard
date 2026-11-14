@@ -36,6 +36,15 @@ const messageApi = baseApi.injectEndpoints({
                 credentials: "include",
             }),
         }),
+
+        editMessage: builder.mutation({
+            query: ({messageId, data, }) => ({
+                url: `/message/edit/${messageId}`,
+                method: "PATCH",
+                body: data,
+                credentials: "include",
+            }),
+        }),
     }),
 });
 
@@ -44,4 +53,5 @@ export const {
     useReactToMessageMutation,
     useDeleteForMeMutation,
     useDeleteForEveryoneMutation,
+    useEditMessageMutation
 } = messageApi;

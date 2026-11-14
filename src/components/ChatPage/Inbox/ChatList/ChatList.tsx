@@ -17,6 +17,8 @@ const ChatList = () => {
     chat.name.toLowerCase().includes(debouncedKeyword.toLowerCase())
   ) || [];
 
+  // console.log(searchedInbox);
+
   const isSearching = keyword.trim().length > 0;
   const hasNoResults = isSearching && searchedInbox.length === 0;
   const isInboxEmpty = !isSearching && searchedInbox.length === 0;
@@ -91,6 +93,7 @@ const ChatList = () => {
                     isGroup: chat.isGroup,
                     unreadCount: chat.unreadCount || 0,
                     senderId: chat.lastMessage?.sender,
+                    isDeletedForEveryone: chat?.lastMessage?.isDeletedForEveryone,
                   }}
                 />
               </div>

@@ -32,6 +32,8 @@ import ReportSpamModal from "./ReportSpamModal";
 import ConfirmationModal from "../../Reusable/ConfirmationModal/ConfirmationModal";
 import GroupDetailsDrawer from "./GroupDetailsDrawer/GroupDetailsDrawer";
 import { getStatusText } from "../../../utils/formatLastActive";
+import ProfileDetailsDrawer from "./ProfileDetailsDrawer";
+import EditMessageModal from "./EditMessageModal";
 
 const ChatWindow = () => {
   const [leaveGroup, { isLoading: isLeavingGroup }] = useLeaveGroupMutation();
@@ -51,6 +53,7 @@ const ChatWindow = () => {
     setMessages,
     typingUsers,
   } = useChat();
+  const [replyTo, setReplyTo] = useState<any>(null);
   // const [isViewMembersModalOpen, setIsViewMembersModalOpen] =
   //   useState<boolean>(false);
   const [isAddGroupMemberModalOpen, setIsAddGroupMemberModalOpen] =
@@ -58,6 +61,9 @@ const ChatWindow = () => {
   const [isReportSpamModalOpen, setIsReportSpamModalOpen] =
     useState<boolean>(false);
   const [isGroupDrawerOpen, setIsGroupDrawerOpen] = useState<boolean>(false);
+  const [isProfileDrawerOpen, setIsProfileDrawerOpen] =
+    useState<boolean>(false);
+    const [editingMessage, setEditingMessage] = useState<any>(null);
 
   const [newMessage, setNewMessage] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -174,37 +180,46 @@ const ChatWindow = () => {
     }, 2000);
   };
 
-  const handleSendMessage = (e: React.FormEvent, taggedUsers: string[]) => {
+ // frontend/ChatWindow.tsx
+
+  const handleSendMessage = (
+    e: React.FormEvent,
+    taggedUsers: string[],
+    replyToId?: string,
+  ) => {
     e.preventDefault();
-    if (!newMessage.trim() || !socket || !selectedChat) return;
-
+    
+    // ✅ Capture the current text
     const textToSend = newMessage.trim();
-    const tempId = `temp-${Date.now()}`; // ✅ Create a temporary ID
+    if (!textToSend || !socket || !selectedChat) return;
 
-    // ✅ 1. Optimistically add the message to the UI
+    const tempId = `temp-${Date.now()}`;
+
     const optimisticMessage = {
       _id: tempId,
       tempId: tempId,
       conversationId: selectedChat.conversationId,
-      sender: currentUser, // We pass the whole user object so the UI has name/picture
-      text: textToSend,
+      sender: currentUser,
+      text: textToSend, // ✅ Use the captured text
       createdAt: new Date().toISOString(),
       readBy: [],
-      isOptimistic: true, // ✅ Flag to style it differently (e.g., reduced opacity)
+      isOptimistic: true,
+      replyTo: replyTo, 
     };
 
     setMessages((prev) => [...prev, optimisticMessage]);
-    setNewMessage("");
+    setNewMessage(""); // Clear input
+    setReplyTo(null);
 
+    // ✅ Emit using the captured text
     socket.emit("sendMessage", {
       conversationId: selectedChat.conversationId,
       senderId: currentUser._id,
-      text: newMessage.trim(),
+      text: textToSend, 
       mentions: taggedUsers,
       tempId: tempId,
+      replyTo: replyToId,
     });
-
-    setNewMessage("");
 
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
     socket.emit("typing", {
@@ -361,7 +376,12 @@ const ChatWindow = () => {
                 </p>
               </button>
             ) : (
-              <p className="font-medium text-neutral-10">{selectedChat.name}</p>
+              <button
+                onClick={() => setIsProfileDrawerOpen(true)}
+                className="font-medium text-neutral-10"
+              >
+                {selectedChat.name}
+              </button>
             )}
 
             {/* Only show online dot for 1-on-1 */}
@@ -445,15 +465,19 @@ const ChatWindow = () => {
         setIsAddGroupMemberModalOpen={setIsAddGroupMemberModalOpen}
         currentUser={currentUser}
         hasLeftGroup={hasLeftGroup}
+        setReplyTo={setReplyTo}
+        setEditingMessage={setEditingMessage}
       />
 
       {/* Typing Indicator */}
-      {!hasLeftGroup && !isBlocked && (
-        <TypingIndicator
-          typingUsers={typingUsers}
-          selectedChat={selectedChat}
-        />
-      )}
+      {!hasLeftGroup &&
+        !isBlocked &&
+        selectedChat?.messageRequestStatus !== "rejected" && (
+          <TypingIndicator
+            typingUsers={typingUsers}
+            selectedChat={selectedChat}
+          />
+        )}
 
       {/* Input Area */}
       {hasLeftGroup ? (
@@ -462,6 +486,25 @@ const ChatWindow = () => {
             You can no longer send messages to this group.
           </p>
         </div>
+      ) : selectedChat?.messageRequestStatus === "rejected" ? (
+        currentUser?._id !== selectedChat?.requestedBy ? (
+          // ✅ The current user is the one who rejected the request
+          <div className="p-4 text-center text-sm text-neutral-45 bg-neutral-50 border-t border-neutral-100 flex flex-col items-center gap-2">
+            <span>You have rejected this message request.</span>
+            <button
+              onClick={() => handleChangeMessageRequestStatus("accepted")}
+              className="px-4 py-1.5 bg-primary-10 text-white rounded-lg font-medium hover:bg-primary-10/90 transition-colors text-xs"
+            >
+              {isChangingStatus ? "Please wait..." : "Approve Request"}
+            </button>
+          </div>
+        ) : (
+          // ✅ The other user rejected the current user's request
+          <div className="p-4 text-center text-sm text-red-500 bg-red-50 border-t border-red-100">
+            Your message request was rejected. You cannot send messages to this
+            user.
+          </div>
+        )
       ) : isBlockedByMe ? (
         <div className="p-4 text-center text-sm text-red-500 bg-red-50 border-t border-red-100">
           You blocked this user.{" "}
@@ -484,6 +527,8 @@ const ChatWindow = () => {
           newMessage={newMessage}
           isLoading={isLoading}
           isPending={isPending}
+          replyTo={replyTo}
+          setReplyTo={setReplyTo}
         />
       )}
 
@@ -538,6 +583,18 @@ const ChatWindow = () => {
         isOpen={isGroupDrawerOpen}
         setIsOpen={setIsGroupDrawerOpen}
       />
+      <ProfileDetailsDrawer
+        isOpen={isProfileDrawerOpen}
+        setIsOpen={setIsProfileDrawerOpen}
+      />
+
+        {editingMessage && (
+    <EditMessageModal
+      isModalOpen={!!editingMessage}
+      setIsModalOpen={(isOpen) => !isOpen && setEditingMessage(null)}
+      message={editingMessage}
+    />
+  )}
     </div>
   );
 };

@@ -5,6 +5,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 import { useSelector } from "react-redux";
 import { useGetMyInboxQuery } from "../redux/Features/Chat/chatApi";
+import { backendBaseUrl } from "../redux/API/baseApi";
 
 interface ChatContextType {
   socket: Socket | null;
@@ -37,13 +38,9 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (!currentUser?._id) return;
 
-    const newSocket = io(
-      // import.meta.env.VITE_BACKEND_URL || "http://localhost:5000",
-      import.meta.env.VITE_BACKEND_URL || "https://vedic-wisdom-server.onrender.com",
-      {
-        query: { userId: currentUser._id },
-      },
-    );
+    const newSocket = io(backendBaseUrl, {
+      query: { userId: currentUser._id },
+    });
 
     setSocket(newSocket);
     newSocket.emit("addUser", currentUser._id);
@@ -105,7 +102,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   }, [socket, selectedChat, refetchInbox]);
 
   // Listen for incoming messages (Both ChatWindow and Inbox)
-    useEffect(() => {
+  useEffect(() => {
     if (!socket) return;
 
     socket.on("receiveMessage", (message) => {
@@ -122,8 +119,8 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         }
 
         // Prevent duplicates if it's a normal message
-        if (prev.some((m) => m._id === message._id)) return prev; 
-        
+        if (prev.some((m) => m._id === message._id)) return prev;
+
         // Append new message from other users
         return [...prev, message];
       });
@@ -289,7 +286,6 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [socket, selectedChat, refetchInbox]);
 
-
   useEffect(() => {
     if (!socket) return;
 
@@ -324,14 +320,14 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [socket, refetchInbox]);
 
-    useEffect(() => {
+  useEffect(() => {
     if (!socket) return;
 
     socket.on("chatDeleted", ({ conversationId }) => {
       if (selectedChat?.conversationId === conversationId) {
         setSelectedChat(null);
       }
-      
+
       // ✅ Force refetch with a tiny delay to ensure DB is updated
       setTimeout(() => {
         refetchInbox();
@@ -342,6 +338,22 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
       socket.off("chatDeleted");
     };
   }, [socket, selectedChat, refetchInbox]);
+
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("messageEdited", (updatedMessage) => {
+      setMessages((prev) =>
+        prev.map((msg) => (msg._id === updatedMessage._id ? updatedMessage : msg))
+      );
+      refetchInbox(); // Update sidebar if it was the last message
+    });
+
+    return () => {
+      socket.off("messageEdited");
+    };
+  }, [socket, refetchInbox]);
 
   return (
     <ChatContext.Provider
